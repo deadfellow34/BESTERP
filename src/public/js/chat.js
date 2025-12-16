@@ -26,10 +26,12 @@
 
   let isWindowOpen = false;
   let unreadCount = 0;
-  let activeTab = 'main'; // 'main' or username for private chat
+  let activeTab = 'main'; // 'main', 'channel:xxx', or username for private chat
   let privateTabs = new Map(); // username -> { unread: 0, messages: [] }
+  let channelTabs = new Map(); // channelId -> { unread: 0, messages: [], info: {} }
   let mainMessages = []; // Cache for main chat messages
   let allUsers = []; // All online users
+  let availableChannels = {}; // Channel info from server
   
   // Reply state
   let replyingTo = null; // { id, sender, text }
@@ -48,6 +50,38 @@
   
   // Available reaction emojis
   const reactionEmojis = ['👍', '❤️', '😂', '😮', '😢', '👏'];
+
+  // Format time to Turkey timezone (HH:MM)
+  function formatChatTime(isoTime) {
+    if (!isoTime) return '';
+    try {
+      const date = new Date(isoTime);
+      if (isNaN(date.getTime())) {
+        // If invalid date, try to extract time from ISO string
+        if (typeof isoTime === 'string' && isoTime.includes('T')) {
+          const timePart = isoTime.split('T')[1];
+          if (timePart) {
+            return timePart.substring(0, 5); // HH:MM
+          }
+        }
+        return '';
+      }
+      return date.toLocaleString('tr-TR', {
+        timeZone: 'Europe/Istanbul',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    } catch (e) {
+      // Fallback: extract time from ISO string
+      if (typeof isoTime === 'string' && isoTime.includes('T')) {
+        const timePart = isoTime.split('T')[1];
+        if (timePart) {
+          return timePart.substring(0, 5); // HH:MM
+        }
+      }
+      return '';
+    }
+  }
 
   // Request notification permission on load
   if ('Notification' in window && Notification.permission === 'default') {
@@ -135,6 +169,7 @@
   function updateUnreadBadge() {
     let total = unreadCount; // main chat unread
     privateTabs.forEach(tab => total += tab.unread);
+    channelTabs.forEach(tab => total += tab.unread);
     
     if (total > 0) {
       unreadBadge.textContent = total > 99 ? '99+' : total;
@@ -436,8 +471,7 @@
   function updateTabsUI() {
     if (!chatTabsEl) return;
     
-    // Clear all except main tab
-    const mainTab = chatTabsEl.querySelector('[data-tab="main"]');
+    // Clear all tabs
     chatTabsEl.innerHTML = '';
     
     // Re-add main tab
@@ -451,6 +485,23 @@
     `;
     mainTabEl.addEventListener('click', () => switchToTab('main'));
     chatTabsEl.appendChild(mainTabEl);
+    
+    // Add channel tabs
+    channelTabs.forEach((tabData, channelId) => {
+      const channelKey = 'channel:' + channelId;
+      const info = tabData.info || {};
+      const tabEl = document.createElement('div');
+      tabEl.className = 'chat-tab chat-tab-channel' + (activeTab === channelKey ? ' active' : '');
+      tabEl.dataset.tab = channelKey;
+      tabEl.style.borderLeft = `3px solid ${info.color || '#6366f1'}`;
+      tabEl.innerHTML = `
+        <span class="chat-tab-icon">${info.icon || '📢'}</span>
+        <span class="chat-tab-name">${escapeHtml(info.name || channelId)}</span>
+        ${tabData.unread > 0 && activeTab !== channelKey ? `<span class="chat-tab-badge">${tabData.unread}</span>` : ''}
+      `;
+      tabEl.addEventListener('click', () => switchToTab(channelKey));
+      chatTabsEl.appendChild(tabEl);
+    });
     
     // Add private chat tabs
     privateTabs.forEach((tabData, userName) => {
@@ -489,6 +540,10 @@
     // Clear unread for this tab
     if (tabName === 'main') {
       unreadCount = 0;
+    } else if (tabName.startsWith('channel:')) {
+      const channelId = tabName.replace('channel:', '');
+      const tab = channelTabs.get(channelId);
+      if (tab) tab.unread = 0;
     } else {
       const tab = privateTabs.get(tabName);
       if (tab) tab.unread = 0;
@@ -500,8 +555,34 @@
     
     // Update input placeholder
     if (chatInput) {
-      chatInput.placeholder = tabName === 'main' ? 'Mesaj yazın...' : `${tabName}'e özel mesaj...`;
+      if (tabName === 'main') {
+        chatInput.placeholder = 'Mesaj yazın...';
+        chatInput.disabled = false;
+      } else if (tabName.startsWith('channel:')) {
+        chatInput.placeholder = 'Bu kanal sadece okunabilir';
+        chatInput.disabled = true; // Channels are read-only
+      } else {
+        chatInput.placeholder = `${tabName}'e özel mesaj...`;
+        chatInput.disabled = false;
+      }
     }
+  }
+
+  // Open or create channel tab
+  function openChannelTab(channelId, switchTo = true) {
+    if (!channelTabs.has(channelId)) {
+      const info = availableChannels[channelId] || { name: channelId, icon: '📢', color: '#6366f1' };
+      channelTabs.set(channelId, { unread: 0, messages: [], info });
+      // Request history from server
+      socket.emit('getChannelHistory', channelId);
+    }
+    
+    if (switchTo) {
+      switchToTab('channel:' + channelId);
+      openChatWindow();
+    }
+    
+    updateTabsUI();
   }
 
   // Open or create private tab
@@ -540,17 +621,26 @@
     chatMessages.innerHTML = '';
     
     let messages = [];
+    let welcomeText = '';
+    
     if (activeTab === 'main') {
       messages = mainMessages;
+      welcomeText = '👋 Henüz mesaj yok. İlk mesajı siz yazın!';
+    } else if (activeTab.startsWith('channel:')) {
+      const channelId = activeTab.replace('channel:', '');
+      const tab = channelTabs.get(channelId);
+      messages = tab ? tab.messages : [];
+      welcomeText = '📢 Bu kanalda henüz bildirim yok.';
     } else {
       const tab = privateTabs.get(activeTab);
       messages = tab ? tab.messages : [];
+      welcomeText = '🔒 Özel sohbete başlayın!';
     }
     
     if (messages.length === 0) {
       chatMessages.innerHTML = `
         <div class="chat-welcome-message">
-          <p>👋 ${activeTab === 'main' ? 'Henüz mesaj yok. İlk mesajı siz yazın!' : 'Özel sohbete başlayın!'}</p>
+          <p>${welcomeText}</p>
         </div>
       `;
       return;
@@ -566,9 +656,11 @@
     if (welcome) welcome.remove();
 
     const isOwnMessage = data.sender === username;
+    const isSystem = data.isSystem || false;
     const messageEl = document.createElement('div');
-    messageEl.className = 'chat-message ' + (isOwnMessage ? 'chat-message-own' : 'chat-message-other');
+    messageEl.className = 'chat-message ' + (isSystem ? 'chat-message-system' : (isOwnMessage ? 'chat-message-own' : 'chat-message-other'));
     if (data.isPrivate) messageEl.classList.add('chat-message-private');
+    if (data.channel) messageEl.classList.add('chat-message-channel');
     messageEl.dataset.messageId = data.id;
     
     // Build reply quote if exists
@@ -617,7 +709,7 @@
     messageEl.innerHTML = `
       <div class="chat-message-header">
         <span class="chat-message-sender">${escapeHtml(data.sender)}</span>
-        <span class="chat-message-time">${data.time}</span>
+        <span class="chat-message-time">${formatChatTime(data.time)}</span>
       </div>
       ${replyHtml}
       ${formattedText ? `<div class="chat-message-text">${formattedText}</div>` : ''}
@@ -1058,6 +1150,75 @@
     socket.emit('join', { name: username, page: currentPage });
     // Request online users immediately after joining
     socket.emit('getOnlineUsers');
+  });
+
+  // Receive available channels info
+  socket.on('channelsInfo', function(channels) {
+    console.log('[Chat] Received channels info:', channels);
+    availableChannels = channels || {};
+    
+    // Auto-open driver-alerts channel tab
+    if (availableChannels['driver-alerts']) {
+      openChannelTab('driver-alerts', false);
+    }
+  });
+
+  // Receive channel history
+  socket.on('channelHistory', function(data) {
+    const { channel, messages, error } = data;
+    console.log('[Chat] Received channel history:', channel, messages?.length || 0, 'messages');
+    
+    if (channelTabs.has(channel)) {
+      const tab = channelTabs.get(channel);
+      tab.messages = messages || [];
+      
+      if (activeTab === 'channel:' + channel) {
+        loadActiveTabMessages();
+      }
+    }
+  });
+
+  // Receive new channel message
+  socket.on('channelMessage', function(data) {
+    const channelId = data.channel;
+    console.log('[Chat] Received channel message:', channelId, data.text);
+    
+    // Auto-open the channel tab if not exists
+    if (!channelTabs.has(channelId)) {
+      const info = availableChannels[channelId] || { name: channelId, icon: '📢', color: '#6366f1' };
+      channelTabs.set(channelId, { unread: 0, messages: [], info });
+    }
+    
+    const tab = channelTabs.get(channelId);
+    tab.messages.push(data);
+    if (tab.messages.length > 200) tab.messages.shift();
+    
+    // If we're viewing this channel, show it
+    if (activeTab === 'channel:' + channelId) {
+      addMessageToUI(data);
+      scrollToBottom();
+    } else {
+      // Increment unread
+      tab.unread++;
+      updateUnreadBadge();
+      updateTabsUI();
+    }
+    
+    // Play sound and show notification
+    playNotificationSound();
+    
+    // Show desktop notification if window is closed or page is hidden
+    if (!isWindowOpen || document.hidden) {
+      const channelInfo = availableChannels[channelId] || {};
+      showNotification(
+        (channelInfo.icon || '📢') + ' ' + (channelInfo.name || channelId),
+        data.text,
+        function() {
+          openChatWindow();
+          switchToTab('channel:' + channelId);
+        }
+      );
+    }
   });
 
   socket.on('chatHistory', function(messages) {

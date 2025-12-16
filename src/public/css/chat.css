@@ -1243,3 +1243,73 @@
 [data-theme="light"] .file-preview-size {
   color: #64748b;
 }
+
+/* Channel Tab Styles */
+.chat-tab-channel {
+  background: rgba(239, 68, 68, 0.1) !important;
+}
+
+.chat-tab-channel.active {
+  background: rgba(239, 68, 68, 0.2) !important;
+}
+
+/* System Message Styles (for channel alerts) */
+.chat-message-system {
+  justify-content: center !important;
+  padding: 8px 12px !important;
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%) !important;
+  border-radius: 8px !important;
+  margin: 8px 12px !important;
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
+}
+
+.chat-message-system .chat-message-header,
+.chat-message-system .chat-message-sender {
+  color: rgba(255, 255, 255, 0.9) !important;
+  font-weight: 600;
+}
+
+.chat-message-system .chat-message-text {
+  color: white !important;
+  font-weight: 500;
+}
+
+.chat-message-system .chat-message-time {
+  color: rgba(255, 255, 255, 0.7) !important;
+}
+
+.chat-message-system .chat-message-actions {
+  display: none !important;
+}
+
+/* Channel Message Styles */
+.chat-message-channel .chat-message-bubble {
+  border-left: 3px solid #ef4444;
+}
+
+/* Light theme adjustments */
+[data-theme="light"] .chat-tab-channel {
+  background: rgba(239, 68, 68, 0.08) !important;
+}
+
+[data-theme="light"] .chat-tab-channel.active {
+  background: rgba(239, 68, 68, 0.15) !important;
+}
+
+/* Light theme - System message text visibility */
+[data-theme="light"] .chat-message-system {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%) !important;
+}
+
+[data-theme="light"] .chat-message-system .chat-message-header,
+[data-theme="light"] .chat-message-system .chat-message-sender {
+  color: rgba(255, 255, 255, 0.9) !important;
+}
+
+[data-theme="light"] .chat-message-system .chat-message-text {
+  color: white !important;
+}
+
+[data-theme="light"] .chat-message-system .chat-message-time {
+  color: rgba(255, 255, 255, 0.7) !important;
+}

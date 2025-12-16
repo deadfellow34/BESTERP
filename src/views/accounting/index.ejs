@@ -610,9 +610,15 @@
       <p style="color: #9ca3af; margin: 8px 0 0 0;">İhracat/İthalat AMETA, T1 ve CMR evraklarını yükleyin</p>
     </div>
     <div style="display:flex; align-items:center; gap:8px;">
-      <input id="accounting-search" type="text" placeholder="Pozisyon veya İhracat Poz ara..." 
-        style="background:#020617; border:1px solid #1f2937; color:#e5e7eb; padding:8px 10px; border-radius:8px; width:320px; font-size:13px;" />
-      <button id="accounting-clear" class="btn btn-outline btn-sm" style="padding:8px 10px;">Temizle</button>
+      <form id="accounting-search-form" method="GET" action="/accounting" style="display:inline-flex; align-items:stretch; margin:0; padding:0;">
+        <input type="hidden" name="year" value="<%= typeof year !== 'undefined' ? year : new Date().getFullYear() %>">
+        <input id="accounting-search" name="search" type="text" placeholder="Pozisyon, İhracat Poz veya Plaka ara..." 
+          value="<%= typeof search !== 'undefined' ? search : '' %>"
+          style="background:#020617; border:1px solid #1f2937; border-right:none; color:#e5e7eb; padding:0 14px; border-radius:8px 0 0 8px; width:320px; font-size:13px; height:38px; margin:0; outline:none;" /><button type="submit" style="background:linear-gradient(135deg, #06b6d4 0%, #0891b2 100%); border:1px solid #0891b2; border-left:none; color:white; padding:0 18px; border-radius:0 8px 8px 0; font-size:13px; font-weight:500; cursor:pointer; height:38px; margin:0; white-space:nowrap;">Ara</button>
+        <% if (typeof search !== 'undefined' && search) { %>
+          <a href="/accounting?year=<%= typeof year !== 'undefined' ? year : new Date().getFullYear() %>" style="margin-left:8px; background:#1f2937; border:1px solid #374151; color:#e5e7eb; padding:0 14px; border-radius:8px; font-size:13px; text-decoration:none; display:flex; align-items:center; height:38px;">Temizle</a>
+        <% } %>
+      </form>
     </div>
   </div>
   <div style="display:flex; gap:8px; margin-bottom:14px;">
@@ -726,8 +732,9 @@
         <% if (typeof totalPages !== 'undefined' && totalPages > 1) { %>
           <div class="pagination">
             <% const currentYear = typeof year !== 'undefined' ? year : new Date().getFullYear(); %>
+            <% const searchQuery = typeof search !== 'undefined' && search ? '&search=' + encodeURIComponent(search) : ''; %>
             <% if (currentPage > 1) { %>
-              <a href="/accounting?page=<%= currentPage - 1 %>&year=<%= currentYear %>">← Önceki</a>
+              <a href="/accounting?page=<%= currentPage - 1 %>&year=<%= currentYear %><%= searchQuery %>">← Önceki</a>
             <% } else { %>
               <span class="disabled">← Önceki</span>
             <% } %>
@@ -736,29 +743,30 @@
               let startPage = Math.max(1, currentPage - 2);
               let endPage = Math.min(totalPages, currentPage + 2);
               if (startPage > 1) { %>
-                <a href="/accounting?page=1&year=<%= currentYear %>">1</a>
+                <a href="/accounting?page=1&year=<%= currentYear %><%= searchQuery %>">1</a>
                 <% if (startPage > 2) { %><span>...</span><% } %>
             <% } 
               for (let i = startPage; i <= endPage; i++) { 
                 if (i === currentPage) { %>
                   <span class="current"><%= i %></span>
                 <% } else { %>
-                  <a href="/accounting?page=<%= i %>&year=<%= currentYear %>"><%= i %></a>
+                  <a href="/accounting?page=<%= i %>&year=<%= currentYear %><%= searchQuery %>"><%= i %></a>
                 <% } 
               }
               if (endPage < totalPages) { 
                 if (endPage < totalPages - 1) { %><span>...</span><% } %>
-                <a href="/accounting?page=<%= totalPages %>&year=<%= currentYear %>"><%= totalPages %></a>
+                <a href="/accounting?page=<%= totalPages %>&year=<%= currentYear %><%= searchQuery %>"><%= totalPages %></a>
             <% } %>
             
             <% if (currentPage < totalPages) { %>
-              <a href="/accounting?page=<%= currentPage + 1 %>&year=<%= currentYear %>">Sonraki →</a>
+              <a href="/accounting?page=<%= currentPage + 1 %>&year=<%= currentYear %><%= searchQuery %>">Sonraki →</a>
             <% } else { %>
               <span class="disabled">Sonraki →</span>
             <% } %>
             
             <span class="pagination-info">
               Toplam <%= typeof totalPositions !== 'undefined' ? totalPositions : 0 %> pozisyon
+              <% if (typeof search !== 'undefined' && search) { %> (arama: "<%= search %>")<% } %>
             </span>
           </div>
         <% } %>
@@ -1109,11 +1117,9 @@ async function confirmDelete() {
   }
 }
 
-// Accounting positions filter (Pozisyon veya İhracat Poz)
+// Accounting positions filter - only filters by complete/incomplete status
+// Search is now done on backend via form submission
 function filterAccountingPositions() {
-  const input = document.getElementById('accounting-search');
-  if (!input) return;
-  const q = input.value.trim().toLowerCase();
   const tbody = document.getElementById('accounting-positions-tbody');
   const noRes = document.getElementById('accounting-no-results');
   if (!tbody) return;
@@ -1122,10 +1128,6 @@ function filterAccountingPositions() {
   const activeFilterEl = document.querySelector('.acct-filter-btn.active');
   const activeFilter = activeFilterEl ? activeFilterEl.dataset.filter : 'all';
   Array.from(tbody.querySelectorAll('tr')).forEach(tr => {
-    const pos = (tr.children[0]?.textContent || '').trim().toLowerCase();
-    const ihr = (tr.children[1]?.textContent || '').trim().toLowerCase();
-    const plate = (tr.children[2]?.textContent || '').trim().toLowerCase();
-    const matchesSearch = !q || pos.includes(q) || ihr.includes(q) || plate.includes(q);
     // determine completion from rendered DOM: if row has .row-complete class it's complete
     const isComplete = tr.classList.contains('row-complete');
 
@@ -1133,9 +1135,8 @@ function filterAccountingPositions() {
     if (activeFilter === 'complete') filterMatch = isComplete;
     else if (activeFilter === 'incomplete') filterMatch = !isComplete;
 
-    const match = matchesSearch && filterMatch;
-    tr.style.display = match ? '' : 'none';
-    if (match) visible += 1;
+    tr.style.display = filterMatch ? '' : 'none';
+    if (filterMatch) visible += 1;
   });
   if (noRes) noRes.style.display = visible === 0 ? 'block' : 'none';
 }
@@ -1153,10 +1154,6 @@ function setAccountingFilter(filter, btn) {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
-  const input = document.getElementById('accounting-search');
-  const clearBtn = document.getElementById('accounting-clear');
-  if (input) input.addEventListener('input', filterAccountingPositions);
-  if (clearBtn) clearBtn.addEventListener('click', function() { input.value = ''; filterAccountingPositions(); input.focus(); });
   // filter buttons
   document.querySelectorAll('.acct-filter-btn').forEach(btn => {
     btn.addEventListener('click', function() {
@@ -1168,6 +1165,17 @@ document.addEventListener('DOMContentLoaded', function() {
   // set default filter to 'all'
   const defaultBtn = document.getElementById('acct-filter-all');
   if (defaultBtn) defaultBtn.classList.add('active');
+  
+  // Enter key submits search form
+  const searchInput = document.getElementById('accounting-search');
+  if (searchInput) {
+    searchInput.addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        document.getElementById('accounting-search-form').submit();
+      }
+    });
+  }
 });
 
 </script>

@@ -877,6 +877,40 @@ const migrations = [
         });
       });
     }
+  },
+  {
+    version: 25,
+    name: 'create_chat_channel_messages_table',
+    description: 'Create chat_channel_messages table for channel-based messaging (e.g., driver alerts)',
+    up: (db) => {
+      return new Promise((resolve, reject) => {
+        db.run(`
+          CREATE TABLE IF NOT EXISTS chat_channel_messages (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            channel TEXT NOT NULL,
+            sender TEXT NOT NULL,
+            text TEXT NOT NULL,
+            time TEXT NOT NULL,
+            is_system INTEGER DEFAULT 0,
+            metadata TEXT,
+            created_at TEXT DEFAULT (datetime('now'))
+          )
+        `, (err) => {
+          if (err && !err.message.includes('already exists')) {
+            console.error('Create chat_channel_messages table error:', err.message);
+            return reject(err);
+          }
+          
+          // Create indexes
+          db.run(`CREATE INDEX IF NOT EXISTS idx_chat_channel_messages_channel ON chat_channel_messages(channel)`, () => {
+            db.run(`CREATE INDEX IF NOT EXISTS idx_chat_channel_messages_time ON chat_channel_messages(time DESC)`, () => {
+              console.log('[Migration] chat_channel_messages table created');
+              resolve();
+            });
+          });
+        });
+      });
+    }
   }
 ];
 

@@ -113,18 +113,30 @@ exports.index = (req, res) => {
   const year = req.query.year || res.locals.year || new Date().getFullYear();
   const yearPrefix = String(year).slice(-2); // 2025 -> "25"
   
+  // Search query
+  const search = (req.query.search || '').trim();
+  
   // Pagination
   const page = parseInt(req.query.page) || 1;
   const limit = 30;
   const offset = (page - 1) * limit;
   
+  // Build search condition
+  let searchCondition = '';
+  let searchParams = [];
+  if (search) {
+    searchCondition = ` AND (l.position_no LIKE ? OR l.ihr_poz LIKE ? OR l.truck_plate LIKE ? OR l.trailer_plate LIKE ?)`;
+    const searchPattern = `%${search}%`;
+    searchParams = [searchPattern, searchPattern, searchPattern, searchPattern];
+  }
+  
   // get recent positions (one row per position_no): prefer the latest row that has a non-empty ihr_poz,
   // otherwise fall back to the latest row for that position.
-  // Filter by year prefix
+  // Filter by year prefix and search
   const countSql = `
-    SELECT COUNT(DISTINCT position_no) as total
-    FROM loads
-    WHERE position_no LIKE ?
+    SELECT COUNT(DISTINCT l.position_no) as total
+    FROM loads l
+    WHERE l.position_no LIKE ?${searchCondition}
   `;
   
   const sql = `
@@ -137,7 +149,7 @@ exports.index = (req, res) => {
           MAX(id)
         ) AS pick_id
       FROM loads
-      WHERE position_no LIKE ?
+      WHERE position_no LIKE ?${search ? ` AND (position_no LIKE ? OR ihr_poz LIKE ? OR truck_plate LIKE ? OR trailer_plate LIKE ?)` : ''}
       GROUP BY position_no
     ) mx ON l.position_no = mx.position_no AND l.id = mx.pick_id
     ORDER BY 
@@ -148,12 +160,20 @@ exports.index = (req, res) => {
   
   const yearPattern = yearPrefix + '/%';
   
+  // Build params for count query
+  const countParams = [yearPattern, ...searchParams];
+  
+  // Build params for main query
+  const mainParams = search 
+    ? [yearPattern, `%${search}%`, `%${search}%`, `%${search}%`, `%${search}%`, limit, offset]
+    : [yearPattern, limit, offset];
+  
   // First get total count for pagination
-  db.get(countSql, [yearPattern], (countErr, countRow) => {
+  db.get(countSql, countParams, (countErr, countRow) => {
     const totalPositions = countRow ? countRow.total : 0;
     const totalPages = Math.ceil(totalPositions / limit);
     
-    db.all(sql, [yearPattern, limit, offset], (err, rows) => {
+    db.all(sql, mainParams, (err, rows) => {
     if (err) {
       console.error('Error fetching positions for accounting:', err);
       // 25-200-552 pozisyonuna yüklenen T1 ve CMR belgelerini oku
@@ -192,7 +212,8 @@ exports.index = (req, res) => {
         year: year,
         currentPage: page,
         totalPages: totalPages,
-        totalPositions: totalPositions
+        totalPositions: totalPositions,
+        search: search
       });
     }
 
@@ -204,7 +225,8 @@ exports.index = (req, res) => {
         year: year,
         currentPage: page,
         totalPages: totalPages,
-        totalPositions: totalPositions
+        totalPositions: totalPositions,
+        search: search
       });
     }
 
@@ -329,7 +351,8 @@ exports.index = (req, res) => {
               year: year,
               currentPage: page,
               totalPages: totalPages,
-              totalPositions: totalPositions
+              totalPositions: totalPositions,
+              search: search
             });
           }
         });

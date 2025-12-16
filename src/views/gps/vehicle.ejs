@@ -1,3 +1,16 @@
+<%
+  // Helper: ISO/UTC tarihini GMT+3 (Türkiye) formatına çevir
+  function toGMT3(dateStr) {
+    if (!dateStr) return '—';
+    try {
+      const d = new Date(dateStr);
+      if (isNaN(d.getTime())) return dateStr;
+      return d.toLocaleString('tr-TR', { timeZone: 'Europe/Istanbul', day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    } catch (e) {
+      return dateStr;
+    }
+  }
+%>
 <style>
   .gps-page { padding: 12px 20px 28px; }
   .gps-header {
@@ -67,7 +80,7 @@
       <h1 class="gps-title">GPS · Araç Detay</h1>
       <div class="gps-sub">
         Araç: <span style="color:var(--text-primary); font-weight:900;"><%= vehicle ? (vehicle.plate || vehicle.vehiclename || vehicle.vehicleid) : '—' %></span>
-        <span style="margin-left:10px;">Son veri: <%= vehicle ? (vehicle.time_indicator || '—') : '—' %></span>
+        <span style="margin-left:10px;">Son veri: <%= vehicle ? toGMT3(vehicle.time_indicator) : '—' %></span>
       </div>
     </div>
 
@@ -106,9 +119,49 @@
   <div style="height: 14px;"></div>
 
   <div class="gps-card">
-    <div class="gps-card-header">
-      <h2 class="gps-card-title">Geçmiş (son 24 saat)</h2>
-      <div class="gps-sub" style="margin:0;">Kayıt sayısı: <%= (history || []).length %></div>
+    <div class="gps-card-header" style="flex-direction:column; align-items:stretch; gap:12px;">
+      <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;">
+        <h2 class="gps-card-title">Geçmiş <%= (dateFilter && dateFilter.startDate) ? '' : '(son 24 saat)' %></h2>
+        <div class="gps-sub" style="margin:0;">Kayıt: <%= (pagination && pagination.totalRows != null) ? pagination.totalRows : (history || []).length %></div>
+      </div>
+
+      <!-- Tarih Filtresi -->
+      <form method="GET" action="/gps/vehicle/<%= encodeURIComponent(vehicle.vehicleid) %>" style="display:flex; align-items:center; gap:10px; flex-wrap:wrap; padding:10px; background:var(--bg-surface); border-radius:8px; border:1px solid var(--border-subtle);">
+        <label style="font-size:12px; font-weight:700; color:var(--text-muted);">Tarih Aralığı:</label>
+        <input type="date" id="reportStartDate" name="startDate" value="<%= (dateFilter && dateFilter.startDate) || '' %>" style="padding:6px 10px; border-radius:6px; border:1px solid var(--border-default); background:var(--bg-card); color:var(--text-primary); font-size:12px;" />
+        <span style="color:var(--text-muted); font-size:12px;">—</span>
+        <input type="date" id="reportEndDate" name="endDate" value="<%= (dateFilter && dateFilter.endDate) || '' %>" style="padding:6px 10px; border-radius:6px; border:1px solid var(--border-default); background:var(--bg-card); color:var(--text-primary); font-size:12px;" />
+        <button type="submit" class="btn" style="padding:6px 14px; font-size:12px;">Filtrele</button>
+        <button type="button" id="openReportBtn" class="btn" style="padding:6px 14px; font-size:12px; background:linear-gradient(90deg,#10b981,#059669);">📊 Rapor</button>
+        <% if (dateFilter && (dateFilter.startDate || dateFilter.endDate)) { %>
+          <a href="/gps/vehicle/<%= encodeURIComponent(vehicle.vehicleid) %>" class="btn btn-outline" style="padding:6px 14px; font-size:12px;">Sıfırla</a>
+        <% } %>
+      </form>
+
+      <% if (pagination && pagination.totalPages && pagination.totalPages > 1) { %>
+        <div style="display:flex; gap:6px; align-items:center; justify-content:flex-end;">
+          <%
+            // Build query string preserving date filters
+            const qs = [];
+            if (dateFilter && dateFilter.startDate) qs.push('startDate=' + encodeURIComponent(dateFilter.startDate));
+            if (dateFilter && dateFilter.endDate) qs.push('endDate=' + encodeURIComponent(dateFilter.endDate));
+            const baseQs = qs.length ? '&' + qs.join('&') : '';
+          %>
+          <% if (pagination.page > 1) { %>
+            <a class="btn btn-outline" style="padding:6px 10px; font-size:12px;" href="/gps/vehicle/<%= encodeURIComponent(vehicle.vehicleid) %>?page=<%= pagination.page - 1 %><%= baseQs %>">← Önceki</a>
+          <% } else { %>
+            <span class="btn btn-outline" style="padding:6px 10px; font-size:12px; opacity:0.5; pointer-events:none;">← Önceki</span>
+          <% } %>
+
+          <span class="gps-sub" style="margin:0;">Sayfa <%= pagination.page %> / <%= pagination.totalPages %></span>
+
+          <% if (pagination.page < pagination.totalPages) { %>
+            <a class="btn btn-outline" style="padding:6px 10px; font-size:12px;" href="/gps/vehicle/<%= encodeURIComponent(vehicle.vehicleid) %>?page=<%= pagination.page + 1 %><%= baseQs %>">Sonraki →</a>
+          <% } else { %>
+            <span class="btn btn-outline" style="padding:6px 10px; font-size:12px; opacity:0.5; pointer-events:none;">Sonraki →</span>
+          <% } %>
+        </div>
+      <% } %>
     </div>
     <div class="gps-table-wrap">
       <table>
@@ -123,7 +176,7 @@
         <tbody>
           <% (history || []).forEach(function(h){ %>
             <tr>
-              <td><%= h.time_indicator || '—' %></td>
+              <td><%= toGMT3(h.time_indicator) %></td>
               <td><%= h.velocity != null ? (h.velocity + ' km/h') : '—' %></td>
               <td><%= h.location || h.address || '—' %></td>
               <td><%= h.latitude != null && h.longitude != null ? (h.latitude + ', ' + h.longitude) : '—' %></td>
@@ -260,4 +313,297 @@
     document.getElementById('gpsRefreshBtn').addEventListener('click', manualRefresh);
     render();
   })();
+</script>
+
+<!-- Drive/Stop Report Modal -->
+<style>
+  .report-modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.7);
+    z-index: 10000;
+    align-items: center;
+    justify-content: center;
+  }
+  .report-modal-overlay.active { display: flex; }
+  .report-modal {
+    background: var(--bg-card);
+    border-radius: 16px;
+    box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+    max-width: 95vw;
+    max-height: 90vh;
+    width: 1100px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+  .report-modal-header {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border-subtle);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--bg-surface);
+  }
+  .report-modal-title {
+    font-size: 16px;
+    font-weight: 900;
+    color: var(--text-primary);
+    margin: 0;
+  }
+  .report-modal-close {
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: var(--text-muted);
+    padding: 4px 8px;
+    border-radius: 6px;
+  }
+  .report-modal-close:hover { background: var(--bg-card); color: var(--text-primary); }
+  .report-modal-body {
+    padding: 20px;
+    overflow-y: auto;
+    flex: 1;
+  }
+  .report-summary {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  .report-summary-card {
+    background: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    border-radius: 10px;
+    padding: 14px;
+    text-align: center;
+  }
+  .report-summary-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 6px;
+  }
+  .report-summary-value {
+    font-size: 20px;
+    font-weight: 900;
+    color: var(--text-primary);
+  }
+  .report-table-wrap {
+    overflow-x: auto;
+    border: 1px solid var(--border-subtle);
+    border-radius: 10px;
+  }
+  .report-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 900px;
+    font-size: 12px;
+  }
+  .report-table th {
+    background: var(--table-header-bg);
+    color: var(--table-header-text);
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    padding: 12px 10px;
+    text-align: left;
+    border-bottom: 2px solid var(--border-default);
+    font-size: 11px;
+  }
+  .report-table td {
+    padding: 10px;
+    border-bottom: 1px solid var(--border-subtle);
+    color: var(--table-cell-text);
+    vertical-align: top;
+  }
+  .report-table tr:nth-child(odd) { background: var(--table-row-odd); }
+  .report-table tr:nth-child(even) { background: var(--table-row-even); }
+  .report-table tr:hover { background: var(--table-row-hover); }
+  .report-type-drive {
+    background: linear-gradient(90deg, rgba(59,130,246,0.15), transparent);
+    border-left: 4px solid #3b82f6;
+  }
+  .report-type-stop {
+    background: linear-gradient(90deg, rgba(239,68,68,0.1), transparent);
+    border-left: 4px solid #ef4444;
+  }
+  .report-type-badge {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-weight: 800;
+    font-size: 11px;
+  }
+  .report-type-badge.drive { background: #3b82f6; color: #fff; }
+  .report-type-badge.stop { background: #ef4444; color: #fff; }
+  .report-loading {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--text-muted);
+    font-size: 14px;
+  }
+  .report-empty {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--text-muted);
+  }
+</style>
+
+<div class="report-modal-overlay" id="reportModalOverlay">
+  <div class="report-modal">
+    <div class="report-modal-header">
+      <h2 class="report-modal-title">📊 Sürüş / Duruş Raporu</h2>
+      <button class="report-modal-close" id="closeReportModal">&times;</button>
+    </div>
+    <div class="report-modal-body" id="reportModalBody">
+      <div class="report-loading">Yükleniyor...</div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  const vehicleId = window.__GPS_VEHICLE_ID__;
+  const overlay = document.getElementById('reportModalOverlay');
+  const body = document.getElementById('reportModalBody');
+  const openBtn = document.getElementById('openReportBtn');
+  const closeBtn = document.getElementById('closeReportModal');
+
+  function toGMT3Time(dateStr) {
+    if (!dateStr) return '—';
+    try {
+      const d = new Date(dateStr);
+      if (isNaN(d.getTime())) return dateStr;
+      return d.toLocaleTimeString('tr-TR', { timeZone: 'Europe/Istanbul', hour: '2-digit', minute: '2-digit' });
+    } catch (e) {
+      return dateStr;
+    }
+  }
+
+  function toGMT3Full(dateStr) {
+    if (!dateStr) return '—';
+    try {
+      const d = new Date(dateStr);
+      if (isNaN(d.getTime())) return dateStr;
+      return d.toLocaleString('tr-TR', { timeZone: 'Europe/Istanbul', day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+    } catch (e) {
+      return dateStr;
+    }
+  }
+
+  async function loadReport() {
+    const startDate = document.getElementById('reportStartDate').value;
+    const endDate = document.getElementById('reportEndDate').value;
+
+    if (!startDate || !endDate) {
+      body.innerHTML = '<div class="report-empty">⚠️ Lütfen başlangıç ve bitiş tarihlerini seçin.</div>';
+      return;
+    }
+
+    body.innerHTML = '<div class="report-loading">⏳ Rapor yükleniyor...</div>';
+
+    try {
+      const res = await fetch(`/api/gps/vehicle/${encodeURIComponent(vehicleId)}/report?startDate=${encodeURIComponent(startDate)}&endDate=${encodeURIComponent(endDate)}`, {
+        credentials: 'include'
+      });
+      const data = await res.json();
+
+      if (!data.ok) {
+        body.innerHTML = `<div class="report-empty">❌ Hata: ${data.error || 'Bilinmeyen hata'}</div>`;
+        return;
+      }
+
+      if (!data.segments || data.segments.length === 0) {
+        body.innerHTML = '<div class="report-empty">📭 Seçilen tarih aralığında veri bulunamadı.</div>';
+        return;
+      }
+
+      const summary = data.summary || {};
+      let html = `
+        <div class="report-summary">
+          <div class="report-summary-card">
+            <div class="report-summary-label">Toplam Sürüş</div>
+            <div class="report-summary-value" style="color:#3b82f6;">${summary.totalDrive || '0h 0m'}</div>
+          </div>
+          <div class="report-summary-card">
+            <div class="report-summary-label">Toplam Duruş</div>
+            <div class="report-summary-value" style="color:#ef4444;">${summary.totalStop || '0h 0m'}</div>
+          </div>
+          <div class="report-summary-card">
+            <div class="report-summary-label">Toplam Mesafe</div>
+            <div class="report-summary-value" style="color:#10b981;">${summary.totalDistance || 0} km</div>
+          </div>
+        </div>
+
+        <div class="report-table-wrap">
+          <table class="report-table">
+            <thead>
+              <tr>
+                <th>Tip</th>
+                <th>Başlangıç Saati</th>
+                <th>Başlangıç Konumu</th>
+                <th>Bitiş Saati</th>
+                <th>Bitiş Konumu</th>
+                <th>Süre</th>
+                <th>Mesafe (km)</th>
+              </tr>
+            </thead>
+            <tbody>
+      `;
+
+      for (const seg of data.segments) {
+        const typeClass = seg.type === 'Drive' ? 'drive' : 'stop';
+        const rowClass = seg.type === 'Drive' ? 'report-type-drive' : 'report-type-stop';
+        const typeBadge = seg.type === 'Drive' ? '🚗 Sürüş' : '🛑 Duruş';
+
+        html += `
+          <tr class="${rowClass}">
+            <td><span class="report-type-badge ${typeClass}">${typeBadge}</span></td>
+            <td>${toGMT3Time(seg.startTime)}</td>
+            <td style="max-width:200px; word-wrap:break-word;">${seg.startLocation || '—'}</td>
+            <td>${toGMT3Time(seg.endTime)}</td>
+            <td style="max-width:200px; word-wrap:break-word;">${seg.endLocation || '—'}</td>
+            <td><strong>${seg.duration || '—'}</strong></td>
+            <td>${seg.distance > 0 ? seg.distance : '—'}</td>
+          </tr>
+        `;
+      }
+
+      html += `
+            </tbody>
+          </table>
+        </div>
+      `;
+
+      body.innerHTML = html;
+
+    } catch (e) {
+      body.innerHTML = `<div class="report-empty">❌ Hata: ${e.message || 'Bilinmeyen hata'}</div>`;
+    }
+  }
+
+  openBtn.addEventListener('click', () => {
+    overlay.classList.add('active');
+    loadReport();
+  });
+
+  closeBtn.addEventListener('click', () => {
+    overlay.classList.remove('active');
+  });
+
+  overlay.addEventListener('click', (e) => {
+    if (e.target === overlay) overlay.classList.remove('active');
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && overlay.classList.contains('active')) {
+      overlay.classList.remove('active');
+    }
+  });
+})();
 </script>

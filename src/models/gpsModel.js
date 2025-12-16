@@ -143,8 +143,22 @@ const GpsModel = {
   getHistory(vehicleId, options = {}) {
     const limit = options.limit != null ? Number(options.limit) : 1000;
     const sinceIso = options.sinceIso || null;
+    const untilIso = options.untilIso || null;
 
-    if (sinceIso) {
+    // Date range filter
+    if (sinceIso || untilIso) {
+      let whereClause = 'vehicleid = ?';
+      const params = [Number(vehicleId)];
+
+      if (sinceIso) {
+        whereClause += ' AND time_indicator >= ?';
+        params.push(sinceIso);
+      }
+      if (untilIso) {
+        whereClause += ' AND time_indicator <= ?';
+        params.push(untilIso);
+      }
+
       const sql = `
         SELECT
           id,
@@ -163,12 +177,11 @@ const GpsModel = {
           start_km,
           created_at
         FROM gps_vehicle_history
-        WHERE vehicleid = ?
-          AND time_indicator >= ?
+        WHERE ${whereClause}
         ORDER BY time_indicator ASC
         LIMIT ?
       `;
-      return db.allSync(sql, [Number(vehicleId), sinceIso, limit]);
+      return db.allSync(sql, [...params, limit]);
     }
 
     const sql = `
@@ -196,6 +209,103 @@ const GpsModel = {
 
     const rows = db.allSync(sql, [Number(vehicleId), limit]);
     return rows.reverse();
+  },
+
+  getHistoryPage(vehicleId, options = {}) {
+    const pageSize = options.pageSize != null ? Number(options.pageSize) : 50;
+    const page = options.page != null ? Number(options.page) : 1;
+    const sinceIso = options.sinceIso || null;
+    const untilIso = options.untilIso || null;
+
+    const safePageSize = Number.isFinite(pageSize) && pageSize > 0 ? Math.min(pageSize, 50) : 50;
+    const safePage = Number.isFinite(page) && page > 0 ? Math.floor(page) : 1;
+    const offset = (safePage - 1) * safePageSize;
+
+    // Date range filter (sinceIso AND/OR untilIso)
+    if (sinceIso || untilIso) {
+      let whereClause = 'vehicleid = ?';
+      const params = [Number(vehicleId)];
+
+      if (sinceIso) {
+        whereClause += ' AND time_indicator >= ?';
+        params.push(sinceIso);
+      }
+      if (untilIso) {
+        whereClause += ' AND time_indicator <= ?';
+        params.push(untilIso);
+      }
+
+      const countRow = db.getSync(
+        `SELECT COUNT(1) AS cnt FROM gps_vehicle_history WHERE ${whereClause}`,
+        params
+      );
+      const total = countRow && countRow.cnt != null ? Number(countRow.cnt) : 0;
+
+      const rowsDesc = db.allSync(
+        `
+          SELECT
+            id,
+            vehicleid,
+            plate,
+            latitude,
+            longitude,
+            velocity,
+            time_indicator,
+            address,
+            drivetime,
+            worktime,
+            idletime,
+            stoptime,
+            totaldistance,
+            start_km,
+            created_at
+          FROM gps_vehicle_history
+          WHERE ${whereClause}
+          ORDER BY time_indicator DESC
+          LIMIT ?
+          OFFSET ?
+        `,
+        [...params, safePageSize, offset]
+      );
+
+      // Return chronological order inside the page
+      return { rows: rowsDesc.reverse(), total, page: safePage, pageSize: safePageSize };
+    }
+
+    const countRow = db.getSync(
+      `SELECT COUNT(1) AS cnt FROM gps_vehicle_history WHERE vehicleid = ?`,
+      [Number(vehicleId)]
+    );
+    const total = countRow && countRow.cnt != null ? Number(countRow.cnt) : 0;
+
+    const rowsDesc = db.allSync(
+      `
+        SELECT
+          id,
+          vehicleid,
+          plate,
+          latitude,
+          longitude,
+          velocity,
+          time_indicator,
+          address,
+          drivetime,
+          worktime,
+          idletime,
+          stoptime,
+          totaldistance,
+          start_km,
+          created_at
+        FROM gps_vehicle_history
+        WHERE vehicleid = ?
+        ORDER BY time_indicator DESC
+        LIMIT ?
+        OFFSET ?
+      `,
+      [Number(vehicleId), safePageSize, offset]
+    );
+
+    return { rows: rowsDesc.reverse(), total, page: safePage, pageSize: safePageSize };
   },
 
   upsertLastAndHistory(vehicles) {
@@ -373,6 +483,47 @@ const GpsModel = {
     const stmt = db.prepare(`DELETE FROM gps_vehicle_history WHERE time_indicator IS NOT NULL AND time_indicator < ?`);
     const res = stmt.run(cutoff);
     return res.changes || 0;
+  },
+
+  /**
+   * Get the first history record of today for each vehicle
+   * Used to calculate daily drivetime/worktime/idletime/stoptime
+   * @returns {Map<number, {drivetime: number, worktime: number, idletime: number, stoptime: number}>}
+   */
+  getTodayStartValues() {
+    // Today start in Turkey time (GMT+3)
+    const now = new Date();
+    // Get start of day in Turkey timezone
+    const turkeyOffset = 3 * 60 * 60 * 1000; // GMT+3
+    const utcToday = new Date(now.getTime() + turkeyOffset);
+    const todayStr = utcToday.toISOString().slice(0, 10); // YYYY-MM-DD
+    const todayStartIso = new Date(todayStr + 'T00:00:00+03:00').toISOString();
+
+    // Get the first record of today for each vehicle using subquery
+    const sql = `
+      SELECT h.vehicleid, h.drivetime, h.worktime, h.idletime, h.stoptime
+      FROM gps_vehicle_history h
+      INNER JOIN (
+        SELECT vehicleid, MIN(time_indicator) as min_time
+        FROM gps_vehicle_history
+        WHERE time_indicator >= ?
+        GROUP BY vehicleid
+      ) t ON h.vehicleid = t.vehicleid AND h.time_indicator = t.min_time
+    `;
+    
+    const rows = db.allSync(sql, [todayStartIso]);
+    const result = new Map();
+    
+    for (const row of rows) {
+      result.set(row.vehicleid, {
+        drivetime: row.drivetime || 0,
+        worktime: row.worktime || 0,
+        idletime: row.idletime || 0,
+        stoptime: row.stoptime || 0,
+      });
+    }
+    
+    return result;
   },
 };
 

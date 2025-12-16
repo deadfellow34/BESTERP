@@ -15,5 +15,6 @@ apiRouter.use(ensureAuth);
 
 apiRouter.get('/live', gpsController.apiLive);
 apiRouter.post('/refresh', gpsController.apiRefresh);
+apiRouter.get('/vehicle/:vehicleId/report', gpsController.apiDriveStopReport);
 
 module.exports = { router, apiRouter };

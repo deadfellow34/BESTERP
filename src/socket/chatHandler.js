@@ -268,11 +268,60 @@ function getReactionsForMessages(messageIds, messageType) {
   });
 }
 
+// Channel message helpers
+function saveChannelMessage(channel, sender, text, time, isSystem = false, metadata = null) {
+  return new Promise((resolve, reject) => {
+    db.run(
+      'INSERT INTO chat_channel_messages (channel, sender, text, time, is_system, metadata) VALUES (?, ?, ?, ?, ?, ?)',
+      [channel, sender, text, time, isSystem ? 1 : 0, metadata ? JSON.stringify(metadata) : null],
+      function(err) {
+        if (err) reject(err);
+        else resolve(this.lastID);
+      }
+    );
+  });
+}
+
+function getChannelMessages(channel, limit = 200) {
+  return new Promise((resolve, reject) => {
+    db.all(
+      `SELECT id, channel, sender, text, time, is_system, metadata
+       FROM chat_channel_messages
+       WHERE channel = ?
+       ORDER BY id DESC LIMIT ?`,
+      [channel, limit],
+      (err, rows) => {
+        if (err) reject(err);
+        else {
+          const messages = (rows || []).reverse().map(row => ({
+            id: row.id,
+            channel: row.channel,
+            sender: row.sender,
+            text: row.text,
+            time: row.time,
+            isSystem: !!row.is_system,
+            metadata: row.metadata ? JSON.parse(row.metadata) : null
+          }));
+          resolve(messages);
+        }
+      }
+    );
+  });
+}
+
+// Available channels
+const CHANNELS = {
+  'driver-alerts': { name: 'Sürücü Bildirimleri', icon: '🚗', color: '#ef4444' }
+};
+
 /**
  * Initialize chat handler with Socket.io instance
  * @param {Server} io - Socket.io server instance
  */
 function initChatHandler(io) {
+  // Store io instance for external access
+  initChatHandler._io = io;
+  
   io.on('connection', (socket) => {
     console.log('[Chat] User connected:', socket.id);
 
@@ -289,6 +338,9 @@ function initChatHandler(io) {
         const reactions = await getReactionsForMessages(messageIds, 'public');
         messages.forEach(m => { m.reactions = reactions[m.id] || {}; });
         socket.emit('chatHistory', messages);
+        
+        // Send available channels info
+        socket.emit('channelsInfo', CHANNELS);
       } catch (err) {
         console.error('[Chat] Error loading messages:', err);
         socket.emit('chatHistory', []);
@@ -313,6 +365,22 @@ function initChatHandler(io) {
       
       // Broadcast online users to everyone immediately
       io.emit('onlineUsers', getAllOnlineUsers());
+    });
+
+    // Get channel history
+    socket.on('getChannelHistory', async (channel) => {
+      if (!CHANNELS[channel]) {
+        socket.emit('channelHistory', { channel, messages: [], error: 'Invalid channel' });
+        return;
+      }
+      
+      try {
+        const messages = await getChannelMessages(channel, 200);
+        socket.emit('channelHistory', { channel, messages });
+      } catch (err) {
+        console.error('[Chat] Error loading channel messages:', err);
+        socket.emit('channelHistory', { channel, messages: [], error: err.message });
+      }
     });
 
     // Join user notification room (from navbar notification system)
@@ -741,5 +809,46 @@ initChatHandler.getMessageCount = function() {
     return Promise.reject(err);
   }
 };
+
+/**
+ * Send a system message to a channel (e.g., speed alerts)
+ * Can be called from anywhere in the app
+ */
+initChatHandler.sendChannelMessage = async function(channel, text, metadata = null) {
+  if (!CHANNELS[channel]) {
+    console.error('[Chat] Invalid channel:', channel);
+    return null;
+  }
+  
+  const time = new Date().toISOString();
+  const sender = 'Sistem';
+  
+  try {
+    const messageId = await saveChannelMessage(channel, sender, text, time, true, metadata);
+    
+    const message = {
+      id: messageId,
+      channel,
+      sender,
+      text,
+      time,
+      isSystem: true,
+      metadata
+    };
+    
+    // Broadcast to all connected clients
+    if (initChatHandler._io) {
+      initChatHandler._io.emit('channelMessage', message);
+    }
+    
+    return message;
+  } catch (err) {
+    console.error('[Chat] Error sending channel message:', err);
+    return null;
+  }
+};
+
+// Export CHANNELS for reference
+initChatHandler.CHANNELS = CHANNELS;
 
 module.exports = initChatHandler;

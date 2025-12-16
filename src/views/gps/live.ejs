@@ -263,7 +263,7 @@
               <th>Konum</th>
               <th>Hız</th>
               <th>Son Görülme</th>
-              <th>Sürüş / Çalışma / Idle</th>
+              <th>Sürüş / Idle</th>
               <th>Start KM</th>
               <th>Aksiyon</th>
             </tr>
@@ -433,13 +433,17 @@
           ? `<div class="gps-plate gps-plate-clickable" data-lat="${lat}" data-lng="${lng}" data-plate="${plate}" title="Haritada göster">${textOrDash(plate)}</div>`
           : `<div class="gps-plate">${textOrDash(plate)}</div>`;
         
+        // Calculate combined values: Sürüş = drivetime+worktime+idletime, Idle = stoptime
+        const dailySurus = (v.dailyDrivetime || 0) + (v.dailyWorktime || 0) + (v.dailyIdletime || 0);
+        const dailyIdle = v.dailyStoptime || 0;
+        
         tr.innerHTML = `
           <td>${plateHtml}<div style="margin-top:6px;">${statusBadge}</div></td>
           <td>${textOrDash(v.drivername)}</td>
           <td title="${(v.location || v.address || '').toString().replace(/"/g,'&quot;')}"><div class="gps-location">${shortLocation(v)}</div><div class="gps-muted" style="margin-top:4px;">${textOrDash(v.address)}</div></td>
           <td>${isFast ? '<span class="gps-chip fast">' + textOrDash(vel) + ' km/h</span>' : textOrDash(vel) + ' km/h'}</td>
           <td>${formatLocalTime(v.time_indicator)}</td>
-          <td>${secondsToHHMM(v.drivetime)} / ${secondsToHHMM(v.worktime)} / ${secondsToHHMM(v.idletime)}</td>
+          <td>${secondsToHHMM(dailySurus)} / ${secondsToHHMM(dailyIdle)}</td>
           <td>${v.start_km != null ? Number(v.start_km).toLocaleString('tr-TR') : '—'}</td>
           <td><a class="btn btn-outline" style="padding:6px 10px; font-size:12px;" href="/gps/vehicle/${encodeURIComponent(v.vehicleid)}">Detay</a></td>
         `;
