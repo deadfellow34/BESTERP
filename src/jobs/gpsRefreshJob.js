@@ -51,6 +51,18 @@ function startGpsRefreshJob() {
   task.start();
   cleanupTask.start();
 
+  // Fire one refresh right away (do not wait for cron boundary)
+  (async () => {
+    try {
+      const r = await refreshOnce();
+      // eslint-disable-next-line no-console
+      console.log('[gpsRefreshJob] startup refreshed', r.persisted.updated, 'vehicles (history +', r.persisted.historyInserted + ')', 'via', r.meta.functionName);
+    } catch (e) {
+      // eslint-disable-next-line no-console
+      console.error('[gpsRefreshJob] startup refresh error:', e && e.message ? e.message : e);
+    }
+  })();
+
   return { enabled: true };
 }
 

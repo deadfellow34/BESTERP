@@ -32,7 +32,13 @@ function warnIfMissingAssets() {
 function validateEnv(options = {}) {
   const { requireGps = false } = options;
 
-  const cronEnabled = parseBooleanEnv('GPS_REFRESH_CRON_ENABLED', false);
+  const hasGpsCreds = !!(requireEnv('GPSBUDDY_COMPANY_ID') && requireEnv('GPSBUDDY_USERNAME') && requireEnv('GPSBUDDY_PASSWORD'));
+  // If GPS_REFRESH_CRON_ENABLED is not set, auto-enable the refresh cron when credentials exist.
+  // This prevents "GPS updates only when GPS page is opened" in setups where creds are configured
+  // but the flag is forgotten.
+  const cronEnabled = (process.env.GPS_REFRESH_CRON_ENABLED == null || String(process.env.GPS_REFRESH_CRON_ENABLED).trim() === '')
+    ? hasGpsCreds
+    : parseBooleanEnv('GPS_REFRESH_CRON_ENABLED', false);
   const shouldRequireGps = !!(requireGps || cronEnabled);
 
   if (shouldRequireGps) {
