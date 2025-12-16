@@ -1,0 +1,155 @@
+<%- include('../partials/navbar') %>
+
+<style>
+  .admin-pin-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: calc(100vh - 80px);
+    padding: 20px;
+  }
+
+  .admin-pin-card {
+    background: var(--bg-card, #1e293b);
+    border: 1px solid var(--border-color, #334155);
+    border-radius: 16px;
+    padding: 40px;
+    max-width: 400px;
+    width: 100%;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+  }
+
+  .admin-pin-card h1 {
+    text-align: center;
+    color: var(--text-primary, #e2e8f0);
+    font-size: 24px;
+    margin-bottom: 8px;
+  }
+
+  .admin-pin-card p {
+    text-align: center;
+    color: var(--text-muted, #94a3b8);
+    font-size: 14px;
+    margin-bottom: 24px;
+  }
+
+  .admin-pin-card .icon {
+    text-align: center;
+    font-size: 48px;
+    margin-bottom: 16px;
+  }
+
+  .pin-input-group {
+    margin-bottom: 20px;
+  }
+
+  .pin-input-group label {
+    display: block;
+    color: var(--text-muted, #94a3b8);
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+
+  .pin-input-group input {
+    width: 100%;
+    padding: 14px 16px;
+    font-size: 24px;
+    text-align: center;
+    letter-spacing: 8px;
+    background: var(--bg-darker, #0f172a);
+    border: 2px solid var(--border-color, #334155);
+    border-radius: 10px;
+    color: var(--text-primary, #e2e8f0);
+    outline: none;
+    transition: all 0.2s ease;
+  }
+
+  .pin-input-group input:focus {
+    border-color: #6366f1;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+  }
+
+  .pin-input-group input::placeholder {
+    letter-spacing: 4px;
+    color: var(--text-muted, #64748b);
+  }
+
+  .admin-pin-btn {
+    width: 100%;
+    padding: 14px 20px;
+    font-size: 16px;
+    font-weight: 600;
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .admin-pin-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(99, 102, 241, 0.4);
+  }
+
+  .admin-pin-error {
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    color: #f87171;
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    text-align: center;
+    font-size: 14px;
+  }
+
+  .back-link {
+    display: block;
+    text-align: center;
+    margin-top: 20px;
+    color: var(--text-muted, #94a3b8);
+    text-decoration: none;
+    font-size: 13px;
+    transition: color 0.2s;
+  }
+
+  .back-link:hover {
+    color: var(--text-primary, #e2e8f0);
+  }
+</style>
+
+<div class="admin-pin-container">
+  <div class="admin-pin-card">
+    <div class="icon">🔐</div>
+    <h1>Admin Panel</h1>
+    <p>Devam etmek için panel PIN'ini girin</p>
+
+    <% if (error) { %>
+      <div class="admin-pin-error">
+        <%= error %>
+      </div>
+    <% } %>
+
+    <form method="POST" action="/admin/login">
+      <div class="pin-input-group">
+        <label for="pin">Panel PIN</label>
+        <input 
+          type="password" 
+          id="pin" 
+          name="pin" 
+          placeholder="••••" 
+          maxlength="10" 
+          required 
+          autofocus
+        />
+      </div>
+
+      <button type="submit" class="admin-pin-btn">
+        Giriş Yap
+      </button>
+    </form>
+
+    <a href="/loads" class="back-link">← Ana Sayfaya Dön</a>
+  </div>
+</div>

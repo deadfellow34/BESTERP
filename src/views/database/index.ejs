@@ -1,0 +1,1376 @@
+<!-- backend/src/views/database/index.ejs -->
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <!-- Inline theme detection - runs before any CSS to prevent flash -->
+  <script>
+    (function() {
+      var theme = localStorage.getItem('bestfreight-theme') || 'dark';
+      document.documentElement.setAttribute('data-theme', theme);
+    })();
+  </script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Veritabanı Yönetimi - BEST Freight ERP</title>
+  <link rel="stylesheet" href="/css/theme.css">
+  <link rel="stylesheet" href="/css/main.css">
+  <script src="/js/theme.js"></script>
+  <style>
+    :root {
+      --bg-0: #030712;
+      --bg-1: #0a0f1a;
+      --bg-2: #111827;
+      --card: rgba(17, 24, 39, 0.8);
+      --card-hover: rgba(30, 41, 59, 0.9);
+      --border: rgba(99, 102, 241, 0.15);
+      --border-hover: rgba(99, 102, 241, 0.3);
+      --muted: #9ca3af;
+      --accent: #6366f1;
+      --accent-2: #8b5cf6;
+      --success: #10b981;
+      --success-2: #34d399;
+      --danger: #ef4444;
+      --danger-2: #f97316;
+      --text: #f1f5f9;
+      --text-muted: #94a3b8;
+    }
+    
+    [data-theme="light"] {
+      --bg-0: #f8fafc;
+      --bg-1: #f1f5f9;
+      --bg-2: #e2e8f0;
+      --card: rgba(255, 255, 255, 0.9);
+      --card-hover: rgba(248, 250, 252, 1);
+      --border: rgba(99, 102, 241, 0.15);
+      --border-hover: rgba(99, 102, 241, 0.3);
+      --muted: #64748b;
+      --accent: #6366f1;
+      --accent-2: #8b5cf6;
+      --success: #10b981;
+      --success-2: #34d399;
+      --danger: #ef4444;
+      --danger-2: #dc2626;
+      --text: #1e293b;
+      --text-muted: #64748b;
+    }
+    
+    * { box-sizing: border-box; }
+    
+    body {
+      background: var(--bg-0);
+      background-image: 
+        radial-gradient(ellipse 80% 50% at 50% -20%, rgba(99, 102, 241, 0.15), transparent),
+        radial-gradient(ellipse 60% 40% at 100% 100%, rgba(139, 92, 246, 0.1), transparent);
+      min-height: 100vh;
+      color: var(--text);
+      font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      font-size: 14px;
+      -webkit-font-smoothing: antialiased;
+    }
+    
+    .database-container {
+      max-width: 100%;
+      width: calc(100% - 48px);
+      margin: 24px auto;
+    }
+    
+    .page-header {
+      margin-bottom: 32px;
+      padding: 24px 32px;
+      background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(139, 92, 246, 0.05) 100%);
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      backdrop-filter: blur(20px);
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .page-header::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(99, 102, 241, 0.5), transparent);
+    }
+    
+    .page-header h1 {
+      font-size: 28px;
+      color: #ffffff;
+      font-weight: 800;
+      margin: 0;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      letter-spacing: -0.02em;
+    }
+    
+    .page-header h1::before {
+      content: '';
+      width: 4px;
+      height: 32px;
+      background: linear-gradient(180deg, var(--accent), var(--accent-2));
+      border-radius: 4px;
+    }
+    
+    .page-header p {
+      color: var(--text-muted);
+      font-size: 15px;
+      margin: 6px 0 0 0;
+      font-weight: 500;
+    }
+    
+    .section-grid {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 24px;
+      margin-bottom: 32px;
+    }
+    
+    @media (max-width: 1600px) {
+      .section-grid { grid-template-columns: repeat(3, 1fr); }
+    }
+    
+    @media (max-width: 1000px) {
+      .section-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    
+    @media (max-width: 700px) {
+      .section-grid { grid-template-columns: 1fr; }
+    }
+    
+    .section-card {
+      background: var(--card);
+      border-radius: 16px;
+      box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.03), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border);
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      backdrop-filter: blur(10px);
+      overflow: hidden;
+      animation: fadeInUp 0.5s ease backwards;
+    }
+    
+    .section-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--accent), var(--accent-2));
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+    
+    .section-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(99, 102, 241, 0.2);
+      border-color: var(--border-hover);
+    }
+    
+    .section-card:hover::before { opacity: 1; }
+    
+    .section-card:nth-child(1) { animation-delay: 0.05s; }
+    .section-card:nth-child(2) { animation-delay: 0.1s; }
+    .section-card:nth-child(3) { animation-delay: 0.15s; }
+    .section-card:nth-child(4) { animation-delay: 0.2s; }
+    .section-card:nth-child(5) { animation-delay: 0.25s; }
+    .section-card:nth-child(6) { animation-delay: 0.3s; }
+    
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    
+    .section-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .section-title-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(139, 92, 246, 0.1));
+      border: 1px solid rgba(99, 102, 241, 0.2);
+    }
+    
+    .section-count {
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      color: white;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 700;
+      box-shadow: 0 2px 10px rgba(99, 102, 241, 0.3);
+    }
+    
+    .add-form {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    
+    .add-form input {
+      flex: 1;
+      min-width: 0;
+      padding: 10px 12px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 10px;
+      background: rgba(0, 0, 0, 0.3);
+      color: inherit;
+      font-size: 13px;
+      transition: all 0.2s ease;
+    }
+    
+    .add-form input::placeholder { color: var(--text-muted); }
+    
+    .add-form input:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+      background: rgba(0, 0, 0, 0.4);
+    }
+    
+    .add-form button {
+      flex-shrink: 0;
+      padding: 10px 14px;
+      background: linear-gradient(135deg, var(--success), var(--success-2));
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-weight: 700;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+      box-shadow: 0 2px 10px rgba(16, 185, 129, 0.3);
+    }
+    
+    .add-form button:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 16px rgba(16, 185, 129, 0.4);
+    }
+    
+    .company-list {
+      max-height: 280px;
+      overflow-y: auto;
+      margin-bottom: 6px;
+      padding-right: 4px;
+    }
+    
+    .company-list::-webkit-scrollbar { width: 6px; }
+    .company-list::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.02); border-radius: 3px; }
+    .company-list::-webkit-scrollbar-thumb { background: rgba(99, 102, 241, 0.3); border-radius: 3px; }
+    .company-list::-webkit-scrollbar-thumb:hover { background: rgba(99, 102, 241, 0.5); }
+    
+    .company-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 16px;
+      border-radius: 10px;
+      background: rgba(0, 0, 0, 0.2);
+      margin-bottom: 10px;
+      gap: 14px;
+      transition: all 0.2s ease;
+      border: 1px solid transparent;
+    }
+    
+    .company-item:hover {
+      background: rgba(99, 102, 241, 0.1);
+      border-color: rgba(99, 102, 241, 0.2);
+    }
+    
+    .company-name {
+      font-size: 14px;
+      color: var(--text);
+      font-weight: 600;
+    }
+    
+    .delete-btn {
+      padding: 8px 16px;
+      background: linear-gradient(135deg, var(--danger), var(--danger-2));
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
+    }
+    
+    .delete-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+    }
+    
+    .empty-state {
+      text-align: center;
+      padding: 32px 16px;
+      color: var(--text-muted);
+      font-size: 14px;
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 12px;
+      border: 1px dashed rgba(255, 255, 255, 0.1);
+    }
+    
+    .all-companies-section {
+      background: var(--card);
+      border-radius: 16px;
+      padding: 24px;
+      border: 1px solid var(--border);
+      backdrop-filter: blur(10px);
+      box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
+      animation: fadeInUp 0.5s ease 0.35s backwards;
+    }
+    
+    .recent-grid {
+      display: grid;
+      gap: 20px;
+    }
+    
+    @media (min-width: 1000px) {
+      .recent-grid { grid-template-columns: 1fr 1fr; }
+    }
+    
+    .db-source-badge {
+      font-size: 11px;
+      color: #ffffff;
+      background: linear-gradient(135deg, var(--success), var(--success-2));
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    .db-deleted-badge {
+      font-size: 11px;
+      color: #ffffff;
+      background: linear-gradient(135deg, var(--danger), var(--danger-2));
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    .company-meta {
+      display: flex;
+      gap: 16px;
+      align-items: center;
+      color: var(--text-muted);
+      font-size: 13px;
+      min-width: 200px;
+      justify-content: flex-end;
+    }
+    
+    .type-badge {
+      font-size: 10px;
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-weight: 700;
+      margin-left: 8px;
+    }
+    
+    .type-both {
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      color: white;
+    }
+    
+    .deleted-company {
+      opacity: 0.5;
+      filter: grayscale(0.7);
+    }
+    
+    .db-toast-container {
+      position: fixed;
+      top: 80px;
+      right: 20px;
+      z-index: 2200;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    
+    .db-toast-success { background: linear-gradient(135deg, var(--success), var(--success-2)); }
+    .db-toast-error { background: linear-gradient(135deg, var(--danger), var(--danger-2)); }
+    
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes modalSlideIn {
+      from { opacity: 0; transform: scale(0.9) translateY(-20px); }
+      to { opacity: 1; transform: scale(1) translateY(0); }
+    }
+
+    @keyframes modalBackdropIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    /* Modern Confirm Modal Styles */
+    .confirm-modal-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .confirm-modal-backdrop {
+      position: absolute;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(8px);
+      animation: modalBackdropIn 0.2s ease;
+    }
+
+    .confirm-modal-content {
+      position: relative;
+      z-index: 10001;
+      width: 420px;
+      max-width: 92%;
+      background: linear-gradient(165deg, #1e293b 0%, #0f172a 100%);
+      border: 1px solid rgba(148, 163, 184, 0.1);
+      border-radius: 20px;
+      padding: 32px;
+      box-shadow: 0 25px 80px rgba(0, 0, 0, 0.5);
+      text-align: center;
+      animation: modalSlideIn 0.3s ease;
+    }
+
+    .confirm-modal-icon {
+      width: 72px;
+      height: 72px;
+      margin: 0 auto 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(239, 68, 68, 0.1);
+      border-radius: 50%;
+      color: #ef4444;
+    }
+
+    .confirm-modal-icon-warning {
+      background: rgba(245, 158, 11, 0.1);
+      color: #f59e0b;
+    }
+
+    .confirm-modal-title {
+      margin: 0 0 12px;
+      font-size: 20px;
+      font-weight: 700;
+      color: #f1f5f9;
+    }
+
+    .confirm-modal-text {
+      margin: 0 0 28px;
+      font-size: 14px;
+      line-height: 1.6;
+      color: #94a3b8;
+    }
+
+    .confirm-modal-buttons {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+    }
+
+    .confirm-btn {
+      padding: 12px 28px;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .confirm-btn-cancel {
+      background: rgba(148, 163, 184, 0.1);
+      color: #94a3b8;
+      border: 1px solid rgba(148, 163, 184, 0.2);
+    }
+
+    .confirm-btn-cancel:hover {
+      background: rgba(148, 163, 184, 0.2);
+      color: #e2e8f0;
+    }
+
+    .confirm-btn-danger {
+      background: linear-gradient(135deg, #ef4444, #dc2626);
+      color: white;
+      border: none;
+      box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
+    }
+
+    .confirm-btn-danger:hover {
+      background: linear-gradient(135deg, #dc2626, #b91c1c);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4);
+    }
+
+    /* Light Theme for Confirm Modal */
+    [data-theme="light"] .confirm-modal-backdrop {
+      background: rgba(0, 0, 0, 0.4);
+    }
+
+    [data-theme="light"] .confirm-modal-content {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      box-shadow: 0 25px 80px rgba(0, 0, 0, 0.15);
+    }
+
+    [data-theme="light"] .confirm-modal-icon {
+      background: rgba(239, 68, 68, 0.08);
+    }
+
+    [data-theme="light"] .confirm-modal-icon-warning {
+      background: rgba(245, 158, 11, 0.08);
+    }
+
+    [data-theme="light"] .confirm-modal-title {
+      color: #1e293b;
+    }
+
+    [data-theme="light"] .confirm-modal-text {
+      color: #64748b;
+    }
+
+    [data-theme="light"] .confirm-btn-cancel {
+      background: #f1f5f9;
+      color: #475569;
+      border: 1px solid #e2e8f0;
+    }
+
+    [data-theme="light"] .confirm-btn-cancel:hover {
+      background: #e2e8f0;
+      color: #1e293b;
+    }
+    
+    /* Delete Button Styles */
+    .btn-delete {
+      background: var(--danger) !important;
+      color: #ffffff !important;
+      border: 1px solid var(--danger-2) !important;
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    
+    .btn-delete:hover {
+      background: var(--danger-2) !important;
+      transform: scale(1.05);
+      box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+    }
+    
+    .btn-edit {
+      background: rgba(99, 102, 241, 0.2);
+      color: #a5b4fc;
+      border: 1px solid rgba(99, 102, 241, 0.3);
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    
+    .btn-edit:hover {
+      background: rgba(99, 102, 241, 0.3);
+      color: #c7d2fe;
+    }
+    
+    [data-theme="light"] .btn-edit {
+      background: rgba(99, 102, 241, 0.1);
+      color: #6366f1;
+      border: 1px solid rgba(99, 102, 241, 0.2);
+    }
+    
+    [data-theme="light"] .btn-edit:hover {
+      background: rgba(99, 102, 241, 0.15);
+      color: #4f46e5;
+    }
+    
+    [data-theme="light"] .btn-delete {
+      background: #ef4444 !important;
+      color: #ffffff !important;
+      border: 1px solid #dc2626 !important;
+    }
+    
+    [data-theme="light"] .btn-delete:hover {
+      background: #dc2626 !important;
+      box-shadow: 0 4px 12px rgba(239, 68, 68, 0.5);
+    }
+    
+    [data-theme="light"] #add-truck-btn {
+      background: rgba(99, 102, 241, 0.1) !important;
+      color: #6366f1 !important;
+      border: 1px solid rgba(99, 102, 241, 0.2) !important;
+    }
+    
+    [data-theme="light"] #add-truck-btn:hover {
+      background: rgba(99, 102, 241, 0.15) !important;
+      color: #4f46e5 !important;
+    }
+    
+    @media (max-width: 900px) {
+      .database-container { width: calc(100% - 24px); margin: 12px auto; }
+      .section-grid { grid-template-columns: 1fr; }
+      .company-meta { display: none; }
+      .page-header { padding: 16px 20px; }
+      .page-header h1 { font-size: 20px; }
+    }
+  </style>
+</head>
+<body>
+  <script>
+    // Apply theme to body immediately
+    document.body.setAttribute('data-theme', localStorage.getItem('bestfreight-theme') || 'dark');
+  </script>
+  <%- include('../partials/navbar') %>
+  <div class="database-container">
+    <div class="page-header">
+      <div>
+        <h1>🗄️ Veritabanı Yönetimi</h1>
+        <p>Şirket ve mühür bilgilerini yönetin</p>
+      </div>
+      <div style="display: flex; gap: 12px; align-items: center;">
+        <button id="clear-chat-btn" type="button" style="display:flex; align-items:center; gap:8px; padding:12px 20px; background:linear-gradient(135deg, rgba(239, 68, 68, 0.15), rgba(239, 68, 68, 0.05)); color:#fca5a5; border:1px solid rgba(239, 68, 68, 0.3); border-radius:12px; font-weight:600; font-size:14px; cursor:pointer; transition:all 0.2s ease;">
+          <span>💬</span>
+          <span>Chat Loglarını Sil</span>
+          <span id="chat-count-badge" style="background:rgba(239, 68, 68, 0.3); padding:2px 8px; border-radius:10px; font-size:12px; font-weight:700; display:none;"></span>
+        </button>
+      </div>
+    </div>
+    
+    <%- include('../partials/truck_driver_modal') %>
+    
+    <div id="toast-container" class="db-toast-container" data-success="<%= success ? success : '' %>" data-error="<%= error ? error : '' %>"></div>
+    
+    <div class="section-grid">
+      <!-- Gönderici Section -->
+      <div class="section-card">
+        <div class="section-header">
+          <div class="section-title">
+            <span class="section-title-icon">👤</span>
+            Gönderici
+          </div>
+          <div class="section-count"><%= customers.length %></div>
+        </div>
+        <form action="/database/add-company" method="POST" class="add-form">
+          <input type="hidden" name="type" value="sender">
+          <input type="text" name="name" placeholder="Yeni gönderici ekle..." required>
+          <button type="submit">+ Ekle</button>
+        </form>
+        <div class="company-list">
+          <% if (customers.length === 0) { %>
+            <div class="empty-state">Henüz gönderici eklenmemiş</div>
+          <% } else { %>
+            <% customers.forEach(company => { %>
+              <div class="company-item">
+                <span class="company-name">
+                  <%= company.name %>
+                  <% if (company.type === 'both') { %>
+                    <span class="type-badge type-both">HER İKİSİ</span>
+                  <% } %>
+                </span>
+                <form action="/database/delete-company/<%= company.id %>" method="POST" class="confirm-delete-form" style="display: inline;">
+                  <button type="submit" class="delete-btn" data-confirm-message="Bu şirketi silmek istediğinize emin misiniz?">Sil</button>
+                </form>
+              </div>
+            <% }); %>
+          <% } %>
+        </div>
+      </div>
+      
+      <!-- Alıcı Section -->
+      <div class="section-card">
+        <div class="section-header">
+          <div class="section-title">
+            <span class="section-title-icon">🏢</span>
+            Alıcı
+          </div>
+          <div class="section-count"><%= consignees.length %></div>
+        </div>
+        <form action="/database/add-company" method="POST" class="add-form">
+          <input type="hidden" name="type" value="receiver">
+          <input type="text" name="name" placeholder="Yeni alıcı ekle..." required>
+          <button type="submit">+ Ekle</button>
+        </form>
+        <div class="company-list">
+          <% if (consignees.length === 0) { %>
+            <div class="empty-state">Henüz alıcı eklenmemiş</div>
+          <% } else { %>
+            <% consignees.forEach(company => { %>
+              <div class="company-item">
+                <span class="company-name">
+                  <%= company.name %>
+                  <% if (company.type === 'both') { %>
+                    <span class="type-badge type-both">HER İKİSİ</span>
+                  <% } %>
+                </span>
+                <form action="/database/delete-company/<%= company.id %>" method="POST" class="confirm-delete-form" style="display: inline;">
+                  <button type="submit" class="delete-btn" data-confirm-message="Bu şirketi silmek istediğinize emin misiniz?">Sil</button>
+                </form>
+              </div>
+            <% }); %>
+          <% } %>
+        </div>
+      </div>
+      
+      <!-- Fatura Kime Section -->
+      <div class="section-card">
+        <div class="section-header">
+          <div class="section-title">
+            <span class="section-title-icon">🧾</span>
+            Fatura Kime
+          </div>
+          <div class="section-count"><%= invoiceCompanies.length %></div>
+        </div>
+        <form action="/database/add-company" method="POST" class="add-form">
+          <input type="hidden" name="type" value="invoice">
+          <input type="text" name="name" placeholder="Yeni fatura şirketi ekle..." required>
+          <button type="submit">+ Ekle</button>
+        </form>
+        <div class="company-list">
+          <% if (invoiceCompanies.length === 0) { %>
+            <div class="empty-state">Henüz fatura şirketi eklenmemiş</div>
+          <% } else { %>
+            <% invoiceCompanies.forEach(company => { %>
+              <div class="company-item">
+                <span class="company-name">
+                  <%= company.name %>
+                  <% if (company.type === 'both') { %>
+                    <span class="type-badge type-both">HER İKİSİ</span>
+                  <% } %>
+                </span>
+                <form action="/database/delete-company/<%= company.id %>" method="POST" class="confirm-delete-form" style="display: inline;">
+                  <button type="submit" class="delete-btn" data-confirm-message="Bu şirketi silmek istediğinize emin misiniz?">Sil</button>
+                </form>
+              </div>
+            <% }); %>
+          <% } %>
+        </div>
+      </div>
+      
+      <!-- Mevcut Mühürler Section -->
+      <div class="section-card">
+        <div class="section-header">
+          <div class="section-title">
+            <span class="section-title-icon">🔒</span>
+            Mevcut Mühürler
+          </div>
+          <div class="section-count"><%= seals ? (seals.filter(s=>!s.is_used).length) : 0 %></div>
+        </div>
+        <form action="/database/add-seal" method="POST" class="add-form">
+          <input type="text" name="seal" placeholder="Yeni mühür ekle..." required>
+          <button type="submit">+ Ekle</button>
+        </form>
+        <div class="company-list">
+          <% if (!seals || seals.filter(s=>!s.is_used).length === 0) { %>
+            <div class="empty-state">Henüz kullanılabilir mühür yok</div>
+          <% } else { %>
+            <% seals.filter(s=>!s.is_used).forEach(seal => { %>
+              <div class="company-item">
+                <span class="company-name"><%= seal.code || seal.seal_no || '-' %> <span style="color:var(--text-muted); font-size:11px; margin-left:8px;">ID:<%= seal.id %></span></span>
+                <form action="/database/delete-seal/<%= seal.id %>" method="POST" class="confirm-delete-form" style="display: inline;">
+                  <button type="submit" class="delete-btn" data-confirm-message="Bu mührü silmek istediğinize emin misiniz?">Sil</button>
+                </form>
+              </div>
+            <% }); %>
+          <% } %>
+        </div>
+      </div>
+
+      <!-- Kullanılmış Mühürler Section -->
+      <div class="section-card">
+        <div class="section-header">
+          <div class="section-title">
+            <span class="section-title-icon">🔐</span>
+            Kullanılmış Mühürler
+          </div>
+          <div class="section-count"><%= seals ? (seals.filter(s=>s.is_used).length) : 0 %></div>
+        </div>
+        <div class="company-list">
+          <% if (!seals || seals.filter(s=>s.is_used).length === 0) { %>
+            <div class="empty-state">Henüz kullanılmış mühür yok</div>
+          <% } else { %>
+            <% seals.filter(s=>s.is_used).forEach(seal => { %>
+              <div class="company-item">
+                <span class="company-name"><%= seal.code || seal.seal_no || '-' %> <span style="color:var(--text-muted); font-size:11px; margin-left:8px;">ID:<%= seal.id %></span></span>
+                <form action="/database/unmark-seal/<%= seal.id %>" method="POST" style="display: inline;">
+                  <button type="submit" class="btn" style="background: linear-gradient(135deg, #ef4444, #dc2626); color:white; padding:5px 12px; border-radius:6px; font-weight:600; font-size:12px; border:none; cursor:pointer;">Kullanımdan Çıkar</button>
+                </form>
+              </div>
+            <% }); %>
+          <% } %>
+        </div>
+      </div>
+      
+      <!-- Çekiciler Section -->
+      <div class="section-card">
+        <div class="section-header">
+          <div class="section-title">
+            <span class="section-title-icon">🚚</span>
+            Çekiciler
+          </div>
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <div class="section-count"><%= trucks ? trucks.length : 0 %></div>
+            <button type="button" id="add-truck-btn" onclick="if(window.openTruckDriverModal) window.openTruckDriverModal('', '')" style="display:flex; align-items:center; gap:6px; padding:8px 14px; background:rgba(99, 102, 241, 0.2); color:#a5b4fc; border:1px solid rgba(99, 102, 241, 0.3); border-radius:8px; font-weight:600; font-size:13px; cursor:pointer; transition:all 0.2s ease;">
+              <span style="font-size:16px;">+</span>
+              <span>Çekici / Şoför Ekle</span>
+            </button>
+          </div>
+        </div>
+        <div class="company-list" id="trucks-list">
+          <% if (!trucks || trucks.length === 0) { %>
+            <div class="empty-state">Henüz çekici kaydı yok</div>
+          <% } else { %>
+            <% trucks.forEach(t => { %>
+              <div class="company-item truck-item" data-id="<%= t.id %>" data-plate="<%= t.plate %>" data-driver="<%= (t.driver_name || '') %>">
+                <span class="company-name" style="min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+                  <strong><%= t.plate %></strong>
+                  <span style="color:var(--text-muted); font-weight:500; margin-left:10px;">
+                    <% if (t.driver_name) { %>
+                      <%= t.driver_name %>
+                    <% } else { %>
+                      <span style="opacity: 0.5;">— şoför atanmadı</span>
+                    <% } %>
+                  </span>
+                </span>
+                <div style="display: flex; gap: 8px;">
+                  <button type="button" class="btn btn-edit" data-edit>Düzenle</button>
+                  <button type="button" class="btn btn-delete" data-delete>Sil</button>
+                </div>
+              </div>
+            <% }); %>
+          <% } %>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Son Eklenenler ve Silinenler -->
+    <div class="recent-grid">
+      <div class="all-companies-section">
+        <div class="section-header">
+          <div style="display:flex; align-items:center; gap:12px;">
+            <div class="section-title">
+              <span class="section-title-icon">🕑</span>
+              Son Eklenenler
+            </div>
+            <small style="color:var(--text-muted); font-size:12px;">(en yeni en üstte)</small>
+          </div>
+          <div class="section-count"><%= allCompanies.length %></div>
+        </div>
+        <div id="recent-list" class="company-list" style="max-height: 320px;">
+          <% if (allCompanies.length === 0) { %>
+            <div class="empty-state">Henüz şirket eklenmemiş</div>
+          <% } else { %>
+            <% allCompanies.forEach(company => { %>
+              <div class="company-item<%= company.is_deleted ? ' deleted-company' : '' %>">
+                <div style="display:flex; align-items:center; gap:12px; min-width:0;">
+                  <span class="company-name" style="min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"><%= company.name %></span>
+                  <span class="db-source-badge"><%= (company.type === 'sender') ? 'Gönderici' : (company.type === 'receiver') ? 'Alıcı' : (company.type === 'invoice') ? 'Fatura' : 'Her İkisi' %></span>
+                </div>
+                <div class="company-meta">
+                  <span><%= company._created_at_formatted ? company._created_at_formatted : '-' %></span>
+                  <span><%= company._created_by ? company._created_by : '-' %></span>
+                </div>
+              </div>
+            <% }); %>
+          <% } %>
+        </div>
+      </div>
+      
+      <div class="all-companies-section">
+        <div class="section-header">
+          <div style="display:flex; align-items:center; gap:12px;">
+            <div class="section-title">
+              <span class="section-title-icon">🗑️</span>
+              Silinenler
+            </div>
+            <small style="color:var(--text-muted); font-size:12px;">(en yeni en üstte)</small>
+          </div>
+          <div class="section-count" style="background: linear-gradient(135deg, var(--danger), var(--danger-2));"><%= deletedItems ? deletedItems.length : 0 %></div>
+        </div>
+        <div class="company-list" style="max-height: 320px;">
+          <% if (!deletedItems || deletedItems.length === 0) { %>
+            <div class="empty-state">Henüz silinen kayıt yok</div>
+          <% } else { %>
+            <% deletedItems.forEach(d => { %>
+              <div class="company-item">
+                <div style="display:flex; align-items:center; gap:12px; min-width:0;">
+                  <span class="company-name" style="min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"><%= d.name %></span>
+                  <span class="db-deleted-badge"><%= (d.type === 'sender') ? 'Gönderici' : (d.type === 'receiver') ? 'Alıcı' : (d.type === 'invoice') ? 'Fatura' : 'Diğer' %></span>
+                </div>
+                <div class="company-meta">
+                  <span><%= d._deleted_at_formatted ? d._deleted_at_formatted : '-' %></span>
+                  <span><%= d.deleted_by ? d.deleted_by : '-' %></span>
+                </div>
+              </div>
+            <% }); %>
+          <% } %>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Confirm Modal -->
+  <div id="confirm-modal" class="confirm-modal-overlay" style="display:none;">
+    <div class="confirm-modal-backdrop"></div>
+    <div class="confirm-modal-content">
+      <div class="confirm-modal-icon">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="8" x2="12" y2="12"></line>
+          <line x1="12" y1="16" x2="12.01" y2="16"></line>
+        </svg>
+      </div>
+      <h3 id="confirm-modal-title" class="confirm-modal-title">Onay Gerekli</h3>
+      <p id="confirm-modal-text" class="confirm-modal-text">Bu işlemi gerçekleştirmek istediğinize emin misiniz?</p>
+      <div class="confirm-modal-buttons">
+        <button id="confirm-cancel" class="confirm-btn confirm-btn-cancel">İptal</button>
+        <button id="confirm-ok" class="confirm-btn confirm-btn-danger">Sil</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Chat Clear Modal -->
+  <div id="chat-clear-modal" class="confirm-modal-overlay" style="display:none;">
+    <div class="confirm-modal-backdrop"></div>
+    <div class="confirm-modal-content">
+      <div class="confirm-modal-icon confirm-modal-icon-warning">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+          <line x1="9" y1="10" x2="15" y2="10"></line>
+        </svg>
+      </div>
+      <h3 class="confirm-modal-title">Chat Loglarını Sil</h3>
+      <p class="confirm-modal-text">Tüm chat loglarını silmek istediğinize emin misiniz?<br><strong style="color:var(--danger);">Bu işlem geri alınamaz!</strong></p>
+      <div class="confirm-modal-buttons">
+        <button id="chat-cancel-btn" class="confirm-btn confirm-btn-cancel">Vazgeç</button>
+        <button id="chat-confirm-btn" class="confirm-btn confirm-btn-danger">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="3 6 5 6 21 6"></polyline>
+            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+          </svg>
+          Evet, Sil
+        </button>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    // Modern Confirm Modal - GLOBAL
+    window.showModernConfirm = function(title, message, callback) {
+      const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+      const overlay = document.createElement('div');
+      overlay.style.cssText = 'position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.7); backdrop-filter:blur(4px); z-index:10000; display:flex; align-items:center; justify-content:center; animation:fadeIn 0.2s ease;';
+      
+      const modal = document.createElement('div');
+      modal.style.cssText = `
+        background:${isDark ? '#1e293b' : '#ffffff'};
+        border-radius:20px;
+        padding:32px;
+        max-width:440px;
+        width:90%;
+        box-shadow:0 20px 60px rgba(0,0,0,0.5);
+        border:1px solid ${isDark ? 'rgba(99, 102, 241, 0.3)' : 'rgba(0,0,0,0.1)'};
+        animation:slideUp 0.3s ease;
+      `;
+      
+      modal.innerHTML = `
+        <style>
+          @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
+          @keyframes fadeOut { from { opacity:1; } to { opacity:0; } }
+          @keyframes slideUp { from { transform:translateY(20px); opacity:0; } to { transform:translateY(0); opacity:1; } }
+          @keyframes slideDown { from { transform:translateY(0); opacity:1; } to { transform:translateY(20px); opacity:0; } }
+        </style>
+        <div style="text-align:center; margin-bottom:24px;">
+          <div style="width:56px; height:56px; margin:0 auto 16px; background:linear-gradient(135deg, #ef4444, #dc2626); border-radius:50%; display:flex; align-items:center; justify-content:center; box-shadow:0 8px 20px rgba(239, 68, 68, 0.4);">
+            <svg width="28" height="28" fill="none" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+            </svg>
+          </div>
+          <h3 style="margin:0 0 8px 0; font-size:20px; font-weight:700; color:${isDark ? '#ffffff' : '#1e293b'};">${title}</h3>
+          <p style="margin:0; font-size:15px; color:${isDark ? '#94a3b8' : '#64748b'}; font-weight:500;">${message}</p>
+        </div>
+        <div style="display:flex; gap:12px; margin-top:28px;">
+          <button id="modal-cancel" style="flex:1; padding:14px 24px; border:1px solid ${isDark ? 'rgba(148, 163, 184, 0.3)' : 'rgba(0,0,0,0.2)'}; background:${isDark ? 'rgba(30, 41, 59, 0.6)' : '#f1f5f9'}; color:${isDark ? '#cbd5e1' : '#475569'}; border-radius:12px; font-weight:700; font-size:15px; cursor:pointer; transition:all 0.2s;">İptal</button>
+          <button id="modal-confirm" style="flex:1; padding:14px 24px; border:1px solid #dc2626; background:linear-gradient(135deg, #ef4444, #dc2626); color:#ffffff; border-radius:12px; font-weight:700; font-size:15px; cursor:pointer; transition:all 0.2s; box-shadow:0 4px 12px rgba(239, 68, 68, 0.4);">Sil</button>
+        </div>
+      `;
+      
+      overlay.appendChild(modal);
+      document.body.appendChild(overlay);
+      
+      const cancelBtn = modal.querySelector('#modal-cancel');
+      const confirmBtn = modal.querySelector('#modal-confirm');
+      
+      cancelBtn.addEventListener('mouseover', function() {
+        this.style.background = isDark ? 'rgba(51, 65, 85, 0.8)' : '#e2e8f0';
+      });
+      cancelBtn.addEventListener('mouseout', function() {
+        this.style.background = isDark ? 'rgba(30, 41, 59, 0.6)' : '#f1f5f9';
+      });
+      
+      confirmBtn.addEventListener('mouseover', function() {
+        this.style.transform = 'scale(1.02)';
+        this.style.boxShadow = '0 6px 16px rgba(239, 68, 68, 0.5)';
+      });
+      confirmBtn.addEventListener('mouseout', function() {
+        this.style.transform = 'scale(1)';
+        this.style.boxShadow = '0 4px 12px rgba(239, 68, 68, 0.4)';
+      });
+      
+      function close(result) {
+        overlay.style.animation = 'fadeOut 0.2s ease';
+        modal.style.animation = 'slideDown 0.2s ease';
+        setTimeout(() => {
+          overlay.remove();
+          callback(result);
+        }, 200);
+      }
+      
+      cancelBtn.addEventListener('click', () => close(false));
+      confirmBtn.addEventListener('click', () => close(true));
+      overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) close(false);
+      });
+    };
+    
+    // Modern Alert Modal - GLOBAL
+    window.showModernAlert = function(message) {
+      const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+      const overlay = document.createElement('div');
+      overlay.style.cssText = 'position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.7); backdrop-filter:blur(4px); z-index:10000; display:flex; align-items:center; justify-content:center; animation:fadeIn 0.2s ease;';
+      
+      const modal = document.createElement('div');
+      modal.style.cssText = `
+        background:${isDark ? '#1e293b' : '#ffffff'};
+        border-radius:20px;
+        padding:32px;
+        max-width:400px;
+        width:90%;
+        box-shadow:0 20px 60px rgba(0,0,0,0.5);
+        border:1px solid ${isDark ? 'rgba(99, 102, 241, 0.3)' : 'rgba(0,0,0,0.1)'};
+        animation:slideUp 0.3s ease;
+      `;
+      
+      modal.innerHTML = `
+        <div style="text-align:center; margin-bottom:24px;">
+          <div style="width:56px; height:56px; margin:0 auto 16px; background:linear-gradient(135deg, #ef4444, #dc2626); border-radius:50%; display:flex; align-items:center; justify-content:center; box-shadow:0 8px 20px rgba(239, 68, 68, 0.4);">
+            <svg width="28" height="28" fill="none" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+          </div>
+          <p style="margin:0; font-size:16px; color:${isDark ? '#cbd5e1' : '#475569'}; font-weight:500; line-height:1.6;">${message}</p>
+        </div>
+        <button id="modal-ok" style="width:100%; padding:14px 24px; border:1px solid #dc2626; background:linear-gradient(135deg, #ef4444, #dc2626); color:#ffffff; border-radius:12px; font-weight:700; font-size:15px; cursor:pointer; transition:all 0.2s; box-shadow:0 4px 12px rgba(239, 68, 68, 0.4);">Tamam</button>
+      `;
+      
+      overlay.appendChild(modal);
+      document.body.appendChild(overlay);
+      
+      const okBtn = modal.querySelector('#modal-ok');
+      okBtn.addEventListener('mouseover', function() {
+        this.style.transform = 'scale(1.02)';
+        this.style.boxShadow = '0 6px 16px rgba(239, 68, 68, 0.5)';
+      });
+      okBtn.addEventListener('mouseout', function() {
+        this.style.transform = 'scale(1)';
+        this.style.boxShadow = '0 4px 12px rgba(239, 68, 68, 0.4)';
+      });
+      
+      function close() {
+        overlay.style.animation = 'fadeOut 0.2s ease';
+        modal.style.animation = 'slideDown 0.2s ease';
+        setTimeout(() => overlay.remove(), 200);
+      }
+      
+      okBtn.addEventListener('click', close);
+      overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) close();
+      });
+    };
+
+    document.addEventListener('DOMContentLoaded', function () {
+      // Chat log management with modern modal
+      (function(){
+        const clearChatBtn = document.getElementById('clear-chat-btn');
+        const chatCountBadge = document.getElementById('chat-count-badge');
+        const chatModal = document.getElementById('chat-clear-modal');
+        const chatCancelBtn = document.getElementById('chat-cancel-btn');
+        const chatConfirmBtn = document.getElementById('chat-confirm-btn');
+        const chatBackdrop = chatModal ? chatModal.querySelector('.confirm-modal-backdrop') : null;
+        
+        // Fetch chat stats on load
+        async function loadChatStats() {
+          try {
+            const resp = await fetch('/database/chat-stats');
+            const data = await resp.json();
+            if (data.success) {
+              const total = (data.general || 0) + (data.private || 0);
+              if (total > 0 && chatCountBadge) {
+                chatCountBadge.textContent = total;
+                chatCountBadge.style.display = 'inline';
+              }
+            }
+          } catch (e) {
+            console.error('Chat stats yüklenemedi:', e);
+          }
+        }
+        loadChatStats();
+
+        function showChatModal() {
+          if (chatModal) {
+            chatModal.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+          }
+        }
+
+        function hideChatModal() {
+          if (chatModal) {
+            chatModal.style.display = 'none';
+            document.body.style.overflow = '';
+          }
+        }
+
+        async function performChatClear() {
+          try {
+            hideChatModal();
+            clearChatBtn.disabled = true;
+            clearChatBtn.innerHTML = '<span>⏳</span> <span>Siliniyor...</span>';
+            
+            const resp = await fetch('/database/clear-chat', { 
+              method: 'POST', 
+              credentials: 'same-origin',
+              headers: { 'Content-Type': 'application/json' }
+            });
+            const data = await resp.json();
+            
+            if (data.success) {
+              // Show success toast
+              const toastContainer = document.getElementById('toast-container');
+              if (toastContainer) {
+                const el = document.createElement('div');
+                el.className = 'db-toast db-toast-success';
+                el.style.cssText = 'min-width:240px; padding:14px 20px; border-radius:12px; color:#fff; box-shadow:0 8px 30px rgba(0,0,0,0.4); font-weight:600; font-size:14px;';
+                el.textContent = data.message || 'Chat logları silindi.';
+                toastContainer.appendChild(el);
+                setTimeout(()=>{ el.style.opacity='0'; setTimeout(()=> el.remove(), 300); }, 3500);
+              }
+              if (chatCountBadge) {
+                chatCountBadge.style.display = 'none';
+              }
+            } else {
+              alert('Hata: ' + (data.message || 'Bilinmeyen hata'));
+            }
+          } catch (e) {
+            console.error('Chat silme hatası:', e);
+            alert('Chat logları silinirken hata oluştu.');
+          } finally {
+            clearChatBtn.disabled = false;
+            clearChatBtn.innerHTML = '<span>💬</span> <span>Chat Loglarını Sil</span> <span id="chat-count-badge" style="background:rgba(239, 68, 68, 0.3); padding:2px 8px; border-radius:10px; font-size:12px; font-weight:700; display:none;"></span>';
+            loadChatStats();
+          }
+        }
+        
+        if (clearChatBtn) {
+          clearChatBtn.addEventListener('click', showChatModal);
+        }
+
+        if (chatCancelBtn) {
+          chatCancelBtn.addEventListener('click', hideChatModal);
+        }
+
+        if (chatConfirmBtn) {
+          chatConfirmBtn.addEventListener('click', performChatClear);
+        }
+
+        if (chatBackdrop) {
+          chatBackdrop.addEventListener('click', hideChatModal);
+        }
+
+        // Close on Escape key
+        document.addEventListener('keydown', function(e) {
+          if (e.key === 'Escape' && chatModal && chatModal.style.display === 'flex') {
+            hideChatModal();
+          }
+        });
+      })();
+      
+      // Confirm modal logic
+      (function(){
+        let pendingForm = null;
+        const modal = document.getElementById('confirm-modal');
+        const modalText = document.getElementById('confirm-modal-text');
+        const btnOk = document.getElementById('confirm-ok');
+        const btnCancel = document.getElementById('confirm-cancel');
+        const backdrop = modal ? modal.querySelector('.confirm-modal-backdrop') : null;
+
+        function showModal(message, okLabel) {
+          if (modalText) modalText.textContent = message || 'İşlemi onaylıyor musunuz?';
+          if (btnOk && okLabel) btnOk.textContent = okLabel;
+          if (modal) modal.style.display = 'flex';
+          document.body.style.overflow = 'hidden';
+        }
+        
+        function hideModal() {
+          if (modal) modal.style.display = 'none';
+          document.body.style.overflow = '';
+          pendingForm = null;
+        }
+
+        document.addEventListener('click', function(e){
+          const btn = e.target.closest && e.target.closest('button[data-confirm-message]');
+          if (!btn) return;
+          e.preventDefault();
+          const msg = btn.getAttribute('data-confirm-message') || 'Onaylıyor musunuz?';
+          pendingForm = btn.closest && btn.closest('form');
+          showModal(msg, btn.getAttribute('data-confirm-ok') || 'Sil');
+        });
+
+        btnCancel && btnCancel.addEventListener('click', hideModal);
+        backdrop && backdrop.addEventListener('click', hideModal);
+
+        btnOk && btnOk.addEventListener('click', async function(){
+          if (!pendingForm) { hideModal(); return; }
+          try {
+            const resp = await fetch(pendingForm.action, { method: 'POST', credentials: 'same-origin', headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+            if (resp.ok) {
+              window.location.href = '/database';
+              return;
+            }
+            pendingForm.submit();
+          } catch (e) {
+            try { pendingForm.submit(); } catch (err) { console.error('Delete failed', err); }
+          } finally {
+            hideModal();
+          }
+        });
+      })();
+      
+      // Truck edit buttons
+      (function(){
+        const trucksList = document.getElementById('trucks-list');
+        if (!trucksList) return;
+        trucksList.addEventListener('click', function(e){
+          // Edit button
+          const editBtn = e.target.closest && e.target.closest('button[data-edit]');
+          if (editBtn) {
+            const item = editBtn.closest && editBtn.closest('.truck-item');
+            if (!item) return;
+            const plate = item.dataset.plate || '';
+            const driver = item.dataset.driver || '';
+            if (window.openTruckDriverModal) {
+              window.openTruckDriverModal(plate, driver);
+            }
+            return;
+          }
+          
+          // Delete button
+          const deleteBtn = e.target.closest && e.target.closest('button[data-delete]');
+          if (deleteBtn) {
+            const item = deleteBtn.closest && deleteBtn.closest('.truck-item');
+            if (!item) return;
+            const truckId = item.dataset.id;
+            const plate = item.dataset.plate || '';
+            if (!truckId) return;
+            
+            showModernConfirm('Bu çekiciyi silmek istediğinize emin misiniz?', 'Plaka: ' + plate, function(confirmed) {
+              if (!confirmed) return;
+            
+              fetch('/database/delete-truck/' + truckId, {
+                method: 'POST',
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+              })
+              .then(res => res.json())
+              .then(data => {
+                if (data.ok) {
+                  item.style.transition = 'all 0.3s ease';
+                  item.style.opacity = '0';
+                  item.style.transform = 'translateX(-20px)';
+                  setTimeout(() => item.remove(), 300);
+                  // Update count
+                  const countEl = document.querySelector('.section-card:has(#trucks-list) .section-count');
+                  if (countEl) {
+                    const currentCount = parseInt(countEl.textContent) || 0;
+                    countEl.textContent = Math.max(0, currentCount - 1);
+                  }
+                } else {
+                  showModernAlert('Silme hatası: ' + (data.message || 'Bilinmeyen hata'));
+                }
+              })
+              .catch(err => {
+                console.error('Delete error:', err);
+                showModernAlert('Silme işlemi başarısız oldu.');
+              });
+            });
+          }
+        });
+      })();
+      
+      // Toast notifications
+      (function(){
+        const toastContainer = document.getElementById('toast-container');
+        function makeToast(message, type) {
+          if (!toastContainer) return;
+          const el = document.createElement('div');
+          el.className = 'db-toast ' + (type === 'error' ? 'db-toast-error' : 'db-toast-success');
+          el.style.cssText = 'min-width:240px; padding:14px 20px; border-radius:12px; color:#fff; box-shadow:0 8px 30px rgba(0,0,0,0.4); font-weight:600; font-size:14px;';
+          el.textContent = message;
+          toastContainer.appendChild(el);
+          el.style.opacity = '0'; 
+          el.style.transform = 'translateY(-10px)';
+          requestAnimationFrame(()=>{ 
+            el.style.transition='all 300ms ease'; 
+            el.style.opacity='1'; 
+            el.style.transform='translateY(0)'; 
+          });
+          setTimeout(()=>{
+            el.style.opacity='0'; 
+            el.style.transform='translateY(-10px)';
+            setTimeout(()=> el.remove(), 300);
+          }, 3500);
+        }
+
+        const successMsg = toastContainer ? toastContainer.dataset.success : '';
+        const errorMsg = toastContainer ? toastContainer.dataset.error : '';
+        if (successMsg) makeToast(successMsg, 'success');
+        if (errorMsg) makeToast(errorMsg, 'error');
+      })();
+    });
+  </script>
+</body>
+</html>

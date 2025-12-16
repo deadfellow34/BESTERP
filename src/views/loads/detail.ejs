@@ -1,0 +1,390 @@
+<style>
+  .load-detail {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+
+  .load-detail-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #1f2937;
+  }
+
+  .load-title {
+    margin: 0 0 6px 0;
+    font-size: 28px;
+    font-weight: 700;
+    color: #f9fafb;
+  }
+
+  .load-subtitle {
+    font-size: 14px;
+    color: #9ca3af;
+    margin-top: 4px;
+  }
+
+  .load-route {
+    font-size: 14px;
+    color: #60a5fa;
+    margin-top: 6px;
+    font-weight: 500;
+  }
+
+  .load-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .load-detail .btn-danger {
+    background-color: #ef4444;
+    border-color: #ef4444;
+  }
+  
+  .load-detail .btn-danger:hover {
+    background-color: #dc2626;
+    border-color: #dc2626;
+  }
+
+  .load-detail-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+
+  @media (max-width: 900px) {
+    .load-detail-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .card {
+    background: rgba(15, 23, 42, 0.95);
+    border: 1px solid #1f2937;
+    border-radius: 12px;
+    padding: 18px 20px;
+    margin-bottom: 20px;
+  }
+
+  .card h2 {
+    margin: 0 0 16px 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: #f9fafb;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .info-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    font-size: 14px;
+  }
+
+  .info-row {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .info-label {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #6b7280;
+    font-weight: 500;
+  }
+
+  .info-value {
+    font-size: 14px;
+    color: #f9fafb;
+    font-weight: 500;
+  }
+
+  .info-value.muted {
+    color: #9ca3af;
+    font-weight: 400;
+  }
+
+  .full-width {
+    grid-column: 1 / -1;
+  }
+
+  .notes-section {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid #1f2937;
+  }
+
+  .notes-body {
+    font-size: 14px;
+    color: #e5e7eb;
+    line-height: 1.6;
+    white-space: pre-wrap;
+    margin-top: 8px;
+  }
+
+  .empty-text {
+    font-size: 13px;
+    color: #6b7280;
+    font-style: italic;
+  }
+
+  .detail-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border-radius: 6px;
+    background: #1e293b;
+    border: 1px solid #334155;
+    font-size: 13px;
+    color: #22c55e;
+    font-weight: 600;
+  }
+
+  .other-load-item {
+    padding: 12px;
+    background: #020617;
+    border: 1px solid #1f2937;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    transition: all 0.2s;
+  }
+
+  .other-load-item:hover {
+    border-color: #3b82f6;
+    transform: translateX(4px);
+  }
+
+  .other-load-item strong {
+    color: #f9fafb;
+    font-size: 14px;
+  }
+
+  .other-load-item .small-text {
+    font-size: 12px;
+    color: #9ca3af;
+    margin-top: 4px;
+  }
+
+  .other-load-item a {
+    display: inline-block;
+    margin-top: 8px;
+    font-size: 13px;
+    color: #60a5fa;
+    text-decoration: none;
+    font-weight: 500;
+  }
+
+  .other-load-item a:hover {
+    color: #3b82f6;
+  }
+</style>
+
+<div class="load-detail">
+  <!-- HEADER -->
+  <div class="load-detail-header">
+    <div>
+      <h1 class="load-title"><%= load.position_no || 'Pozisyon Yok' %></h1>
+      <div class="load-subtitle">
+        <%= load.customer_name || '-' %>
+        <% if (load.consignee_name) { %> → <%= load.consignee_name %><% } %>
+      </div>
+      <% if (load.loading_city || load.unloading_city) { %>
+        <div class="load-route">
+          <%= [load.loading_city, load.loading_country].filter(Boolean).join(', ') || '-' %>
+          →
+          <%= [load.unloading_city, load.unloading_country].filter(Boolean).join(', ') || '-' %>
+        </div>
+      <% } %>
+    </div>
+    
+    <div class="load-actions">
+      <a href="/loads" class="btn btn-outline">← Listeye Dön</a>
+      <a href="/loads/<%= load.id %>/logs" class="btn btn-outline">Log</a>
+      <a href="/loads/<%= load.id %>/edit" class="btn">Düzenle</a>
+      <form id="delete-form-<%= load.id %>" method="POST" action="/loads/<%= load.id %>/delete" style="display:none;"></form>
+      <a href="#" class="btn btn-danger" onclick="if (confirm('Bu yükleme kaydını silmek istediğinizden emin misiniz?')) { document.getElementById('delete-form-<%= load.id %>').submit(); } return false;">Sil</a>
+    </div>
+  </div>
+
+  <!-- GRID -->
+  <div class="load-detail-grid">
+    <!-- SOL TARAF -->
+    <div>
+      <!-- GENEL BİLGİLER -->
+      <div class="card">
+        <h2>📋 Genel Bilgiler</h2>
+        <div class="info-grid">
+          <div class="info-row full-width">
+            <div class="info-label">Gönderici</div>
+            <div class="info-value"><%= load.customer_name || '-' %></div>
+          </div>
+          <div class="info-row full-width">
+            <div class="info-label">Alıcı</div>
+            <div class="info-value"><%= load.consignee_name || '-' %></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- YÜKLEME & BOŞALTMA -->
+      <div class="card">
+        <h2>📍 Yükleme & Boşaltma</h2>
+        <div class="info-grid">
+          <div class="info-row">
+            <div class="info-label">Yükleme</div>
+            <div class="info-value"><%= [load.loading_country, load.loading_city].filter(Boolean).join(' / ') || '-' %></div>
+          </div>
+          <div class="info-row">
+            <div class="info-label">Boşaltma</div>
+            <div class="info-value"><%= [load.unloading_country, load.unloading_city].filter(Boolean).join(' / ') || '-' %></div>
+          </div>
+          <div class="info-row">
+            <div class="info-label">Kap Adedi</div>
+            <div class="info-value"><%= load.packages || '-' %></div>
+          </div>
+          <div class="info-row">
+            <div class="info-label">LDM</div>
+            <div class="info-value"><%= load.ldm || '-' %></div>
+          </div>
+          <div class="info-row">
+            <div class="info-label">Brüt Ağırlık (kg)</div>
+            <div class="info-value"><%= load.gross_weight || '-' %></div>
+          </div>
+          <div class="info-row">
+            <div class="info-label">Malzeme Cinsi</div>
+            <div class="info-value"><%= load.goods_description || '-' %></div>
+          </div>
+        </div>
+        <% if (load.notes) { %>
+          <div class="notes-section">
+            <div class="info-label">Notlar</div>
+            <div class="notes-body"><%= load.notes %></div>
+          </div>
+        <% } %>
+      </div>
+    </div>
+
+    <!-- SAĞ TARAF -->
+    <div>
+      <!-- ARAÇ & ŞOFÖR -->
+      <div class="card">
+        <h2>🚛 Araç & Şoför</h2>
+        <div class="info-grid">
+          <div class="info-row">
+            <div class="info-label">Çekici Plakası</div>
+            <div class="info-value">
+              <% if (typeof truckId !== 'undefined' && truckId && load.truck_plate) { %>
+                <a href="/vehicles/<%= truckId %>" style="color:#60a5fa; text-decoration:none;"><%= load.truck_plate %></a>
+              <% } else { %>
+                <%= load.truck_plate || '-' %>
+              <% } %>
+            </div>
+          </div>
+          <div class="info-row">
+            <div class="info-label">Dorse Plakası</div>
+            <div class="info-value"><%= load.trailer_plate || '-' %></div>
+          </div>
+          <div class="info-row full-width">
+            <div class="info-label">Şoför</div>
+            <div class="info-value">
+              <% if (typeof driverId !== 'undefined' && driverId && load.driver_name) { %>
+                <a href="/drivers/<%= driverId %>" style="color:#60a5fa; text-decoration:none;"><%= load.driver_name %></a>
+              <% } else { %>
+                <%= load.driver_name || '-' %>
+              <% } %>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- DİĞER BİLGİLER -->
+      <div class="card">
+        <h2>📄 Diğer Bilgiler</h2>
+        <div class="info-grid">
+          <div class="info-row full-width">
+            <div class="info-label">T1 / MRN No</div>
+            <div class="info-value"><%= load.t1_mrn || '-' %></div>
+          </div>
+          <% const detailSealCode = (seal && seal.seal_code) || (load && load.seal_code); %>
+          <% if (detailSealCode) { %>
+            <div class="info-row full-width">
+              <div class="info-label">Mühür No</div>
+              <div class="info-value">
+                <span class="detail-pill">🔒 <%= detailSealCode %></span>
+              </div>
+            </div>
+          <% } %>
+          <div class="info-row">
+            <div class="info-label">Yükleme Tarihi</div>
+            <div class="info-value"><%= load.loading_date || '-' %></div>
+          </div>
+          <div class="info-row">
+            <div class="info-label">Varış Tarihi</div>
+            <div class="info-value"><%= load.arrival_date || '-' %></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- NAVLUN -->
+      <div class="card">
+        <h2>💰 Navlun</h2>
+        <div class="info-grid">
+          <div class="info-row full-width">
+            <div class="info-label">Tutar</div>
+            <div class="info-value">
+              <% if (load.navlun_amount) { %>
+                <%= load.navlun_amount %> <%= load.navlun_currency || '' %>
+              <% } else { %>
+                -
+              <% } %>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ORDİNO -->
+      <div class="card">
+        <h2>📋 Ordino</h2>
+        <div class="info-grid">
+          <div class="info-row full-width">
+            <div class="info-label">Ordino Bedeli</div>
+            <div class="info-value">
+              <% if (load.ordino_cost) { %>
+                <%= load.ordino_cost %> TL
+              <% } else { %>
+                -
+              <% } %>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- AYNI POZİSYONDAKİ YÜKLER -->
+      <% if (otherLoads && otherLoads.length > 0) { %>
+        <div class="card">
+          <h2>📌 Bu Pozisyondaki Diğer Yükler</h2>
+          <% otherLoads.forEach(function (other) { %>
+            <div class="other-load-item">
+              <div>
+                <strong><%= other.customer_name || '-' %></strong>
+                <% if (other.consignee_name) { %> → <%= other.consignee_name %><% } %>
+              </div>
+              <div class="small-text">
+                <%= other.loading_city || '-' %> → <%= other.unloading_city || '-' %>
+              </div>
+              <a href="/loads/<%= other.id %>">Detayını Gör →</a>
+            </div>
+          <% }); %>
+        </div>
+      <% } %>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,263 @@
+<style>
+  .gps-page { padding: 12px 20px 28px; }
+  .gps-header {
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin: 10px 0 14px;
+  }
+  .gps-title { margin:0; font-size: 18px; font-weight: 900; color: var(--text-primary); }
+  .gps-sub { margin: 6px 0 0; color: var(--text-muted); font-size: 12px; font-weight: 600; }
+
+  .gps-grid { display:grid; grid-template-columns: 1.1fr 0.9fr; gap: 14px; align-items: start; }
+  @media (max-width: 980px) { .gps-grid { grid-template-columns: 1fr; } }
+
+  .gps-card { border-radius: 14px; border: 1px solid var(--border-subtle); background: var(--bg-card); box-shadow: var(--shadow-md); overflow:hidden; }
+  .gps-card-header { padding: 12px; border-bottom: 1px solid var(--border-subtle); display:flex; align-items:center; justify-content:space-between; gap: 10px; flex-wrap: wrap; }
+  .gps-card-title { margin:0; font-size: 13px; font-weight: 800; color: var(--text-secondary); letter-spacing: 0.2px; }
+  .gps-body { padding: 12px; }
+
+  .gps-kv { display:grid; grid-template-columns: 140px 1fr; gap: 10px; margin: 8px 0; }
+  .gps-k { color: var(--text-muted); font-weight: 800; font-size: 12px; }
+  .gps-v { color: var(--text-primary); font-weight: 700; font-size: 12px; }
+
+  .gps-map { height: 520px; width: 100%; }
+  @media (max-width: 980px) { .gps-map { height: 380px; } }
+
+  .gps-table-wrap { overflow-x: auto; border-top: 1px solid var(--border-subtle); }
+  table { width:100%; border-collapse: separate; border-spacing:0; min-width: 720px; }
+  thead th {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    background: var(--table-header-bg);
+    color: var(--table-header-text);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    padding: 10px 10px;
+    border-bottom: 1px solid var(--table-border);
+  }
+  tbody td {
+    padding: 10px 10px;
+    border-bottom: 1px solid var(--border-subtle);
+    color: var(--table-cell-text);
+    font-size: 12px;
+    vertical-align: top;
+  }
+  tbody tr:nth-child(odd) { background: var(--table-row-odd); }
+  tbody tr:nth-child(even) { background: var(--table-row-even); }
+  tbody tr:hover { background: var(--table-row-hover); }
+
+  .leaflet-container { background: var(--bg-surface-solid); }
+  .leaflet-popup-content-wrapper, .leaflet-popup-tip {
+    background: var(--bg-card-solid);
+    color: var(--text-primary);
+    border: 1px solid var(--border-default);
+  }
+</style>
+
+<%- include('../partials/navbar') %>
+
+<div class="gps-page">
+  <div class="gps-header">
+    <div>
+      <h1 class="gps-title">GPS · Araç Detay</h1>
+      <div class="gps-sub">
+        Araç: <span style="color:var(--text-primary); font-weight:900;"><%= vehicle ? (vehicle.plate || vehicle.vehiclename || vehicle.vehicleid) : '—' %></span>
+        <span style="margin-left:10px;">Son veri: <%= vehicle ? (vehicle.time_indicator || '—') : '—' %></span>
+      </div>
+    </div>
+
+    <div style="display:flex; gap: 8px; flex-wrap:wrap; align-items:center;">
+      <a class="btn btn-outline" href="/gps/live">Canlı Takip</a>
+      <button class="btn" id="gpsRefreshBtn" type="button">Yenile</button>
+    </div>
+  </div>
+
+  <div class="gps-grid">
+    <div class="gps-card">
+      <div class="gps-card-header">
+        <h2 class="gps-card-title">Harita</h2>
+        <div class="gps-sub" id="gpsApiStatus" style="margin:0;"></div>
+      </div>
+      <div id="gpsMap" class="gps-map"></div>
+    </div>
+
+    <div class="gps-card">
+      <div class="gps-card-header">
+        <h2 class="gps-card-title">Özet</h2>
+      </div>
+      <div class="gps-body">
+        <div class="gps-kv"><div class="gps-k">Plaka</div><div class="gps-v"><%= vehicle ? (vehicle.plate || vehicle.vehiclename || '—') : '—' %></div></div>
+        <div class="gps-kv"><div class="gps-k">Şoför</div><div class="gps-v"><%= vehicle ? (vehicle.drivername || '—') : '—' %></div></div>
+        <div class="gps-kv"><div class="gps-k">Hız</div><div class="gps-v"><%= vehicle && vehicle.velocity != null ? (vehicle.velocity + ' km/h') : '—' %></div></div>
+        <div class="gps-kv"><div class="gps-k">Konum</div><div class="gps-v"><%= vehicle ? (vehicle.location || vehicle.address || '—') : '—' %></div></div>
+        <div class="gps-kv"><div class="gps-k">Koordinat</div><div class="gps-v"><%= vehicle && vehicle.latitude != null && vehicle.longitude != null ? (vehicle.latitude + ', ' + vehicle.longitude) : '—' %></div></div>
+        <div class="gps-kv"><div class="gps-k">Toplam Km</div><div class="gps-v"><%= vehicle && vehicle.totaldistance != null ? vehicle.totaldistance : '—' %></div></div>
+        <div class="gps-kv"><div class="gps-k">Start Km</div><div class="gps-v"><%= vehicle && vehicle.start_km != null ? vehicle.start_km : '—' %></div></div>
+        <div class="gps-kv"><div class="gps-k">İletişim</div><div class="gps-v"><%= vehicle && vehicle.communication != null ? (vehicle.communication ? 'Var' : 'Yok') : '—' %></div></div>
+      </div>
+    </div>
+  </div>
+
+  <div style="height: 14px;"></div>
+
+  <div class="gps-card">
+    <div class="gps-card-header">
+      <h2 class="gps-card-title">Geçmiş (son 24 saat)</h2>
+      <div class="gps-sub" style="margin:0;">Kayıt sayısı: <%= (history || []).length %></div>
+    </div>
+    <div class="gps-table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Zaman</th>
+            <th>Hız</th>
+            <th>Konum</th>
+            <th>Koordinat</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% (history || []).forEach(function(h){ %>
+            <tr>
+              <td><%= h.time_indicator || '—' %></td>
+              <td><%= h.velocity != null ? (h.velocity + ' km/h') : '—' %></td>
+              <td><%= h.location || h.address || '—' %></td>
+              <td><%= h.latitude != null && h.longitude != null ? (h.latitude + ', ' + h.longitude) : '—' %></td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+<script>
+  window.__GPS_VEHICLE_ID__ = <%- JSON.stringify(vehicle ? vehicle.vehicleid : null) %>;
+  window.__GPS_LAST__ = <%- JSON.stringify(vehicle || null) %>;
+  window.__GPS_HISTORY__ = <%- JSON.stringify(history || []) %>;
+</script>
+
+<script>
+  (function(){
+    let map;
+    let marker;
+    let poly;
+
+    function setStatus(ok, message){
+      const el = document.getElementById('gpsApiStatus');
+      el.textContent = message || '';
+      el.style.padding = message ? '6px 10px' : '';
+      el.style.borderRadius = message ? '999px' : '';
+      el.style.border = message ? (ok ? '1px solid var(--border-default)' : '1px solid var(--warning-light)') : '';
+      el.style.background = message ? (ok ? 'var(--bg-surface)' : 'var(--warning-light)') : '';
+      el.style.color = message ? (ok ? 'var(--text-secondary)' : 'var(--warning-text)') : '';
+      el.style.fontWeight = '800';
+      el.style.fontSize = '12px';
+    }
+
+    function ensureMap(){
+      if (map) return;
+      map = L.map('gpsMap', { zoomControl: true });
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '&copy; OpenStreetMap'
+      }).addTo(map);
+      map.setView([39.0, 35.0], 5);
+    }
+
+    function render(){
+      ensureMap();
+
+      const last = window.__GPS_LAST__;
+      const history = window.__GPS_HISTORY__ || [];
+
+      const pts = [];
+      history.forEach(h => {
+        const lat = Number(h.latitude);
+        const lng = Number(h.longitude);
+        if (!Number.isFinite(lat) || !Number.isFinite(lng)) return;
+        pts.push([lat, lng]);
+      });
+
+      if (poly) { poly.remove(); poly = null; }
+      if (pts.length >= 2) {
+        const primary = getComputedStyle(document.documentElement).getPropertyValue('--primary').trim();
+        const options = { weight: 3, opacity: 0.85 };
+        if (primary) options.color = primary;
+        poly = L.polyline(pts, options);
+        poly.addTo(map);
+      }
+
+      if (marker) { marker.remove(); marker = null; }
+      if (last) {
+        const lat = Number(last.latitude);
+        const lng = Number(last.longitude);
+        if (Number.isFinite(lat) && Number.isFinite(lng)) {
+          const popup = `<div style="font-weight:900; margin-bottom:4px;">${(last.plate || last.vehiclename || last.vehicleid || '').toString()}</div>` +
+            `<div style="font-size:12px; color: var(--text-muted)">${(last.drivername || '').toString()}</div>` +
+            `<div style="margin-top:6px; font-size:12px;">Hız: ${last.velocity != null ? last.velocity + ' km/h' : '—'}</div>` +
+            `<div style="margin-top:4px; font-size:12px;">${(last.time_indicator || '—').toString()}</div>`;
+          marker = L.marker([lat, lng]).bindPopup(popup);
+          marker.addTo(map);
+          marker.openPopup();
+          map.setView([lat, lng], 12);
+        }
+      }
+
+      if (pts.length) {
+        try {
+          const b = L.latLngBounds(pts);
+          map.fitBounds(b.pad(0.12));
+        } catch (_) {}
+      }
+    }
+
+    async function manualRefresh(){
+      const btn = document.getElementById('gpsRefreshBtn');
+      btn.disabled = true;
+      try {
+        setStatus(true, 'Yenileniyor...');
+        const res = await fetch('/api/gps/refresh', {
+          method: 'POST',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({})
+        });
+        const ct = (res && res.headers && res.headers.get && res.headers.get('content-type')) ? res.headers.get('content-type') : '';
+        const data = (ct && ct.toLowerCase().includes('application/json')) ? await res.json() : null;
+        if (!data) {
+          setStatus(false, 'Yenileme başarısız (JSON yanıtı yok - giriş gerekli olabilir)');
+          return;
+        }
+
+        const apiError = (typeof data.error === 'string' && data.error.trim()) ? data.error.trim() : null;
+        if (data && data.ok && data.vehicles) {
+          // find vehicle in refreshed list
+          const id = window.__GPS_VEHICLE_ID__;
+          const found = data.vehicles.find(v => String(v.vehicleid) === String(id));
+          window.__GPS_LAST__ = found || window.__GPS_LAST__;
+          setStatus(true, 'Yenilendi');
+          render();
+        } else {
+          if (apiError) setStatus(false, apiError);
+          else if (res && (res.status === 401 || res.status === 403)) setStatus(false, 'Yetkiniz yok veya oturum süresi doldu');
+          else setStatus(false, 'Yenileme başarısız');
+        }
+      } catch (e) {
+        setStatus(false, (e && e.message) ? e.message : 'Yenileme başarısız');
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
+    document.getElementById('gpsRefreshBtn').addEventListener('click', manualRefresh);
+    render();
+  })();
+</script>

@@ -1,0 +1,680 @@
+<%- include('../partials/navbar') %>
+
+<style>
+  .new-contract-container {
+    padding: 24px;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+
+  .page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+
+  .page-title {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--text-primary, #e2e8f0);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .page-title-icon {
+    font-size: 28px;
+  }
+
+  .btn-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    background: rgba(100, 116, 139, 0.2);
+    border: 1px solid rgba(100, 116, 139, 0.4);
+    color: var(--text-secondary, #94a3b8);
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.2s ease;
+  }
+
+  .btn-back:hover {
+    background: rgba(100, 116, 139, 0.3);
+    border-color: rgba(100, 116, 139, 0.5);
+    transform: translateY(-1px);
+  }
+
+  .alert {
+    padding: 14px 18px;
+    border-radius: 10px;
+    margin-bottom: 24px;
+    font-size: 14px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .alert-error {
+    background: rgba(239, 68, 68, 0.15);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    color: #ef4444;
+  }
+
+  .form-card {
+    background: var(--bg-card, #1e293b);
+    border: 1px solid var(--border-color, rgba(255,255,255,0.06));
+    border-radius: 16px;
+    padding: 32px;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.2);
+  }
+
+  .form-section {
+    margin-bottom: 32px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--border-color, rgba(255,255,255,0.06));
+  }
+
+  .form-section:last-child {
+    margin-bottom: 0;
+    padding-bottom: 0;
+    border-bottom: none;
+  }
+
+  .form-section-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text-primary, #e2e8f0);
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .form-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+  }
+
+  .form-group {
+    margin-bottom: 20px;
+  }
+
+  .form-group.full-width {
+    grid-column: 1 / -1;
+  }
+
+  .form-label {
+    display: block;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary, #e2e8f0);
+    margin-bottom: 8px;
+  }
+
+  .form-label .required {
+    color: #ef4444;
+    margin-left: 4px;
+  }
+
+  .form-input, .form-select {
+    width: 100%;
+    padding: 12px 16px;
+    background: var(--bg-surface, rgba(0,0,0,0.2));
+    border: 1px solid var(--border-color, rgba(255,255,255,0.1));
+    border-radius: 10px;
+    font-size: 14px;
+    color: var(--text-primary, #e2e8f0);
+    transition: all 0.2s ease;
+    box-sizing: border-box;
+  }
+
+  .form-input:focus, .form-select:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+  }
+
+  .form-input::placeholder {
+    color: var(--text-muted, #64748b);
+  }
+
+  .form-select {
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2394a3b8'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 16px;
+    padding-right: 40px;
+  }
+
+  .form-select option {
+    background: #1e293b;
+    color: #e2e8f0;
+  }
+
+  .form-textarea {
+    min-height: 100px;
+    resize: vertical;
+  }
+
+  .input-group {
+    display: flex;
+    gap: 8px;
+  }
+
+  .input-group .form-input {
+    flex: 1;
+  }
+
+  .input-group .form-select {
+    width: 100px;
+    flex-shrink: 0;
+  }
+
+  .file-upload-wrapper {
+    position: relative;
+  }
+
+  .file-upload-area {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+    background: var(--bg-surface, rgba(0,0,0,0.2));
+    border: 2px dashed var(--border-color, rgba(255,255,255,0.15));
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .file-upload-area:hover {
+    border-color: #3b82f6;
+    background: rgba(59, 130, 246, 0.05);
+  }
+
+  .file-upload-area.has-file {
+    border-color: #10b981;
+    background: rgba(16, 185, 129, 0.05);
+  }
+
+  .file-upload-icon {
+    font-size: 48px;
+    margin-bottom: 16px;
+    opacity: 0.7;
+  }
+
+  .file-upload-text {
+    font-size: 14px;
+    color: var(--text-muted, #94a3b8);
+    text-align: center;
+  }
+
+  .file-upload-text strong {
+    color: #3b82f6;
+  }
+
+  .file-upload-hint {
+    font-size: 12px;
+    color: var(--text-muted, #64748b);
+    margin-top: 8px;
+  }
+
+  .file-input {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+  }
+
+  .selected-file {
+    display: none;
+    padding: 12px 16px;
+    background: rgba(16, 185, 129, 0.1);
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    border-radius: 8px;
+    margin-top: 12px;
+    color: #10b981;
+    font-size: 14px;
+    font-weight: 500;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .selected-file.visible {
+    display: flex;
+  }
+
+  .form-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 32px;
+  }
+
+  .btn-submit {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 14px 28px;
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+  }
+
+  .btn-submit:hover {
+    background: linear-gradient(135deg, #2563eb, #1d4ed8);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(59, 130, 246, 0.4);
+  }
+
+  .btn-cancel {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 14px 28px;
+    background: rgba(100, 116, 139, 0.2);
+    border: 1px solid rgba(100, 116, 139, 0.4);
+    color: var(--text-secondary, #94a3b8);
+    border-radius: 10px;
+    font-size: 15px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.2s ease;
+  }
+
+  .btn-cancel:hover {
+    background: rgba(100, 116, 139, 0.3);
+    border-color: rgba(100, 116, 139, 0.5);
+  }
+
+  /* Light theme */
+  [data-theme="light"] .page-title {
+    color: #1f2937;
+  }
+
+  [data-theme="light"] .btn-back {
+    background: rgba(100, 116, 139, 0.1);
+    border-color: #d1d5db;
+    color: #64748b;
+  }
+
+  [data-theme="light"] .btn-back:hover {
+    background: rgba(100, 116, 139, 0.15);
+    border-color: #9ca3af;
+  }
+
+  [data-theme="light"] .alert-error {
+    background: rgba(239, 68, 68, 0.1);
+    border-color: rgba(239, 68, 68, 0.3);
+    color: #dc2626;
+  }
+
+  [data-theme="light"] .form-card {
+    background: #ffffff;
+    border-color: #e5e7eb;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+  }
+
+  [data-theme="light"] .form-section {
+    border-bottom-color: #e5e7eb;
+  }
+
+  [data-theme="light"] .form-section-title {
+    color: #1f2937;
+  }
+
+  [data-theme="light"] .form-label {
+    color: #374151;
+  }
+
+  [data-theme="light"] .form-input, [data-theme="light"] .form-select {
+    background: #f9fafb;
+    border-color: #d1d5db;
+    color: #1f2937;
+  }
+
+  [data-theme="light"] .form-input::placeholder {
+    color: #9ca3af;
+  }
+
+  [data-theme="light"] .form-input:focus, [data-theme="light"] .form-select:focus {
+    border-color: #3b82f6;
+    background: #ffffff;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  }
+
+  [data-theme="light"] .form-select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236b7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+  }
+
+  [data-theme="light"] .form-select option {
+    background: #fff;
+    color: #1f2937;
+  }
+
+  [data-theme="light"] .file-upload-area {
+    background: #f9fafb;
+    border-color: #d1d5db;
+  }
+
+  [data-theme="light"] .file-upload-area:hover {
+    background: rgba(59, 130, 246, 0.05);
+    border-color: #3b82f6;
+  }
+
+  [data-theme="light"] .file-upload-area.has-file {
+    background: rgba(16, 185, 129, 0.05);
+    border-color: #10b981;
+  }
+
+  [data-theme="light"] .file-upload-text {
+    color: #64748b;
+  }
+
+  [data-theme="light"] .file-upload-hint {
+    color: #9ca3af;
+  }
+
+  [data-theme="light"] .selected-file {
+    background: rgba(16, 185, 129, 0.1);
+    border-color: rgba(16, 185, 129, 0.3);
+    color: #059669;
+  }
+
+  [data-theme="light"] .btn-submit {
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+    color: #ffffff;
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25);
+  }
+
+  [data-theme="light"] .btn-submit:hover {
+    background: linear-gradient(135deg, #2563eb, #1d4ed8);
+    box-shadow: 0 6px 16px rgba(59, 130, 246, 0.35);
+  }
+
+  [data-theme="light"] .btn-cancel {
+    background: rgba(100, 116, 139, 0.1);
+    border-color: #d1d5db;
+    color: #64748b;
+  }
+
+  [data-theme="light"] .btn-cancel:hover {
+    background: rgba(100, 116, 139, 0.15);
+    border-color: #9ca3af;
+  }
+
+  @media (max-width: 768px) {
+    .new-contract-container {
+      padding: 16px;
+    }
+
+    .form-card {
+      padding: 24px;
+    }
+
+    .page-header {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .form-row {
+      grid-template-columns: 1fr;
+    }
+
+    .form-actions {
+      flex-direction: column;
+    }
+
+    .btn-submit, .btn-cancel {
+      width: 100%;
+      justify-content: center;
+    }
+  }
+</style>
+
+<div class="new-contract-container">
+  <div class="page-header">
+    <h1 class="page-title">
+      <span class="page-title-icon">➕</span>
+      Yeni Sözleşme Ekle
+    </h1>
+    <a href="/contracts" class="btn-back">
+      ← Geri Dön
+    </a>
+  </div>
+
+  <% if (error) { %>
+    <div class="alert alert-error">
+      ❌ <%= error %>
+    </div>
+  <% } %>
+
+  <div class="form-card">
+    <form action="/contracts" method="POST" enctype="multipart/form-data" id="contractForm">
+      
+      <!-- Temel Bilgiler -->
+      <div class="form-section">
+        <h3 class="form-section-title">📋 Temel Bilgiler</h3>
+        <div class="form-row">
+          <div class="form-group full-width">
+            <label class="form-label">
+              Sözleşme Adı <span class="required">*</span>
+            </label>
+            <input 
+              type="text" 
+              name="title" 
+              class="form-input" 
+              placeholder="Örn: Taşımacılık Sözleşmesi - ABC Firma"
+              value="<%= formData && formData.title ? formData.title : '' %>"
+              required
+            />
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Sözleşme Türü</label>
+            <select name="contract_type" class="form-select">
+              <% Object.entries(contractTypes).forEach(([key, label]) => { %>
+                <option value="<%= key %>" <%= formData && formData.contract_type === key ? 'selected' : '' %>><%= label %></option>
+              <% }); %>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Başlangıç Tarihi</label>
+            <input 
+              type="date" 
+              name="start_date" 
+              class="form-input"
+              value="<%= formData && formData.start_date ? formData.start_date : '' %>"
+            />
+          </div>
+          <div class="form-group">
+            <label class="form-label">
+              Bitiş Tarihi <span class="required">*</span>
+            </label>
+            <input 
+              type="date" 
+              name="expiry_date" 
+              class="form-input"
+              value="<%= formData && formData.expiry_date ? formData.expiry_date : '' %>"
+              required
+            />
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Açıklama</label>
+          <textarea 
+            name="description" 
+            class="form-input form-textarea" 
+            placeholder="Sözleşme hakkında notlar..."
+          ><%= formData && formData.description ? formData.description : '' %></textarea>
+        </div>
+      </div>
+
+      <!-- Sözleşme Değeri -->
+      <div class="form-section">
+        <h3 class="form-section-title">💰 Sözleşme Değeri</h3>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Tutar</label>
+            <div class="input-group">
+              <input 
+                type="number" 
+                name="contract_value" 
+                class="form-input" 
+                placeholder="0.00"
+                step="0.01"
+                min="0"
+                value="<%= formData && formData.contract_value ? formData.contract_value : '' %>"
+              />
+              <select name="currency" class="form-select">
+                <% currencies.forEach(c => { %>
+                  <option value="<%= c %>" <%= formData && formData.currency === c ? 'selected' : (c === 'EUR' ? 'selected' : '') %>><%= c %></option>
+                <% }); %>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Karşı Taraf Bilgileri -->
+      <div class="form-section">
+        <h3 class="form-section-title">👤 Karşı Taraf Bilgileri</h3>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Firma / Kişi Adı</label>
+            <input 
+              type="text" 
+              name="party_name" 
+              class="form-input" 
+              placeholder="Karşı taraf adı"
+              value="<%= formData && formData.party_name ? formData.party_name : '' %>"
+            />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Telefon / İletişim</label>
+            <input 
+              type="text" 
+              name="party_contact" 
+              class="form-input" 
+              placeholder="+90 5XX XXX XX XX"
+              value="<%= formData && formData.party_contact ? formData.party_contact : '' %>"
+            />
+          </div>
+          <div class="form-group">
+            <label class="form-label">E-posta</label>
+            <input 
+              type="email" 
+              name="party_email" 
+              class="form-input" 
+              placeholder="email@firma.com"
+              value="<%= formData && formData.party_email ? formData.party_email : '' %>"
+            />
+          </div>
+        </div>
+      </div>
+
+      <!-- PDF Dosyası -->
+      <div class="form-section">
+        <h3 class="form-section-title">📄 Sözleşme Dosyası</h3>
+        <div class="form-group">
+          <label class="form-label">
+            Sözleşme PDF Dosyası <span class="required">*</span>
+          </label>
+          <div class="file-upload-wrapper">
+            <div class="file-upload-area" id="fileUploadArea">
+              <div class="file-upload-icon">📄</div>
+              <div class="file-upload-text">
+                <strong>Dosya seçmek için tıklayın</strong> veya sürükleyip bırakın
+              </div>
+              <div class="file-upload-hint">Sadece PDF dosyaları kabul edilir (Max: 50MB)</div>
+            </div>
+            <input 
+              type="file" 
+              name="file" 
+              class="file-input" 
+              id="fileInput"
+              accept=".pdf,application/pdf"
+              required
+            />
+          </div>
+          <div class="selected-file" id="selectedFile">
+            📎 <span id="selectedFileName"></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" class="btn-submit">
+          💾 Sözleşmeyi Kaydet
+        </button>
+        <a href="/contracts" class="btn-cancel">
+          İptal
+        </a>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  // File input handling
+  const fileInput = document.getElementById('fileInput');
+  const fileUploadArea = document.getElementById('fileUploadArea');
+  const selectedFile = document.getElementById('selectedFile');
+  const selectedFileName = document.getElementById('selectedFileName');
+
+  fileInput.addEventListener('change', function(e) {
+    if (this.files && this.files.length > 0) {
+      const file = this.files[0];
+      selectedFileName.textContent = file.name;
+      selectedFile.classList.add('visible');
+      fileUploadArea.classList.add('has-file');
+    } else {
+      selectedFile.classList.remove('visible');
+      fileUploadArea.classList.remove('has-file');
+    }
+  });
+
+  // Drag and drop support
+  fileUploadArea.addEventListener('dragover', function(e) {
+    e.preventDefault();
+    this.style.borderColor = '#3b82f6';
+    this.style.background = 'rgba(59, 130, 246, 0.1)';
+  });
+
+  fileUploadArea.addEventListener('dragleave', function(e) {
+    e.preventDefault();
+    this.style.borderColor = '';
+    this.style.background = '';
+  });
+
+  fileUploadArea.addEventListener('drop', function(e) {
+    e.preventDefault();
+    this.style.borderColor = '';
+    this.style.background = '';
+    
+    if (e.dataTransfer.files.length > 0) {
+      fileInput.files = e.dataTransfer.files;
+      const event = new Event('change');
+      fileInput.dispatchEvent(event);
+    }
+  });
+</script>

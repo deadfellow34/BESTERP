@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#1e3a5f">
+  <title>Hata - BEST Freight</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+      background: linear-gradient(135deg, #1e3a5f 0%, #0f1f35 100%);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      color: #e5e7eb;
+    }
+    
+    .container {
+      width: 100%;
+      max-width: 400px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 20px;
+      padding: 40px 30px;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+      text-align: center;
+    }
+    
+    .error-icon {
+      font-size: 80px;
+      margin-bottom: 20px;
+    }
+    
+    h1 {
+      font-size: 24px;
+      font-weight: 700;
+      color: #f87171;
+      margin-bottom: 16px;
+    }
+    
+    .message {
+      font-size: 16px;
+      color: #cbd5e1;
+      line-height: 1.6;
+      margin-bottom: 25px;
+      padding: 16px;
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid rgba(239, 68, 68, 0.2);
+      border-radius: 12px;
+    }
+    
+    .help-text {
+      font-size: 14px;
+      color: #94a3b8;
+      line-height: 1.5;
+    }
+    
+    .footer {
+      margin-top: 30px;
+      font-size: 11px;
+      color: #64748b;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="error-icon">⚠️</div>
+    
+    <h1>Bir Sorun Oluştu</h1>
+    
+    <p class="message">
+      <%= message %>
+    </p>
+    
+    <p class="help-text">
+      Lütfen dispatçınızdan yeni bir yükleme linki isteyin.
+    </p>
+    
+    <div class="footer">
+      BEST Freight ERP &copy; 2025
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="tr">
+  <head>
+    <meta charset="UTF-8" />
+    <!-- Inline theme detection - runs before any CSS to prevent flash -->
+    <script>
+      (function() {
+        var theme = localStorage.getItem('bestfreight-theme') || 'dark';
+        document.documentElement.setAttribute('data-theme', theme);
+      })();
+    </script>
+    <title><%= typeof pageTitle !== 'undefined' ? pageTitle : 'BEST Freight - ERP' %></title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- Favicon / site icon - uses auto-detected navbarLogo provided by server.js -->
+    <% if (typeof navbarLogo !== 'undefined' && navbarLogo) { %>
+      <link rel="icon" type="image/png" href="<%= navbarLogo %>" />
+      <link rel="shortcut icon" href="<%= navbarLogo %>" />
+      <link rel="apple-touch-icon" href="<%= navbarLogo %>" />
+      <meta name="theme-color" content="#0a1628">
+    <% } else { %>
+      <link rel="icon" type="image/png" href="/img/logo.png" />
+    <% } %>
+
+    <!-- Theme CSS must load first -->
+    <link rel="stylesheet" href="/css/theme.css" />
+    <link rel="stylesheet" href="/css/main.css" />
+    <link rel="stylesheet" href="/css/chat.css" />
+    <!-- Theme JS loads early to prevent flash -->
+    <script src="/js/theme.js"></script>
+  </head>
+  <body data-username="<%= typeof chatUsername !== 'undefined' ? chatUsername : 'Guest' %>" data-current-page="<%= typeof currentPath !== 'undefined' ? currentPath : '/' %>">
+    <%- body %>
+    
+    <%- include('../partials/chatWidget') %>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/js/dateUtils.js"></script>
+    <script src="/js/chat.js"></script>
+    <script src="/js/adminBroadcast.js"></script>
+  </body>
+</html>

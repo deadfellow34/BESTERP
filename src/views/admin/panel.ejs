@@ -1,0 +1,2124 @@
+﻿<%- include('../partials/navbar') %>
+
+<style>
+  :root {
+    --admin-primary: #6366f1;
+    --admin-success: #10b981;
+    --admin-warning: #f59e0b;
+    --admin-danger: #ef4444;
+    --admin-info: #3b82f6;
+  }
+
+  .admin-container {
+    max-width: 1600px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+
+  .admin-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+
+  .admin-header h1 {
+    color: var(--text-primary, #e2e8f0);
+    font-size: 28px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .admin-header-actions {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+  }
+
+  .admin-logout-btn {
+    padding: 10px 20px;
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    color: #f87171;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    transition: all 0.2s;
+  }
+
+  .admin-logout-btn:hover {
+    background: rgba(239, 68, 68, 0.2);
+  }
+
+  /* Tabs */
+  .admin-tabs {
+    display: flex;
+    gap: 4px;
+    background: var(--bg-card, #1e293b);
+    padding: 6px;
+    border-radius: 12px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+  }
+
+  .admin-tab {
+    padding: 12px 20px;
+    background: transparent;
+    border: none;
+    color: var(--text-muted, #94a3b8);
+    font-size: 14px;
+    font-weight: 600;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .admin-tab:hover {
+    background: rgba(99, 102, 241, 0.1);
+    color: var(--text-primary, #e2e8f0);
+  }
+
+  .admin-tab.active {
+    background: var(--admin-primary);
+    color: white;
+  }
+
+  /* Tab Content */
+  .tab-content {
+    display: none;
+  }
+
+  .tab-content.active {
+    display: block;
+  }
+
+  /* Cards */
+  .admin-card {
+    background: var(--bg-card, #1e293b);
+    border: 1px solid var(--border-color, #334155);
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 20px;
+  }
+
+  .admin-card h2 {
+    color: var(--text-primary, #e2e8f0);
+    font-size: 18px;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .admin-card h2 .badge {
+    font-size: 12px;
+    padding: 4px 8px;
+    background: rgba(99, 102, 241, 0.2);
+    color: #a5b4fc;
+    border-radius: 6px;
+    font-weight: 600;
+  }
+
+  /* Stats Grid */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+
+  .stat-card {
+    background: var(--bg-card, #1e293b);
+    border: 1px solid var(--border-color, #334155);
+    border-radius: 12px;
+    padding: 20px;
+    text-align: center;
+    transition: all 0.2s;
+  }
+
+  .stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+  }
+
+  .stat-card .icon {
+    font-size: 32px;
+    margin-bottom: 8px;
+  }
+
+  .stat-card .value {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--text-primary, #e2e8f0);
+    margin-bottom: 4px;
+  }
+
+  .stat-card .label {
+    font-size: 13px;
+    color: var(--text-muted, #94a3b8);
+  }
+
+  .stat-card.primary { border-left: 4px solid var(--admin-primary); }
+  .stat-card.success { border-left: 4px solid var(--admin-success); }
+  .stat-card.warning { border-left: 4px solid var(--admin-warning); }
+  .stat-card.danger { border-left: 4px solid var(--admin-danger); }
+  .stat-card.info { border-left: 4px solid var(--admin-info); }
+
+  /* Grid layouts */
+  .admin-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+  }
+
+  @media (max-width: 768px) {
+    .admin-grid { grid-template-columns: 1fr; }
+  }
+
+  /* Form elements */
+  .form-group {
+    margin-bottom: 16px;
+  }
+
+  .form-group label {
+    display: block;
+    color: var(--text-muted, #94a3b8);
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 6px;
+  }
+
+  .form-group input,
+  .form-group textarea,
+  .form-group select {
+    width: 100%;
+    padding: 12px 14px;
+    background: var(--bg-darker, #0f172a);
+    border: 1px solid var(--border-color, #334155);
+    border-radius: 8px;
+    color: var(--text-primary, #e2e8f0);
+    font-size: 14px;
+    outline: none;
+    transition: all 0.2s;
+  }
+
+  .form-group input:focus,
+  .form-group textarea:focus,
+  .form-group select:focus {
+    border-color: var(--admin-primary);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+  }
+
+  .form-group textarea {
+    min-height: 100px;
+    resize: vertical;
+  }
+
+  .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  /* Buttons */
+  .btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .btn-primary {
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    color: white;
+  }
+
+  .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(99, 102, 241, 0.3);
+  }
+
+  .btn-success {
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: white;
+  }
+
+  .btn-warning {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    color: white;
+  }
+
+  .btn-danger {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    color: white;
+  }
+
+  .btn-secondary {
+    background: rgba(100, 116, 139, 0.2);
+    border: 1px solid rgba(100, 116, 139, 0.3);
+    color: #94a3b8;
+  }
+
+  .btn-sm {
+    padding: 6px 12px;
+    font-size: 12px;
+  }
+
+  /* Tables */
+  .admin-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .admin-table th,
+  .admin-table td {
+    padding: 12px 14px;
+    text-align: left;
+    border-bottom: 1px solid var(--border-color, #334155);
+    font-size: 13px;
+  }
+
+  .admin-table th {
+    color: var(--text-muted, #94a3b8);
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 11px;
+  }
+
+  .admin-table td {
+    color: var(--text-primary, #e2e8f0);
+  }
+
+  .admin-table tr:hover td {
+    background: rgba(99, 102, 241, 0.05);
+  }
+
+  /* Clickable stat cards */
+  .stat-card.clickable {
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .stat-card.clickable:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+  }
+
+  .stat-card.clickable:active {
+    transform: translateY(0);
+  }
+
+  .group-label {
+    font-weight: 700;
+    color: #2563eb;
+  }
+
+  [data-theme="light"] .group-label {
+    color: #1d4ed8;
+    font-weight: 700;
+    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.8);
+  }
+
+  .positions-table tbody tr.grouped {
+    background: rgba(37, 99, 235, 0.08);
+  }
+
+  .positions-table tbody tr.grouped.grouped-clickable {
+    cursor: pointer;
+  }
+
+  .group-detail-summary {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    margin-bottom: 12px;
+  }
+
+  .group-detail-summary div {
+    background: rgba(148, 163, 184, 0.08);
+    border-radius: 12px;
+    padding: 10px 14px;
+    min-width: 160px;
+  }
+
+  .group-detail-label,
+  .group-detail-summary .group-detail-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--text-muted, #94a3b8);
+    display: block;
+  }
+
+  .group-detail-value {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary, #e2e8f0);
+  }
+
+  .group-detail-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 12px;
+  }
+
+  .group-detail-row {
+    border: 1px solid rgba(148, 163, 184, 0.4);
+    border-radius: 12px;
+    padding: 14px 16px;
+    background: rgba(15, 23, 42, 0.7);
+  }
+  [data-theme="light"] .group-detail-row {
+    background: #f8fafc;
+    border-color: #cbd5f5;
+  }
+
+  /* Today positions modal table */
+  .positions-table-container {
+    max-height: 400px;
+    overflow-y: auto;
+  }
+
+  .positions-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+
+  .positions-table th,
+  .positions-table td {
+    padding: 10px 12px;
+    text-align: left;
+    border-bottom: 1px solid var(--border-color, #334155);
+  }
+
+  .positions-table th {
+    background: var(--bg-darker, #0f172a);
+    color: var(--text-muted, #94a3b8);
+    font-weight: 600;
+    font-size: 11px;
+    text-transform: uppercase;
+    position: sticky;
+    top: 0;
+  }
+
+  .positions-table td {
+    color: var(--text-primary, #e2e8f0);
+  }
+
+  [data-theme="light"] .positions-table td,
+  [data-theme="light"] .positions-table th {
+    color: #0f172a;
+  }
+  [data-theme="light"] .positions-table td .group-label,
+  [data-theme="light"] .positions-table th .group-label {
+    color: #1d4ed8 !important;
+  }
+
+  .positions-table tr:hover td {
+    background: rgba(99, 102, 241, 0.05);
+  }
+
+  .position-link {
+    color: var(--admin-primary);
+    text-decoration: none;
+    font-weight: 600;
+  }
+
+  .position-link:hover {
+    text-decoration: underline;
+  }
+
+  /* Status badges */
+  .status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  .status-badge.active {
+    background: #dcfce7 !important;
+    color: #047857 !important;
+    border: 1px solid #34d399 !important;
+  }
+
+  .status-badge.inactive {
+    background: #fee2e2 !important;
+    color: #991b1b !important;
+    border: 1px solid #f87171 !important;
+  }
+
+
+  .role-badge {
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+  }
+
+  .role-badge.admin {
+    background: rgba(139, 92, 246, 0.2);
+    color: #a78bfa;
+  }
+
+  .role-badge.user {
+    background: rgba(59, 130, 246, 0.2);
+    color: #60a5fa;
+  }
+
+  /* Notification types */
+  .notification-type {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  .notification-type.info { background: rgba(59, 130, 246, 0.15); color: #60a5fa; }
+  .notification-type.warning { background: rgba(245, 158, 11, 0.15); color: #fbbf24; }
+  .notification-type.reminder { background: rgba(139, 92, 246, 0.15); color: #a78bfa; }
+  .notification-type.urgent { background: rgba(239, 68, 68, 0.15); color: #f87171; }
+
+  /* Alerts */
+  .alert {
+    padding: 14px 18px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .alert-success {
+    background: rgba(16, 185, 129, 0.1);
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    color: #34d399;
+  }
+
+  .alert-error {
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    color: #f87171;
+  }
+
+  /* System info */
+  .system-info {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 12px;
+  }
+
+  .system-info-item {
+    background: var(--bg-darker, #0f172a);
+    padding: 12px 16px;
+    border-radius: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .system-info-item .label {
+    color: var(--text-muted, #94a3b8);
+    font-size: 12px;
+  }
+
+  .system-info-item .value {
+    color: var(--text-primary, #e2e8f0);
+    font-weight: 600;
+    font-size: 14px;
+  }
+
+  /* Memory bar */
+  .memory-bar {
+    height: 8px;
+    background: var(--bg-darker, #0f172a);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-top: 8px;
+  }
+
+  .memory-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--admin-success), var(--admin-warning));
+    border-radius: 4px;
+    transition: width 0.3s ease;
+  }
+
+  /* Online users list */
+  .online-users-list {
+    max-height: 300px;
+    overflow-y: auto;
+  }
+
+  .online-user-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    transition: background 0.2s;
+  }
+
+  .online-user-item:hover {
+    background: rgba(99, 102, 241, 0.05);
+  }
+
+  .online-user-avatar {
+    width: 36px;
+    height: 36px;
+    background: linear-gradient(135deg, var(--admin-primary), #8b5cf6);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 600;
+    font-size: 14px;
+  }
+
+  .online-user-info {
+    flex: 1;
+  }
+
+  .online-user-name {
+    color: #1e293b;
+    font-weight: 600;
+    font-size: 14px;
+  }
+
+  .online-user-page {
+    color: #64748b;
+    font-size: 12px;
+  }
+
+  /* Dark theme override */
+  [data-theme="dark"] .online-user-name,
+  :root:not([data-theme]) .online-user-name {
+    color: #e2e8f0;
+  }
+  
+  [data-theme="dark"] .online-user-page,
+  :root:not([data-theme]) .online-user-page {
+    color: #94a3b8;
+  }
+
+  .online-indicator {
+    width: 10px;
+    height: 10px;
+    background: var(--admin-success);
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+  }
+
+  /* Log viewer */
+  .log-viewer {
+    max-height: 400px;
+    overflow-y: auto;
+    background: var(--bg-darker, #0f172a);
+    border-radius: 8px;
+    padding: 16px;
+    font-family: monospace;
+    font-size: 12px;
+  }
+
+  .log-entry {
+    padding: 6px 0;
+    border-bottom: 1px solid rgba(51, 65, 85, 0.5);
+    display: flex;
+    gap: 12px;
+  }
+
+  .log-time {
+    color: var(--text-muted, #94a3b8);
+    white-space: nowrap;
+    font-size: 11px;
+  }
+
+  .log-user {
+    color: var(--admin-primary);
+    font-weight: 600;
+    min-width: 80px;
+  }
+
+  .log-action {
+    color: var(--text-primary, #e2e8f0);
+    flex: 1;
+  }
+
+  /* Empty state */
+  .empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--text-muted, #94a3b8);
+  }
+
+  .empty-state .icon {
+    font-size: 48px;
+    margin-bottom: 12px;
+    opacity: 0.5;
+  }
+
+  /* Modal */
+  .modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 10000;
+  }
+
+  .modal-overlay.active {
+    display: flex;
+  }
+
+  .modal-content {
+    background: var(--bg-card, #1e293b);
+    border: 1px solid var(--border-color, #334155);
+    border-radius: 16px;
+    padding: 24px;
+    max-width: 500px;
+    width: 90%;
+  }
+  [data-theme="light"] .modal-content {
+    background: #ffffff;
+    border-color: #e2e8f0;
+    color: #0f172a;
+  }
+
+  .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+
+  .modal-header h3 {
+    color: var(--text-primary, #e2e8f0);
+    font-size: 18px;
+  }
+
+  .modal-close {
+    background: none;
+    border: none;
+    color: var(--text-muted, #94a3b8);
+    font-size: 24px;
+    cursor: pointer;
+  }
+  [data-theme="light"] .modal-close {
+    color: #475569;
+  }
+
+  /* Settings cards */
+  .settings-card {
+    background: var(--bg-darker, #0f172a);
+    border-radius: 12px;
+    padding: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+  }
+
+  .settings-info h3 {
+    color: var(--text-primary, #e2e8f0);
+    font-size: 16px;
+    margin-bottom: 4px;
+  }
+
+  .settings-info p {
+    color: var(--text-muted, #94a3b8);
+    font-size: 13px;
+  }
+
+  /* Toggle switch */
+  .toggle-switch {
+    position: relative;
+    width: 50px;
+    height: 26px;
+  }
+
+  .toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+
+  .toggle-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(100, 116, 139, 0.3);
+    border-radius: 26px;
+    transition: 0.3s;
+  }
+
+  .toggle-slider:before {
+    position: absolute;
+    content: "";
+    height: 20px;
+    width: 20px;
+    left: 3px;
+    bottom: 3px;
+    background: white;
+    border-radius: 50%;
+    transition: 0.3s;
+  }
+
+  .toggle-switch input:checked + .toggle-slider {
+    background: var(--admin-success);
+  }
+
+  .toggle-switch input:checked + .toggle-slider:before {
+    transform: translateX(24px);
+  }
+
+  /* Quick actions */
+  .quick-actions {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 12px;
+  }
+
+  .quick-action-btn {
+    padding: 16px;
+    background: var(--bg-darker, #0f172a);
+    border: 1px solid var(--border-color, #334155);
+    border-radius: 12px;
+    color: var(--text-primary, #e2e8f0);
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: center;
+  }
+
+  .quick-action-btn:hover {
+    border-color: var(--admin-primary);
+    transform: translateY(-2px);
+  }
+
+  .quick-action-btn .icon {
+    font-size: 24px;
+    margin-bottom: 8px;
+    display: block;
+  }
+
+  .quick-action-btn .label {
+    font-size: 13px;
+    font-weight: 600;
+  }
+
+  /* ============ LIGHT THEME OVERRIDES ============ */
+  [data-theme="light"] .admin-container {
+    background: #f8fafc;
+  }
+
+  [data-theme="light"] .admin-header h1 {
+    color: #1e293b;
+  }
+
+  [data-theme="light"] .admin-tabs {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+  }
+
+  [data-theme="light"] .admin-tab {
+    color: #64748b;
+  }
+
+  [data-theme="light"] .admin-tab:hover {
+    background: rgba(99, 102, 241, 0.1);
+    color: #334155;
+  }
+
+  [data-theme="light"] .admin-tab.active {
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.25), rgba(129, 140, 248, 0.5));
+    color: #1e1b4b;
+    border: 1px solid #c7d2fe;
+    box-shadow: 0 10px 24px rgba(99, 102, 241, 0.25);
+  }
+
+  [data-theme="light"] .admin-card {
+    background: #ffffff;
+    border-color: #e2e8f0;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  }
+
+  [data-theme="light"] .admin-card h2 {
+    color: #1e293b;
+  }
+
+  [data-theme="light"] .admin-card h2 .badge {
+    background: rgba(99, 102, 241, 0.15);
+    color: #6366f1;
+  }
+
+  [data-theme="light"] .stat-card {
+    background: #ffffff;
+    border-color: #e2e8f0;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  }
+
+  [data-theme="light"] .stat-card .value {
+    color: #1e293b;
+  }
+
+  [data-theme="light"] .stat-card .label {
+    color: #64748b;
+  }
+
+  [data-theme="light"] .form-group label {
+    color: #475569;
+  }
+
+  [data-theme="light"] .form-group input,
+  [data-theme="light"] .form-group textarea,
+  [data-theme="light"] .form-group select {
+    background: #f8fafc;
+    border-color: #e2e8f0;
+    color: #1e293b;
+  }
+
+  [data-theme="light"] .form-group input:focus,
+  [data-theme="light"] .form-group textarea:focus,
+  [data-theme="light"] .form-group select:focus {
+    background: #ffffff;
+    border-color: #6366f1;
+  }
+
+  [data-theme="light"] .admin-table th {
+    color: #64748b;
+    background: #f8fafc;
+  }
+
+  [data-theme="light"] .admin-table td {
+    color: #334155;
+    border-color: #e2e8f0;
+  }
+
+  [data-theme="light"] .admin-table tr:hover td {
+    background: rgba(99, 102, 241, 0.05);
+  }
+
+  [data-theme="light"] .log-viewer {
+    background: #f1f5f9;
+    border: 1px solid #e2e8f0;
+  }
+
+  [data-theme="light"] .log-entry {
+    border-color: #e2e8f0;
+  }
+
+  [data-theme="light"] .log-entry .log-message {
+    color: #334155;
+  }
+
+  [data-theme="light"] .log-entry .log-meta {
+    color: #64748b;
+  }
+
+  [data-theme="light"] .modal-content {
+    background: #ffffff;
+    border-color: #e2e8f0;
+  }
+
+  [data-theme="light"] .modal-header {
+    background: #f8fafc;
+    border-color: #e2e8f0;
+  }
+
+  [data-theme="light"] .system-info-item {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+  }
+
+  [data-theme="light"] .system-info-item .label {
+    color: #64748b;
+  }
+
+  [data-theme="light"] .system-info-item .value {
+    color: #0f172a;
+  }
+
+  [data-theme="light"] .memory-bar {
+    background: #e5e7eb;
+  }
+
+  [data-theme="light"] .modal-header h3 {
+    color: #1e293b;
+  }
+
+  [data-theme="light"] .quick-action-btn {
+    background: #f8fafc;
+    border-color: #e2e8f0;
+    color: #334155;
+  }
+
+  [data-theme="light"] .quick-action-btn:hover {
+    background: #ffffff;
+    border-color: #6366f1;
+  }
+
+  [data-theme="light"] .system-info-item .label {
+    color: #64748b;
+  }
+
+  [data-theme="light"] .system-info-item .value {
+    color: #1e293b;
+  }
+
+  [data-theme="light"] .memory-bar {
+    background: #e2e8f0;
+  }
+
+  [data-theme="light"] .settings-card {
+    background: #f8fafc;
+    border-color: #e2e8f0;
+  }
+
+  [data-theme="light"] .settings-card h3 {
+    color: #1e293b;
+  }
+
+  [data-theme="light"] .settings-card p {
+    color: #64748b;
+  }
+
+  [data-theme="light"] .toggle-slider {
+    background: #cbd5e1;
+  }
+
+  [data-theme="light"] .positions-table th {
+    background: #f1f5f9;
+    color: #475569;
+  }
+
+  [data-theme="light"] .positions-table td {
+    color: #334155;
+    border-color: #e2e8f0;
+  }
+
+  [data-theme="light"] .online-user-item:hover {
+    background: rgba(99, 102, 241, 0.08);
+  }
+
+  [data-theme="light"] .btn-secondary {
+    background: #f1f5f9;
+    border-color: #e2e8f0;
+    color: #475569;
+  }
+
+  [data-theme="light"] .btn-secondary:hover {
+    background: #e2e8f0;
+  }
+
+  /* ============ CUSTOM MODAL DIALOG ============ */
+  .custom-dialog-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.2s ease;
+  }
+
+  .custom-dialog-overlay.active {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  .custom-dialog {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 16px;
+    padding: 24px;
+    max-width: 400px;
+    width: 90%;
+    transform: scale(0.9);
+    transition: transform 0.2s ease;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+  }
+
+  .custom-dialog-overlay.active .custom-dialog {
+    transform: scale(1);
+  }
+
+  .custom-dialog-icon {
+    text-align: center;
+    font-size: 48px;
+    margin-bottom: 16px;
+  }
+
+  .custom-dialog-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: #e2e8f0;
+    text-align: center;
+    margin-bottom: 8px;
+  }
+
+  .custom-dialog-message {
+    font-size: 14px;
+    color: #94a3b8;
+    text-align: center;
+    margin-bottom: 24px;
+    line-height: 1.5;
+  }
+
+  .custom-dialog-buttons {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+  }
+
+  .custom-dialog-btn {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    min-width: 100px;
+  }
+
+  .custom-dialog-btn.cancel {
+    background: rgba(100, 116, 139, 0.2);
+    color: #94a3b8;
+    border: 1px solid rgba(100, 116, 139, 0.3);
+  }
+
+  .custom-dialog-btn.cancel:hover {
+    background: rgba(100, 116, 139, 0.3);
+  }
+
+  .custom-dialog-btn.confirm {
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    color: white;
+  }
+
+  .custom-dialog-btn.confirm:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(99, 102, 241, 0.3);
+  }
+
+  .custom-dialog-btn.confirm.danger {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+  }
+
+  .custom-dialog-btn.confirm.danger:hover {
+    box-shadow: 0 8px 20px rgba(239, 68, 68, 0.3);
+  }
+
+  .custom-dialog-btn.confirm.warning {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+  }
+
+  .custom-dialog-btn.confirm.warning:hover {
+    box-shadow: 0 8px 20px rgba(245, 158, 11, 0.3);
+  }
+
+  .custom-dialog-btn.confirm.success {
+    background: linear-gradient(135deg, #10b981, #059669);
+  }
+
+  .custom-dialog-btn.confirm.success:hover {
+    box-shadow: 0 8px 20px rgba(16, 185, 129, 0.3);
+  }
+
+  /* Light theme for custom dialog */
+  [data-theme="light"] .custom-dialog {
+    background: #ffffff;
+    border-color: #e2e8f0;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+  }
+
+  [data-theme="light"] .custom-dialog-title {
+    color: #1e293b;
+  }
+
+  [data-theme="light"] .custom-dialog-message {
+    color: #64748b;
+  }
+
+  [data-theme="light"] .custom-dialog-btn.cancel {
+    background: #f1f5f9;
+    color: #475569;
+    border-color: #e2e8f0;
+  }
+
+  [data-theme="light"] .custom-dialog-btn.cancel:hover {
+    background: #e2e8f0;
+  }
+</style>
+
+<!-- Custom Dialog Container -->
+<div class="custom-dialog-overlay" id="custom-dialog">
+  <div class="custom-dialog">
+    <div class="custom-dialog-icon" id="dialog-icon">⚠️</div>
+    <div class="custom-dialog-title" id="dialog-title">Onay</div>
+    <div class="custom-dialog-message" id="dialog-message">Bu işlemi yapmak istediğinize emin misiniz?</div>
+    <div class="custom-dialog-buttons">
+      <button class="custom-dialog-btn cancel" onclick="closeCustomDialog(false)">İptal</button>
+      <button class="custom-dialog-btn confirm" id="dialog-confirm" onclick="closeCustomDialog(true)">Onayla</button>
+    </div>
+  </div>
+</div>
+
+<div class="admin-container">
+  <div class="admin-header">
+    <h1>🛡️ Admin Panel</h1>
+    <div class="admin-header-actions">
+      <span id="last-refresh" style="color: var(--text-muted); font-size: 12px;"></span>
+      <button onclick="refreshStats()" class="btn btn-secondary btn-sm">🔄 Yenile</button>
+      <form method="POST" action="/admin/logout" style="margin:0;">
+        <button type="submit" class="admin-logout-btn">🔒 Panel Çıkışı</button>
+      </form>
+    </div>
+  </div>
+
+  <% if (success) { %>
+    <div class="alert alert-success">✅ <%= success %></div>
+  <% } %>
+
+  <% if (error) { %>
+    <div class="alert alert-error">❌ <%= error %></div>
+  <% } %>
+
+  <!-- Tabs -->
+  <div class="admin-tabs">
+    <button class="admin-tab <%= activeTab === 'dashboard' ? 'active' : '' %>" data-tab="dashboard">📊 Dashboard</button>
+    <button class="admin-tab <%= activeTab === 'broadcast' ? 'active' : '' %>" data-tab="broadcast">📢 Duyurular</button>
+    <button class="admin-tab <%= activeTab === 'users' ? 'active' : '' %>" data-tab="users">👥 Kullanıcılar</button>
+    <button class="admin-tab <%= activeTab === 'settings' ? 'active' : '' %>" data-tab="settings">⚙️ Ayarlar</button>
+  </div>
+
+  <!-- Dashboard Tab -->
+  <div class="tab-content <%= activeTab === 'dashboard' ? 'active' : '' %>" id="tab-dashboard">
+    <div class="stats-grid">
+      <div class="stat-card primary">
+        <div class="icon">👥</div>
+        <div class="value" id="stat-online">-</div>
+        <div class="label">Aktif Kullanıcı</div>
+      </div>
+      <div class="stat-card success clickable" onclick="showTodayPositions()" title="Bugünkü pozisyonları görüntüle">
+        <div class="icon">📦</div>
+        <div class="value" id="stat-today"><%= dbStats.todayPositions %></div>
+        <div class="label">Bugünkü Pozisyon</div>
+      </div>
+      <div class="stat-card warning clickable" onclick="showDeletedPositionsModal()" title="Silinen pozisyonları göster">
+        <div class="icon">🗑️</div>
+        <div class="value"><%= deletedPositions.length %></div>
+        <div class="label">Silinen Pozisyon</div>
+      </div>
+      <div class="stat-card info">
+        <div class="icon">📋</div>
+        <div class="value"><%= dbStats.totalPositions %></div>
+        <div class="label">Toplam Pozisyon</div>
+      </div>
+      <div class="stat-card danger">
+        <div class="icon">👤</div>
+        <div class="value"><%= dbStats.totalUsers %></div>
+        <div class="label">Toplam Kullanıcı</div>
+      </div>
+    </div>
+
+    <div class="admin-grid">
+      <div class="admin-card">
+        <h2>🟢 Aktif Kullanıcılar <span class="badge" id="admin-online-count">0</span></h2>
+        <div class="online-users-list" id="admin-online-users-list">
+          <div class="empty-state">
+            <div class="icon">👥</div>
+            <p>Yükleniyor...</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="admin-card">
+        <h2>💻 Sistem Bilgisi</h2>
+        <div class="system-info">
+          <div class="system-info-item">
+            <span class="label">Platform</span>
+            <span class="value"><%= systemStats.platform %></span>
+          </div>
+          <div class="system-info-item">
+            <span class="label">Node.js</span>
+            <span class="value"><%= systemStats.nodeVersion %></span>
+          </div>
+          <div class="system-info-item">
+            <span class="label">CPU</span>
+            <span class="value"><%= systemStats.cpuCount %> Core</span>
+          </div>
+          <div class="system-info-item">
+            <span class="label">Uptime</span>
+            <span class="value" id="stat-uptime"><%= systemStats.processUptime %></span>
+          </div>
+          <div class="system-info-item">
+            <span class="label">Toplam RAM</span>
+            <span class="value"><%= systemStats.totalMemory %></span>
+          </div>
+          <div class="system-info-item">
+            <span class="label">Kullanılan</span>
+            <span class="value" id="stat-memory"><%= systemStats.usedMemory %></span>
+          </div>
+        </div>
+        <div style="margin-top: 16px;">
+          <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+            <span style="color: var(--text-muted); font-size: 12px;">Bellek</span>
+            <span style="color: var(--text-primary); font-size: 12px;" id="stat-memory-pct"><%= systemStats.memoryUsage %>%</span>
+          </div>
+          <div class="memory-bar">
+            <div class="memory-bar-fill" id="memory-bar" style="width: <%= systemStats.memoryUsage %>%"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="admin-card">
+      <h2>⚡ Hızlı İşlemler</h2>
+      <div class="quick-actions">
+        <button class="quick-action-btn" onclick="createBackup()">
+          <span class="icon">💾</span>
+          <span class="label">Yedek Al</span>
+        </button>
+        <button class="quick-action-btn" onclick="showTab('broadcast')">
+          <span class="icon">📢</span>
+          <span class="label">Duyuru Gönder</span>
+        </button>
+        <button class="quick-action-btn" onclick="showTab('users')">
+          <span class="icon">👤</span>
+          <span class="label">Kullanıcı Ekle</span>
+        </button>
+        <button class="quick-action-btn" onclick="toggleMaintenance()">
+          <span class="icon">🔧</span>
+          <span class="label">Bakım Modu</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Broadcast Tab -->
+  <div class="tab-content <%= activeTab === 'broadcast' ? 'active' : '' %>" id="tab-broadcast">
+    <div class="admin-grid">
+      <div class="admin-card">
+        <h2>📢 Bildirim Yayınla <span class="badge">Tüm Kullanıcılara</span></h2>
+        <form method="POST" action="/admin/notifications/broadcast" enctype="multipart/form-data">
+          <div class="form-group">
+            <label>Başlık (Opsiyonel)</label>
+            <input type="text" name="title" placeholder="Örn: Önemli Duyuru" />
+          </div>
+          <div class="form-group">
+            <label>Mesaj *</label>
+            <textarea name="message" placeholder="Mesajı yazın..." required></textarea>
+          </div>
+          <div class="form-group">
+            <label>Fotoğraf (Opsiyonel)</label>
+            <input type="file" name="image" accept="image/*" />
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Pozisyon (Opsiyonel)</label>
+              <select name="position_code">
+                <option value="">-- Seç --</option>
+                <% positions.forEach(function(pos) { %>
+                  <option value="<%= pos.position_no %>"><%= pos.position_no %></option>
+                <% }); %>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Tip</label>
+              <select name="notification_type">
+                <option value="info">ℹ️ Bilgi</option>
+                <option value="warning">⚠️ Uyarı</option>
+                <option value="urgent">🚨 Acil</option>
+              </select>
+            </div>
+          </div>
+          <button type="submit" class="btn btn-primary">📤 Gönder</button>
+        </form>
+      </div>
+
+      <div class="admin-card" style="border-color: rgba(245, 158, 11, 0.3);">
+        <h2 style="color: #fbbf24;">📋 Pozisyon Hatırlatması</h2>
+        <form method="POST" action="/admin/notifications/reminder">
+          <div class="form-group">
+            <label>Pozisyon *</label>
+            <select name="position_code" required>
+              <option value="">-- Seç --</option>
+              <% positions.forEach(function(pos) { %>
+                <option value="<%= pos.position_no %>"><%= pos.position_no %></option>
+              <% }); %>
+            </select>
+          </div>
+          <button type="submit" class="btn btn-warning">🔔 Hatırlat</button>
+        </form>
+      </div>
+    </div>
+
+    <div class="admin-card">
+      <h2>📜 Son Bildirimler</h2>
+      <% if (notifications && notifications.length > 0) { %>
+        <div style="overflow-x: auto;">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Tip</th>
+                <th>Başlık</th>
+                <th>Mesaj</th>
+                <th>Görsel</th>
+                <th>Pozisyon</th>
+                <th>Gönderen</th>
+                <th>Tarih</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              <% notifications.forEach(function(n) { %>
+                <tr>
+                  <td>
+                    <span class="notification-type <%= n.notification_type %>">
+                      <%= n.notification_type === 'info' ? 'ℹ️' : n.notification_type === 'warning' ? '⚠️' : n.notification_type === 'urgent' ? '🚨' : '📋' %>
+                    </span>
+                  </td>
+                  <td><%= n.title || '-' %></td>
+                  <td style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: normal; word-break: break-word;"><%= n.message %></td>
+                  <td><% if (n.image_path) { %><img src="<%= n.image_path %>" alt="Görsel" style="max-width: 50px; max-height: 50px; border-radius: 4px; cursor: pointer;" onclick="window.open('<%= n.image_path %>', '_blank');" /><% } else { %>-<% } %></td>
+                  <td><%= n.position_code || '-' %></td>
+                  <td><%= n.created_by_username || '-' %></td>
+                  <td><%= n.created_at ? new Date(n.created_at).toLocaleString('tr-TR') : '-' %></td>
+                  <td>
+                    <form method="POST" action="/admin/notifications/<%= n.id %>?_method=DELETE" style="margin:0;">
+                      <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Silmek istediğinize emin misiniz?')">🗑️</button>
+                    </form>
+                  </td>
+                </tr>
+              <% }); %>
+            </tbody>
+          </table>
+        </div>
+      <% } else { %>
+        <div class="empty-state">
+          <div class="icon">📭</div>
+          <p>Bildirim yok.</p>
+        </div>
+      <% } %>
+    </div>
+  </div>
+
+  <!-- Users Tab -->
+  <div class="tab-content <%= activeTab === 'users' ? 'active' : '' %>" id="tab-users">
+    <div class="admin-card">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <h2 style="margin: 0;">👥 Kullanıcı Yönetimi</h2>
+        <button class="btn btn-primary" onclick="showAddUserModal()">➕ Yeni Kullanıcı</button>
+      </div>
+      <div style="overflow-x: auto;">
+        <table class="admin-table" id="users-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Kullanıcı Adı</th>
+              <th>Rol</th>
+              <th>Durum</th>
+              <th>Son Giriş</th>
+              <th>İşlemler</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% users.forEach(function(u) { %>
+              <tr data-user-id="<%= u.id %>">
+                <td><%= u.id %></td>
+                <td style="font-weight: 600;"><%= u.username %></td>
+                <td><span class="role-badge <%= u.role %>"><%= u.role %></span></td>
+                <td>
+                  <span class="status-badge <%= u.is_active !== 0 ? 'active' : 'inactive' %>">
+                    <%= u.is_active !== 0 ? '✓ Aktif' : '✗ Pasif' %>
+                  </span>
+                </td>
+                <td><%= u.last_login ? new Date(u.last_login).toLocaleString('tr-TR') : 'Hiç' %></td>
+                <td>
+                  <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+                    <button class="btn btn-secondary btn-sm" onclick="showResetPasswordModal(<%= u.id %>, '<%= u.username %>')">Şifre Değiştir</button>
+                    <button class="btn btn-warning btn-sm" onclick="toggleUserActive(<%= u.id %>)"><%= u.is_active !== 0 ? 'Pasif Yap' : 'Aktif Yap' %></button>
+                    <button class="btn btn-info btn-sm" onclick="forceLogout(<%= u.id %>, '<%= u.username %>')" style="background: linear-gradient(135deg, #3b82f6, #1d4ed8); color: #fff;">Oturumu Kapat</button>
+                    <button class="btn btn-danger btn-sm" onclick="deleteUser(<%= u.id %>, '<%= u.username %>')">Sil</button>
+                  </div>
+                </td>
+              </tr>
+            <% }); %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Settings Tab -->
+  <div class="tab-content <%= activeTab === 'settings' ? 'active' : '' %>" id="tab-settings">
+    <div class="admin-grid">
+      <div class="admin-card">
+        <h2>🔧 Sistem Ayarları</h2>
+        <div class="settings-card">
+          <div class="settings-info">
+            <h3>🚧 Bakım Modu</h3>
+            <p>Kullanıcılara bakım mesajı gösterilir.</p>
+          </div>
+          <label class="toggle-switch">
+            <input type="checkbox" id="maintenance-toggle" <%= maintenanceMode ? 'checked' : '' %> onchange="toggleMaintenance()">
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+        <div class="settings-card">
+          <div class="settings-info">
+            <h3>💾 Veritabanı Yedekleme</h3>
+            <p>Manuel yedek oluştur.</p>
+          </div>
+          <button class="btn btn-primary btn-sm" onclick="createBackup()">Yedek Al</button>
+        </div>
+      </div>
+
+      <div class="admin-card">
+        <h2>📧 Toplu Mail</h2>
+        <form id="bulk-mail-form" onsubmit="sendBulkMail(event)">
+          <div class="form-group">
+            <label>Konu</label>
+            <input type="text" id="mail-subject" required>
+          </div>
+          <div class="form-group">
+            <label>İçerik</label>
+            <textarea id="mail-body" required></textarea>
+          </div>
+          <button type="submit" class="btn btn-primary">📤 Gönder</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Add User Modal -->
+<div class="modal-overlay" id="add-user-modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3>➕ Yeni Kullanıcı</h3>
+      <button class="modal-close" onclick="closeModal('add-user-modal')">&times;</button>
+    </div>
+    <form onsubmit="addUser(event)">
+      <div class="form-group">
+        <label>Kullanıcı Adı *</label>
+        <input type="text" id="new-username" required>
+      </div>
+      <div class="form-group">
+        <label>Şifre *</label>
+        <input type="password" id="new-password" required>
+      </div>
+      <div class="form-group">
+        <label>Rol</label>
+        <select id="new-role">
+          <option value="user">User</option>
+          <option value="admin">Admin</option>
+        </select>
+      </div>
+      <button type="submit" class="btn btn-primary" style="width: 100%;">Ekle</button>
+    </form>
+  </div>
+</div>
+
+<!-- Reset Password Modal -->
+<div class="modal-overlay" id="reset-password-modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3>🔑 Şifre Değiştir: <span id="reset-username"></span></h3>
+      <button class="modal-close" onclick="closeModal('reset-password-modal')">&times;</button>
+    </div>
+    <form onsubmit="resetPassword(event)">
+      <input type="hidden" id="reset-user-id">
+      <div class="form-group">
+        <label>Yeni Şifre *</label>
+        <input type="password" id="new-user-password" required minlength="4">
+      </div>
+      <button type="submit" class="btn btn-warning" style="width: 100%;">Sıfırla</button>
+    </form>
+  </div>
+</div>
+
+<!-- Today Positions Modal -->
+<div class="modal-overlay" id="today-positions-modal">
+  <div class="modal-content" style="max-width: 1100px; width: 92%;">
+    <div class="modal-header">
+      <h3>📦 Toplam Pozisyonlar<span class="badge" id="today-positions-count">0</span></h3>
+      <button class="modal-close" onclick="closeModal('today-positions-modal')">&times;</button>
+    </div>
+    <div class="positions-table-container">
+      <table class="positions-table">
+        <thead>
+          <tr>
+            <th>Pozisyon No</th>
+            <th>Gönderen</th>
+            <th>Alıcı</th>
+            <th>Araç Plakaları</th>
+            <th>Şoför</th>
+            <th>Durum</th>
+            <th>Açan</th>
+            <th>Tarih</th>
+            <th>Saat</th>
+          </tr>
+        </thead>
+        <tbody id="today-positions-body">
+          <tr><td colspan="9" style="text-align: center;">Yükleniyor...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Group Detail Modal -->
+<div class="modal-overlay" id="group-detail-modal">
+  <div class="modal-content" style="max-width: 640px; width: 92%;">
+    <div class="modal-header">
+      <h3>🎯 Grupaj Detayı <span id="group-detail-number">—</span></h3>
+      <button class="modal-close" onclick="closeModal('group-detail-modal')">&times;</button>
+    </div>
+    <div class="group-detail-summary">
+      <div>
+        <span class="group-detail-label">Durum</span>
+        <span class="group-detail-value" id="group-detail-status">—</span>
+      </div>
+      <div>
+        <span class="group-detail-label">Oluşturan</span>
+        <span class="group-detail-value" id="group-detail-creator">—</span>
+      </div>
+      <div>
+        <span class="group-detail-label">Tarih / Saat</span>
+        <span class="group-detail-value" id="group-detail-created-at">—</span>
+      </div>
+    </div>
+    <div class="group-detail-grid" id="group-detail-grid"></div>
+  </div>
+</div>
+
+<!-- Deleted Positions Modal -->
+<div class="modal-overlay" id="deleted-positions-modal">
+  <div class="modal-content" style="max-width: 1000px; width: 90%;">
+    <div class="modal-header">
+      <h3>🗑️ Silinen Pozisyonlar <span class="badge" id="deleted-positions-count"><%= deletedPositions.length %></span></h3>
+      <button class="modal-close" onclick="closeModal('deleted-positions-modal')">&times;</button>
+    </div>
+    <div class="positions-table-container">
+      <table class="positions-table">
+        <thead>
+          <tr>
+            <th>Pozisyon</th>
+            <th>İşlem</th>
+            <th>Silinme Tarihi</th>
+            <th>Silinen</th>
+          </tr>
+        </thead>
+        <tbody id="deleted-positions-body">
+          <tr><td colspan="4" style="text-align:center;">Veriler hazırlanıyor...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script>
+  const deletedPositionsData = <%- JSON.stringify(deletedPositions || []) %>;
+
+  function escapeHtml(value) {
+    const str = value === null || value === undefined ? '' : String(value);
+    return str.replace(/[&<>"']/g, ch => ({
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#39;'
+    }[ch]));
+  }
+
+  function safeCell(value) {
+    if (value === null || value === undefined || value === '') return '—';
+    return escapeHtml(value);
+  }
+
+  // Tab switching
+  document.querySelectorAll('.admin-tab').forEach(tab => {
+    tab.addEventListener('click', function() { showTab(this.dataset.tab); });
+  });
+
+  function showTab(tabName) {
+    document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
+    document.getElementById(`tab-${tabName}`).classList.add('active');
+    const url = new URL(window.location);
+    url.searchParams.set('tab', tabName);
+    window.history.replaceState({}, '', url);
+  }
+
+  function showAddUserModal() { document.getElementById('add-user-modal').classList.add('active'); }
+  function showResetPasswordModal(userId, username) {
+    document.getElementById('reset-user-id').value = userId;
+    document.getElementById('reset-username').textContent = username;
+    document.getElementById('reset-password-modal').classList.add('active');
+  }
+  function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+
+  // Show today's positions modal
+  function showDeletedPositionsModal() {
+    const body = document.getElementById('deleted-positions-body');
+    const countEl = document.getElementById('deleted-positions-count');
+    countEl.textContent = deletedPositionsData.length;
+
+    if (!deletedPositionsData.length) {
+      body.innerHTML = '<tr><td colspan="4" style="text-align:center; padding: 24px;">Şimdiye kadar silinen pozisyon yok.</td></tr>';
+    } else {
+      body.innerHTML = deletedPositionsData.map(entry => `
+        <tr>
+          <td>${safeCell(entry.position_no)}</td>
+          <td>${safeCell(entry.action)}</td>
+          <td>${safeCell(entry.deleted_at)}</td>
+          <td>${safeCell(entry.deleted_by)}</td>
+        </tr>
+      `).join('');
+    }
+
+    document.getElementById('deleted-positions-modal').classList.add('active');
+  }
+
+  async function showTodayPositions() {
+    document.getElementById('today-positions-modal').classList.add('active');
+    document.getElementById('today-positions-body').innerHTML = '<tr><td colspan="8" style="text-align: center;">Yükleniyor...</td></tr>';
+    
+    try {
+      const res = await fetch('/admin/today-positions', { credentials: 'include' });
+      const data = await res.json();
+      
+      if (!data.success) {
+        document.getElementById('today-positions-body').innerHTML = '<tr><td colspan="8" style="text-align: center; color: #ef4444;">Hata: ' + data.error + '</td></tr>';
+        return;
+      }
+      
+      document.getElementById('today-positions-count').textContent = data.count;
+      
+      if (!data.positions.length) {
+        document.getElementById('today-positions-body').innerHTML = '<tr><td colspan="9" style="text-align: center;">Bugün henüz pozisyon açılmamış.</td></tr>';
+        return;
+      }
+      
+        document.getElementById('today-positions-body').innerHTML = data.positions.map(p => {
+        const time = p.display_time || '-';
+        const date = p.display_date || '-';
+        const statusColors = {
+          'Yüklendi': '#10b981',
+          'Yolda': '#3b82f6',
+          'Tamamlandı': '#6366f1',
+          'İptal': '#ef4444'
+        };
+        const statusColor = statusColors[p.status] || '#94a3b8';
+        const senderTooltip = p.senders && p.senders.length ? p.senders.join(', ') : (p.sender || '—');
+        const receiverTooltip = p.receivers && p.receivers.length ? p.receivers.join(', ') : (p.receiver || '—');
+        const groupDetail = {
+          number: p.position_no,
+          senders: p.senders,
+          receivers: p.receivers,
+          truck_plate: p.truck_plate,
+          trailer_plate: p.trailer_plate,
+          driver_name: p.driver_name,
+          loading_point: p.loading_point,
+          unloading_point: p.unloading_point,
+          created_by: p.created_by,
+          status: p.status,
+          created_at: `${date} ${time}`
+        };
+        const senderCell = p.isGrouped ? '<span class="group-label">Grupaj</span>' : safeCell(p.sender || '-');
+        const receiverCell = p.isGrouped ? '<span class="group-label">Grupaj</span>' : safeCell(p.receiver || '-');
+        const rowClass = p.isGrouped ? 'grouped' : '';
+        const groupAttr = p.isGrouped ? `data-group='${escapeHtml(JSON.stringify(groupDetail))}'` : '';
+        return `
+          <tr ${groupAttr} class="${rowClass}${p.isGrouped ? ' grouped-clickable' : ''}">
+            <td><a href="/loads/position/${encodeURIComponent(p.position_no)}" class="position-link" target="_blank">${p.position_no || '-'}</a></td>
+            <td>${senderCell}</td>
+            <td>${receiverCell}</td>
+            <td>
+              <div style="font-size:14px; font-weight:600; color:#0f172a;">${p.truck_plate || '-'}</div>
+              <div style="font-size:14px; font-weight:600; color:#0f172a;">${p.trailer_plate || '-'}</div>
+            </td>
+            <td>${p.driver_name || '-'}</td>
+            <td><span style="color: ${statusColor}; font-weight: 600;">${p.status || '-'}</span></td>
+            <td>${p.created_by || '-'}</td>
+            <td>${date}</td>
+            <td>${time}</td>
+          </tr>
+        `;
+      }).join('');
+    } catch (err) {
+      document.getElementById('today-positions-body').innerHTML = '<tr><td colspan="9" style="text-align: center; color: #ef4444;">Hata: ' + err.message + '</td></tr>';
+    }
+  }
+
+  function showGroupDetailModal(payload) {
+    if (!payload || !payload.number) return;
+    document.getElementById('group-detail-number').textContent = payload.number || '—';
+    document.getElementById('group-detail-status').textContent = payload.status || '—';
+    document.getElementById('group-detail-creator').textContent = payload.created_by || '—';
+    document.getElementById('group-detail-created-at').textContent = payload.created_at || '—';
+
+    const grid = document.getElementById('group-detail-grid');
+    const sections = [];
+
+    const addSection = (label, value) => {
+      if (!value || (Array.isArray(value) && !value.length)) return;
+      sections.push(`
+        <div class="group-detail-row">
+          <span class="group-detail-label">${label}</span>
+          <span class="group-detail-value">${Array.isArray(value) ? value.join(', ') : value}</span>
+        </div>
+      `);
+    };
+
+    addSection('Gönderen', payload.senders);
+    addSection('Alıcı', payload.receivers);
+    addSection('Araç Plakası', payload.truck_plate);
+    addSection('Dorse', payload.trailer_plate);
+    addSection('Şoför', payload.driver_name);
+    addSection('Yükleme Noktası', payload.loading_point);
+    addSection('Boşaltma Noktası', payload.unloading_point);
+
+    grid.innerHTML = sections.length ? sections.join('') : '<div class="group-detail-row"><span class="group-detail-label">Detay</span><span class="group-detail-value">Veri yok</span></div>';
+    document.getElementById('group-detail-modal').classList.add('active');
+  }
+
+  document.querySelectorAll('.modal-overlay').forEach(m => {
+    m.addEventListener('click', function(e) { if (e.target === this) this.classList.remove('active'); });
+  });
+
+
+  document.getElementById('today-positions-body').addEventListener('click', function(e) {
+    const row = e.target.closest('tr[data-group]');
+    if (!row) return;
+    const payload = row.getAttribute('data-group');
+    try {
+      const parsed = JSON.parse(payload);
+      showGroupDetailModal(parsed);
+    } catch (err) {
+      console.error('Group modal payload parse error', err);
+    }
+  });
+
+  async function addUser(e) {
+    e.preventDefault();
+    const res = await fetch('/admin/users', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        username: document.getElementById('new-username').value,
+        password: document.getElementById('new-password').value,
+        role: document.getElementById('new-role').value
+      })
+    });
+    const data = await res.json();
+    if (data.success) { 
+      await showAlert('Kullanıcı başarıyla eklendi!', '✅', 'Başarılı');
+      location.reload(); 
+    } else {
+      await showAlert('Hata: ' + data.error, '❌', 'Hata');
+    }
+  }
+
+  async function resetPassword(e) {
+    e.preventDefault();
+    const res = await fetch(`/admin/users/${document.getElementById('reset-user-id').value}/reset-password`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ newPassword: document.getElementById('new-user-password').value })
+    });
+    const data = await res.json();
+    if (data.success) { 
+      await showAlert('Şifre başarıyla sıfırlandı!', '🔑', 'Başarılı');
+      closeModal('reset-password-modal'); 
+    } else {
+      await showAlert('Hata: ' + data.error, '❌', 'Hata');
+    }
+  }
+
+  async function toggleUserActive(id) {
+    const res = await fetch(`/admin/users/${id}/toggle-active`, { method: 'POST' });
+    const data = await res.json();
+    if (data.success) location.reload();
+    else await showAlert('Hata: ' + data.error, '❌', 'Hata');
+  }
+
+  async function deleteUser(id, username) {
+    const confirmed = await showCustomDialog({
+      icon: '🗑️',
+      title: 'Kullanıcı Sil',
+      message: `"${username}" kullanıcısı silinsin mi?`,
+      confirmText: 'Sil',
+      confirmClass: 'danger'
+    });
+    if (!confirmed) return;
+    
+    const res = await fetch(`/admin/users/${id}`, { method: 'DELETE' });
+    const data = await res.json();
+    if (data.success) {
+      document.querySelector(`tr[data-user-id="${id}"]`).remove();
+      await showAlert('Kullanıcı silindi!', '✅', 'Başarılı');
+    } else {
+      await showAlert('Hata: ' + data.error, '❌', 'Hata');
+    }
+  }
+
+  async function forceLogout(id, username) {
+    const confirmed = await showCustomDialog({
+      icon: '🚪',
+      title: 'Oturumu Sonlandır',
+      message: `"${username}" kullanıcısının oturumunu sonlandırmak istiyor musunuz?`,
+      confirmText: 'Sonlandır',
+      confirmClass: 'warning'
+    });
+    if (!confirmed) return;
+    
+    try {
+      const res = await fetch(`/admin/users/${id}/force-logout`, { method: 'POST' });
+      const data = await res.json();
+      if (data.success) {
+        await showAlert(`${username} oturumu sonlandırıldı! (${data.destroyed || 0} oturum)`, '✅', 'Başarılı');
+      } else {
+        await showAlert('Hata: ' + data.error, '❌', 'Hata');
+      }
+    } catch (err) {
+      await showAlert('Hata: ' + err.message, '❌', 'Hata');
+    }
+  }
+
+  async function toggleMaintenance() {
+    const res = await fetch('/admin/settings/maintenance', { method: 'POST' });
+    const data = await res.json();
+    if (data.success) {
+      document.getElementById('maintenance-toggle').checked = data.maintenanceMode;
+      await showAlert(
+        data.maintenanceMode ? 'Bakım modu açıldı!' : 'Bakım modu kapatıldı!',
+        data.maintenanceMode ? '🚧' : '✅',
+        'Bakım Modu'
+      );
+    }
+  }
+
+  async function createBackup() {
+    const res = await fetch('/admin/settings/backup', { method: 'POST' });
+    const data = await res.json();
+    await showAlert(
+      data.success ? 'Veritabanı yedeği başarıyla oluşturuldu!' : 'Hata: ' + data.error,
+      data.success ? '💾' : '❌',
+      data.success ? 'Başarılı' : 'Hata'
+    );
+  }
+
+  async function sendBulkMail(e) {
+    e.preventDefault();
+    const res = await fetch('/admin/broadcast/mail', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        subject: document.getElementById('mail-subject').value,
+        body: document.getElementById('mail-body').value
+      })
+    });
+    const data = await res.json();
+    await showAlert(
+      data.success ? data.message : 'Hata: ' + data.error,
+      data.success ? '📧' : '❌',
+      data.success ? 'Mail Gönderildi' : 'Hata'
+    );
+  }
+
+  async function refreshStats() {
+    try {
+      const res = await fetch('/admin/stats');
+      const data = await res.json();
+      if (data.success) {
+        document.getElementById('stat-today').textContent = data.dbStats.todayPositions;
+        document.getElementById('stat-memory').textContent = data.systemStats.usedMemory;
+        document.getElementById('stat-memory-pct').textContent = data.systemStats.memoryUsage + '%';
+        document.getElementById('memory-bar').style.width = data.systemStats.memoryUsage + '%';
+        document.getElementById('stat-uptime').textContent = data.systemStats.processUptime;
+        document.getElementById('last-refresh').textContent = 'Son: ' + new Date().toLocaleTimeString('tr-TR');
+      }
+    } catch (e) {}
+  }
+
+  // Fetch online users via API
+  async function fetchOnlineUsers() {
+    try {
+      const res = await fetch('/admin/online-users', {
+        credentials: 'include'
+      });
+      
+      const contentType = res.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        return;
+      }
+      
+      const data = await res.json();
+      
+      if (!data.success) {
+        return;
+      }
+      
+      const users = data.users || [];
+      
+      const container = document.getElementById('admin-online-users-list');
+      const countBadge = document.getElementById('admin-online-count');
+      const statOnline = document.getElementById('stat-online');
+      
+      if (countBadge) countBadge.textContent = users.length;
+      if (statOnline) statOnline.textContent = users.length;
+      
+      if (!container) {
+        return;
+      }
+      
+      if (!users.length) {
+        container.innerHTML = '<div class="empty-state"><div class="icon">👥</div><p>Aktif kullanıcı yok.</p></div>';
+        return;
+      }
+      
+      container.innerHTML = users.map(u => `
+        <div class="online-user-item">
+          <div class="online-user-avatar">${u.name.charAt(0).toUpperCase()}</div>
+          <div class="online-user-info">
+            <div class="online-user-name">${u.name}</div>
+            <div class="online-user-page">${u.pageDisplay || u.page}</div>
+          </div>
+          <div class="online-indicator"></div>
+        </div>
+      `).join('');
+    } catch (err) {
+      // Silent fail
+    }
+  }
+  
+  // Fetch online users immediately and every 10 seconds
+  setTimeout(function() {
+    fetchOnlineUsers();
+  }, 500);
+  setInterval(fetchOnlineUsers, 10000);
+
+  setInterval(refreshStats, 30000);
+  refreshStats();
+
+  // ============ CUSTOM DIALOG SYSTEM ============
+  let dialogResolve = null;
+
+  function showCustomDialog(options = {}) {
+    return new Promise((resolve) => {
+      dialogResolve = resolve;
+      
+      const icon = options.icon || '⚠️';
+      const title = options.title || 'Onay';
+      const message = options.message || 'Bu işlemi yapmak istediğinize emin misiniz?';
+      const confirmText = options.confirmText || 'Onayla';
+      const confirmClass = options.confirmClass || '';
+      
+      document.getElementById('dialog-icon').textContent = icon;
+      document.getElementById('dialog-title').textContent = title;
+      document.getElementById('dialog-message').textContent = message;
+      
+      const confirmBtn = document.getElementById('dialog-confirm');
+      confirmBtn.textContent = confirmText;
+      confirmBtn.className = 'custom-dialog-btn confirm ' + confirmClass;
+      
+      document.getElementById('custom-dialog').classList.add('active');
+    });
+  }
+
+  function closeCustomDialog(result) {
+    document.getElementById('custom-dialog').classList.remove('active');
+    if (dialogResolve) {
+      dialogResolve(result);
+      dialogResolve = null;
+    }
+  }
+
+  function showAlert(message, icon = 'ℹ️', title = 'Bilgi') {
+    return new Promise((resolve) => {
+      dialogResolve = resolve;
+      
+      document.getElementById('dialog-icon').textContent = icon;
+      document.getElementById('dialog-title').textContent = title;
+      document.getElementById('dialog-message').textContent = message;
+      
+      // Hide cancel button for alerts
+      const cancelBtn = document.querySelector('.custom-dialog-btn.cancel');
+      cancelBtn.style.display = 'none';
+      
+      const confirmBtn = document.getElementById('dialog-confirm');
+      confirmBtn.textContent = 'Tamam';
+      confirmBtn.className = 'custom-dialog-btn confirm';
+      
+      document.getElementById('custom-dialog').classList.add('active');
+    });
+  }
+
+  // Override closeCustomDialog to restore cancel button
+  const originalCloseDialog = closeCustomDialog;
+  closeCustomDialog = function(result) {
+    document.querySelector('.custom-dialog-btn.cancel').style.display = '';
+    originalCloseDialog(result);
+  };
+
+  // Close dialog on Escape key
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' && document.getElementById('custom-dialog').classList.contains('active')) {
+      closeCustomDialog(false);
+    }
+  });
+
+  // Close dialog on overlay click
+  document.getElementById('custom-dialog').addEventListener('click', function(e) {
+    if (e.target === this) {
+      closeCustomDialog(false);
+    }
+  });
+</script>

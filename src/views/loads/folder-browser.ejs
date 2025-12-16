@@ -1,0 +1,923 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dosya Tarayıcı - <%= positionNo %></title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/theme.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="/js/theme.js" defer></script>
+  <style>
+    .folder-browser {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 18px;
+    }
+    .folder-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .folder-header h2 {
+      margin: 0;
+      color: var(--text-primary);
+    }
+    .folder-path {
+      font-size: 14px;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+    .folder-path i {
+      margin-right: 6px;
+    }
+    
+    /* Sections */
+    .section-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--accent-primary);
+      margin: 18px 0 10px 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .section-title i {
+      font-size: 14px;
+    }
+    
+    /* Grid */
+    .folders-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+    .folder-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-default);
+      border-radius: 10px;
+      padding: 16px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      text-decoration: none;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+    .folder-card:hover {
+      border-color: var(--accent-primary);
+      background: var(--bg-surface-hover);
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
+    }
+    .folder-card .folder-icon {
+      font-size: 36px;
+      color: #f59e0b;
+    }
+    .folder-card.category .folder-icon {
+      color: var(--accent-primary);
+    }
+    .folder-card .folder-name {
+      font-weight: 600;
+      color: var(--text-primary);
+      font-size: 14px;
+      text-align: center;
+    }
+    .folder-card .file-count {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+    
+    /* Files list */
+    .files-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .file-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 14px;
+      background: var(--bg-input);
+      border-radius: 8px;
+      border: 1px solid var(--border-default);
+      transition: all 0.15s ease;
+    }
+    .file-row:hover {
+      border-color: var(--border-strong);
+      background: var(--bg-surface-hover);
+    }
+    .file-info {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      flex: 1;
+      min-width: 0;
+    }
+    .file-icon {
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--bg-card);
+      border-radius: 8px;
+      font-size: 18px;
+    }
+    .file-icon.pdf { color: #ef4444; }
+    .file-icon.image { color: #10b981; }
+    .file-icon.doc { color: #3b82f6; }
+    .file-icon.other { color: var(--text-muted); }
+    
+    /* Section title badge */
+    .section-title .file-count-badge {
+      background: var(--accent-primary);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 10px;
+      margin-left: 8px;
+    }
+    
+    /* Modern Files Grid */
+    .files-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 16px;
+    }
+    .file-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-default);
+      border-radius: 12px;
+      overflow: hidden;
+      transition: all 0.2s ease;
+    }
+    .file-card:hover {
+      border-color: var(--accent-primary);
+      box-shadow: var(--shadow-md);
+      transform: translateY(-2px);
+    }
+    .file-card-header {
+      padding: 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+    .file-icon-large {
+      width: 52px;
+      height: 52px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 12px;
+      font-size: 24px;
+    }
+    .file-icon-large.pdf { color: #ef4444; }
+    .file-icon-large.image { color: #10b981; }
+    .file-icon-large.doc { color: #3b82f6; }
+    .file-icon-large.other { color: var(--text-muted); }
+    
+    .file-delete-btn {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      border: none;
+      background: var(--danger-light);
+      color: var(--danger);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: all 0.2s ease;
+    }
+    .file-card:hover .file-delete-btn {
+      opacity: 1;
+    }
+    .file-delete-btn:hover {
+      background: var(--danger);
+      color: #fff;
+    }
+    
+    .file-card-body {
+      padding: 0 16px 12px;
+    }
+    .file-card-name {
+      font-weight: 600;
+      color: var(--text-primary);
+      font-size: 13px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-bottom: 4px;
+    }
+    .file-card-meta {
+      font-size: 12px;
+      color: var(--text-muted);
+      display: flex;
+      gap: 12px;
+    }
+    .file-card-meta i {
+      margin-right: 4px;
+      opacity: 0.7;
+    }
+    
+    .file-card-actions {
+      display: flex;
+      border-top: 1px solid var(--border-default);
+    }
+    .file-action-btn {
+      flex: 1;
+      padding: 10px;
+      text-align: center;
+      font-size: 12px;
+      font-weight: 500;
+      text-decoration: none;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+    .file-action-btn.view {
+      color: var(--accent-primary);
+      border-right: 1px solid var(--border-default);
+    }
+    .file-action-btn.view:hover {
+      background: var(--accent-primary-light);
+    }
+    .file-action-btn.download {
+      color: var(--success);
+    }
+    .file-action-btn.download:hover {
+      background: var(--success-light);
+    }
+    
+    /* Empty State Modern */
+    .empty-state-modern {
+      padding: 48px 24px;
+      text-align: center;
+      background: var(--bg-card);
+      border: 2px dashed var(--border-default);
+      border-radius: 16px;
+    }
+    .empty-icon {
+      width: 80px;
+      height: 80px;
+      margin: 0 auto 16px;
+      background: var(--accent-primary-light);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 32px;
+      color: var(--accent-primary);
+    }
+    .empty-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 8px;
+    }
+    .empty-desc {
+      font-size: 14px;
+      color: var(--text-muted);
+    }
+    
+    /* Upload Zone Modern */
+    .upload-zone-modern {
+      border: 2px dashed var(--border-accent);
+      background: linear-gradient(180deg, var(--accent-primary-light) 0%, transparent 100%);
+      border-radius: 16px;
+      padding: 32px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    .upload-zone-modern:hover {
+      border-color: var(--accent-primary);
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
+    }
+    .upload-zone-modern.dragover {
+      border-color: var(--success);
+      background: linear-gradient(180deg, var(--success-light) 0%, transparent 100%);
+    }
+    .upload-icon-wrapper {
+      position: relative;
+      width: 70px;
+      height: 70px;
+      margin: 0 auto 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .upload-icon-wrapper i {
+      font-size: 32px;
+      color: var(--accent-primary);
+      z-index: 1;
+    }
+    .upload-icon-ring {
+      position: absolute;
+      inset: 0;
+      border: 3px solid var(--accent-primary-light);
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.1); opacity: 0.5; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    .upload-zone-modern h4 {
+      margin: 0 0 8px 0;
+      color: var(--text-primary);
+      font-size: 16px;
+    }
+    .upload-zone-modern p {
+      margin: 0 0 16px 0;
+      color: var(--text-muted);
+      font-size: 13px;
+    }
+    .upload-formats {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .format-tag {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-default);
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 11px;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .format-tag i {
+      font-size: 12px;
+    }
+    
+    /* Upload area - keep old styles for compatibility */
+    .upload-section {
+      margin-top: 24px;
+      padding-top: 20px;
+      border-top: 1px solid var(--border-default);
+    }
+    
+    /* Empty state - keep for compatibility */
+    .empty-state {
+      padding: 24px;
+      text-align: center;
+      color: var(--text-muted);
+      background: var(--bg-card);
+      border-radius: 10px;
+      border: 1px solid var(--border-default);
+    }
+    .empty-state i {
+      font-size: 32px;
+      margin-bottom: 10px;
+      opacity: 0.5;
+    }
+    
+    /* Toast */
+    #browserToast {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 12000;
+      background: var(--success);
+      color: #fff;
+      padding: 12px 16px;
+      border-radius: 8px;
+      box-shadow: var(--shadow-md);
+      display: none;
+      font-weight: 500;
+    }
+    
+    /* Delete Confirmation Modal */
+    .delete-modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(4px);
+      z-index: 15000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: opacity 0.2s ease;
+    }
+    .delete-modal-overlay.active {
+      display: flex;
+      opacity: 1;
+    }
+    .delete-modal {
+      background: var(--bg-card);
+      border: 1px solid var(--border-default);
+      border-radius: 16px;
+      width: 100%;
+      max-width: 400px;
+      margin: 20px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      transform: scale(0.9) translateY(-20px);
+      transition: transform 0.25s ease;
+      overflow: hidden;
+    }
+    .delete-modal-overlay.active .delete-modal {
+      transform: scale(1) translateY(0);
+    }
+    .delete-modal-header {
+      padding: 20px 24px 0;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .delete-modal-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      background: rgba(239, 68, 68, 0.15);
+      color: #ef4444;
+    }
+    .delete-modal-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+    .delete-modal-body {
+      padding: 16px 24px;
+    }
+    .delete-modal-text {
+      color: var(--text-secondary);
+      font-size: 14px;
+      line-height: 1.6;
+      margin: 0 0 12px 0;
+    }
+    .delete-modal-filename {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-default);
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-size: 13px;
+      color: var(--text-primary);
+      font-weight: 500;
+      word-break: break-all;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .delete-modal-filename i {
+      color: var(--text-muted);
+    }
+    .delete-modal-footer {
+      padding: 16px 24px 20px;
+      display: flex;
+      gap: 12px;
+      justify-content: flex-end;
+    }
+    .delete-modal-btn {
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      border: none;
+    }
+    .delete-modal-btn.cancel {
+      background: var(--bg-surface);
+      color: var(--text-secondary);
+      border: 1px solid var(--border-default);
+    }
+    .delete-modal-btn.cancel:hover {
+      background: var(--bg-surface-hover);
+      color: var(--text-primary);
+    }
+    .delete-modal-btn.confirm {
+      background: #ef4444;
+      color: #fff;
+    }
+    .delete-modal-btn.confirm:hover {
+      background: #dc2626;
+      box-shadow: 0 4px 12px rgba(239, 68, 68, 0.35);
+    }
+    .delete-modal-btn.confirm:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+    }
+    .delete-modal-btn.confirm i {
+      margin-right: 6px;
+    }
+    
+    /* Upload progress */
+    .upload-progress {
+      display: none;
+      margin-top: 14px;
+    }
+    .upload-progress.active {
+      display: block;
+    }
+    .progress-bar {
+      height: 6px;
+      background: var(--accent-primary-light);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--accent-primary), var(--success));
+      border-radius: 3px;
+      transition: width 0.3s ease;
+    }
+    .progress-text {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 6px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body class="folder-browser-page">
+<%- include('../partials/navbar') %>
+
+<div class="folder-browser">
+  <!-- Header -->
+  <div class="folder-header">
+    <div>
+      <h2><i class="fas fa-folder-open" style="color:#f59e0b; margin-right:8px;"></i>Dosya Tarayıcı</h2>
+      <div class="folder-path">
+        <i class="fas fa-map-marker-alt"></i>
+        uploads/<%= safePosNo %>/
+      </div>
+    </div>
+    <div>
+      <a href="/loads/position/<%= encodeURIComponent(positionNo) %>" class="btn btn-outline">
+        <i class="fas fa-arrow-left"></i> Pozisyona Dön
+      </a>
+    </div>
+  </div>
+  
+  <!-- Subfolders Section -->
+  <div class="section-title">
+    <i class="fas fa-folder"></i>
+    Klasörler
+  </div>
+  
+  <% if (subfolders && subfolders.length > 0) { %>
+    <div class="folders-grid">
+      <% subfolders.forEach(folder => { %>
+        <a href="/loads/position/<%= encodeURIComponent(positionNo) %>/files?category=<%= encodeURIComponent(folder.displayName || folder.name) %>" 
+           class="folder-card <%= folder.isCategory ? 'category' : '' %>">
+          <div class="folder-icon">
+            <i class="fas fa-folder"></i>
+          </div>
+          <div class="folder-name"><%= folder.displayName || folder.name %></div>
+          <div class="file-count"><%= folder.fileCount %> dosya</div>
+        </a>
+      <% }) %>
+    </div>
+  <% } else { %>
+    <div class="empty-state">
+      <i class="fas fa-folder-open"></i>
+      <div>Alt klasör bulunamadı</div>
+    </div>
+  <% } %>
+  
+  <!-- Parent Folder Files Section -->
+  <div class="section-title">
+    <i class="fas fa-file-alt"></i>
+    Ana Klasördeki Dosyalar
+    <span class="file-count-badge"><%= parentFiles ? parentFiles.length : 0 %></span>
+  </div>
+  
+  <% if (parentFiles && parentFiles.length > 0) { %>
+    <div class="files-grid">
+      <% parentFiles.forEach(file => { 
+        let iconClass = 'other';
+        let icon = 'fa-file';
+        let iconBg = 'rgba(148,163,184,0.15)';
+        if (['.pdf'].includes(file.ext)) { iconClass = 'pdf'; icon = 'fa-file-pdf'; iconBg = 'rgba(239,68,68,0.15)'; }
+        else if (['.jpg','.jpeg','.png','.gif','.webp'].includes(file.ext)) { iconClass = 'image'; icon = 'fa-file-image'; iconBg = 'rgba(16,185,129,0.15)'; }
+        else if (['.doc','.docx'].includes(file.ext)) { iconClass = 'doc'; icon = 'fa-file-word'; iconBg = 'rgba(59,130,246,0.15)'; }
+        else if (['.xls','.xlsx'].includes(file.ext)) { iconClass = 'doc'; icon = 'fa-file-excel'; iconBg = 'rgba(34,197,94,0.15)'; }
+      %>
+        <div class="file-card" data-filename="<%= file.name %>">
+          <div class="file-card-header">
+            <div class="file-icon-large <%= iconClass %>" style="background: <%= iconBg %>">
+              <i class="fas <%= icon %>"></i>
+            </div>
+            <button type="button" onclick="event.stopPropagation(); deleteParentFile('<%= file.name %>', this)" class="file-delete-btn" title="Sil">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+          <div class="file-card-body">
+            <div class="file-card-name" title="<%= file.name %>"><%= file.name %></div>
+            <div class="file-card-meta">
+              <span><i class="fas fa-hdd"></i> <%= file.sizeFormatted %></span>
+            </div>
+          </div>
+          <div class="file-card-actions">
+            <a href="/uploads/<%= safePosNo %>/<%= encodeURIComponent(file.name) %>" target="_blank" class="file-action-btn view">
+              <i class="fas fa-eye"></i> Görüntüle
+            </a>
+            <a href="/uploads/<%= safePosNo %>/<%= encodeURIComponent(file.name) %>" download class="file-action-btn download">
+              <i class="fas fa-download"></i> İndir
+            </a>
+          </div>
+        </div>
+      <% }) %>
+    </div>
+  <% } else { %>
+    <div class="empty-state-modern">
+      <div class="empty-icon">
+        <i class="fas fa-folder-open"></i>
+      </div>
+      <div class="empty-title">Dosya Bulunamadı</div>
+      <div class="empty-desc">Ana klasörde henüz dosya yok. Aşağıdan dosya yükleyebilirsiniz.</div>
+    </div>
+  <% } %>
+  
+  <!-- Upload Section -->
+  <div class="upload-section">
+    <div class="section-title">
+      <i class="fas fa-cloud-upload-alt"></i>
+      Dosya Yükle
+    </div>
+    
+    <div class="upload-zone-modern" id="uploadZone" onclick="document.getElementById('fileInput').click();">
+      <input type="file" id="fileInput" multiple style="display:none;" onchange="handleFileSelect(this.files)">
+      <div class="upload-icon-wrapper">
+        <i class="fas fa-cloud-upload-alt"></i>
+        <div class="upload-icon-ring"></div>
+      </div>
+      <h4>Dosya Sürükle veya Tıkla</h4>
+      <p>PDF, Word, Excel, Resim dosyaları</p>
+      <div class="upload-formats">
+        <span class="format-tag"><i class="fas fa-file-pdf"></i> PDF</span>
+        <span class="format-tag"><i class="fas fa-file-word"></i> DOC</span>
+        <span class="format-tag"><i class="fas fa-file-excel"></i> XLS</span>
+        <span class="format-tag"><i class="fas fa-file-image"></i> IMG</span>
+      </div>
+    </div>
+    
+    <div class="upload-progress" id="uploadProgress">
+      <div class="progress-bar">
+        <div class="progress-fill" id="progressFill"></div>
+      </div>
+      <div class="progress-text" id="progressText">Yükleniyor...</div>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="browserToast">İşlem başarılı</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="delete-modal-overlay" id="deleteModal">
+  <div class="delete-modal">
+    <div class="delete-modal-header">
+      <div class="delete-modal-icon">
+        <i class="fas fa-trash-alt"></i>
+      </div>
+      <div class="delete-modal-title">Dosya Silme</div>
+    </div>
+    <div class="delete-modal-body">
+      <p class="delete-modal-text">Bu dosyayı kalıcı olarak silmek istediğinize emin misiniz? Bu işlem geri alınamaz.</p>
+      <div class="delete-modal-filename">
+        <i class="fas fa-file"></i>
+        <span id="deleteFileName"></span>
+      </div>
+    </div>
+    <div class="delete-modal-footer">
+      <button type="button" class="delete-modal-btn cancel" onclick="closeDeleteModal()">
+        İptal
+      </button>
+      <button type="button" class="delete-modal-btn confirm" id="confirmDeleteBtn">
+        <i class="fas fa-trash-alt"></i>Sil
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const positionNo = '<%= positionNo %>';
+  const safePosNo = '<%= safePosNo %>';
+  
+  // Toast
+  function showToast(message, success = true) {
+    const t = document.getElementById('browserToast');
+    t.textContent = message;
+    t.style.background = success ? '#10b981' : '#ef4444';
+    t.style.display = 'block';
+    setTimeout(() => { t.style.display = 'none'; }, 3000);
+  }
+  
+  // Drag & Drop
+  const uploadZone = document.getElementById('uploadZone');
+  
+  uploadZone.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    uploadZone.classList.add('dragover');
+  });
+  
+  uploadZone.addEventListener('dragleave', () => {
+    uploadZone.classList.remove('dragover');
+  });
+  
+  uploadZone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    uploadZone.classList.remove('dragover');
+    handleFileSelect(e.dataTransfer.files);
+  });
+  
+  // File Upload
+  async function handleFileSelect(files) {
+    if (!files || files.length === 0) return;
+    
+    const progressDiv = document.getElementById('uploadProgress');
+    const progressFill = document.getElementById('progressFill');
+    const progressText = document.getElementById('progressText');
+    
+    progressDiv.classList.add('active');
+    progressFill.style.width = '0%';
+    progressText.textContent = `0 / ${files.length} dosya yükleniyor...`;
+    
+    let uploaded = 0;
+    let failed = 0;
+    
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('category', ''); // Ana klasöre yükle (kategorisiz)
+      
+      try {
+        const res = await fetch(`/loads/position/${encodeURIComponent(positionNo)}/upload-parent`, {
+          method: 'POST',
+          body: formData
+        });
+        const data = await res.json();
+        
+        if (data.success) {
+          uploaded++;
+        } else {
+          failed++;
+          console.error('Upload failed:', data.message);
+        }
+      } catch (err) {
+        failed++;
+        console.error('Upload error:', err);
+      }
+      
+      const progress = Math.round(((i + 1) / files.length) * 100);
+      progressFill.style.width = progress + '%';
+      progressText.textContent = `${i + 1} / ${files.length} dosya işleniyor...`;
+    }
+    
+    if (uploaded > 0) {
+      showToast(`${uploaded} dosya başarıyla yüklendi`, true);
+    }
+    if (failed > 0) {
+      showToast(`${failed} dosya yüklenemedi`, false);
+    }
+    
+    // Sayfayı yenile
+    setTimeout(() => {
+      location.reload();
+    }, 1500);
+  }
+  
+  // Delete parent file
+  let pendingDeleteFilename = null;
+  let pendingDeleteElement = null;
+  
+  function openDeleteModal(filename, el) {
+    pendingDeleteFilename = filename;
+    pendingDeleteElement = el;
+    document.getElementById('deleteFileName').textContent = filename;
+    const modal = document.getElementById('deleteModal');
+    modal.style.display = 'flex';
+    // Trigger animation
+    requestAnimationFrame(() => {
+      modal.classList.add('active');
+    });
+  }
+  
+  function closeDeleteModal() {
+    const modal = document.getElementById('deleteModal');
+    modal.classList.remove('active');
+    setTimeout(() => {
+      modal.style.display = 'none';
+      pendingDeleteFilename = null;
+      pendingDeleteElement = null;
+    }, 200);
+  }
+  
+  // Close modal on overlay click
+  document.getElementById('deleteModal').addEventListener('click', function(e) {
+    if (e.target === this) {
+      closeDeleteModal();
+    }
+  });
+  
+  // ESC key to close modal
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+      closeDeleteModal();
+    }
+  });
+  
+  // Confirm delete button
+  document.getElementById('confirmDeleteBtn').addEventListener('click', async function() {
+    if (!pendingDeleteFilename || !pendingDeleteElement) return;
+    
+    const btn = this;
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>Siliniyor...';
+    
+    try {
+      const res = await fetch(`/loads/position/${encodeURIComponent(positionNo)}/delete-parent-file`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ filename: pendingDeleteFilename })
+      });
+      const data = await res.json();
+      
+      if (data.success) {
+        // Dosya kartını DOM'dan kaldır
+        const card = pendingDeleteElement.closest('.file-card');
+        if (card) {
+          card.style.transition = 'all 0.3s ease';
+          card.style.opacity = '0';
+          card.style.transform = 'scale(0.8)';
+          setTimeout(() => {
+            card.remove();
+            updateFileCount();
+          }, 300);
+        }
+        closeDeleteModal();
+        showToast('Dosya silindi', true);
+      } else {
+        showToast('Silme başarısız: ' + (data.message || 'Hata'), false);
+        closeDeleteModal();
+      }
+    } catch (err) {
+      showToast('Silme hatası: ' + err.message, false);
+      closeDeleteModal();
+    }
+    
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fas fa-trash-alt"></i>Sil';
+  });
+  
+  // Legacy function for onclick
+  function deleteParentFile(filename, el) {
+    openDeleteModal(filename, el);
+  }
+  
+  // Dosya sayısını güncelle
+  function updateFileCount() {
+    const filesGrid = document.querySelector('.files-grid');
+    const countBadge = document.querySelector('.section-title .file-count-badge');
+    if (filesGrid && countBadge) {
+      const remaining = filesGrid.querySelectorAll('.file-card').length;
+      countBadge.textContent = remaining;
+      
+      // Eğer hiç dosya kalmadıysa boş durum göster
+      if (remaining === 0) {
+        filesGrid.outerHTML = `
+          <div class="empty-state-modern">
+            <div class="empty-icon">
+              <i class="fas fa-folder-open"></i>
+            </div>
+            <div class="empty-title">Dosya Bulunamadı</div>
+            <div class="empty-desc">Ana klasörde henüz dosya yok. Aşağıdan dosya yükleyebilirsiniz.</div>
+          </div>
+        `;
+      }
+    }
+  }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,640 @@
+<%- include('../partials/navbar') %>
+
+<style>
+  /* Theme-aware styles */
+  .management-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 24px;
+  }
+  
+  .management-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 32px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--border-color, rgba(148, 163, 184, 0.2));
+  }
+  
+  .management-header h1 {
+    font-size: 28px;
+    font-weight: 700;
+    background: linear-gradient(135deg, #60a5fa, #3b82f6);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    margin-bottom: 32px;
+  }
+  
+  .stat-card {
+    background: var(--bg-card, rgba(30, 41, 59, 0.8));
+    border: 1px solid var(--border-color, rgba(148, 163, 184, 0.1));
+    border-radius: 16px;
+    padding: 20px;
+    text-align: center;
+  }
+  
+  .stat-card .value {
+    font-size: 36px;
+    font-weight: 700;
+    color: #3b82f6;
+  }
+  
+  .stat-card .label {
+    font-size: 14px;
+    color: var(--text-muted, #94a3b8);
+    margin-top: 4px;
+  }
+  
+  .stat-card.success .value { color: #10b981; }
+  .stat-card.warning .value { color: #f59e0b; }
+  .stat-card.danger .value { color: #ef4444; }
+  .stat-card.revoked .value { color: #a855f7; }
+  
+  .section {
+    background: var(--bg-card, rgba(30, 41, 59, 0.6));
+    border: 1px solid var(--border-color, rgba(148, 163, 184, 0.1));
+    border-radius: 16px;
+    padding: 24px;
+    margin-bottom: 24px;
+  }
+  
+  .section h2 {
+    font-size: 20px;
+    font-weight: 600;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--text-primary, #f1f5f9);
+  }
+  
+  .table-container {
+    overflow-x: auto;
+  }
+  
+  .mgmt-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  
+  .mgmt-table th, 
+  .mgmt-table td {
+    padding: 14px 16px;
+    text-align: left;
+    border-bottom: 1px solid var(--border-color, rgba(148, 163, 184, 0.1));
+  }
+  
+  .mgmt-table th {
+    background: var(--bg-header, rgba(15, 23, 42, 0.5));
+    font-weight: 600;
+    color: var(--text-muted, #94a3b8);
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  
+  .mgmt-table tr:hover {
+    background: var(--bg-hover, rgba(59, 130, 246, 0.05));
+  }
+  
+  .status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+  
+  .status-badge.active {
+    background: rgba(16, 185, 129, 0.15);
+    color: #10b981;
+    border: 1px solid rgba(16, 185, 129, 0.3);
+  }
+  
+  .status-badge.expired {
+    background: rgba(239, 68, 68, 0.15);
+    color: #ef4444;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+  }
+  
+  .status-badge.revoked {
+    background: rgba(107, 114, 128, 0.15);
+    color: #9ca3af;
+    border: 1px solid rgba(107, 114, 128, 0.3);
+    text-decoration: line-through;
+  }
+  
+  .status-badge.used {
+    background: rgba(251, 191, 36, 0.15);
+    color: #f59e0b;
+    border: 1px solid rgba(251, 191, 36, 0.3);
+  }
+  
+  .position-link {
+    color: #3b82f6;
+    text-decoration: none;
+    font-weight: 600;
+  }
+  
+  .position-link:hover {
+    text-decoration: underline;
+  }
+  
+  .upload-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 28px;
+    height: 28px;
+    background: rgba(59, 130, 246, 0.2);
+    color: #3b82f6;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 14px;
+  }
+  
+  .upload-count.has-uploads {
+    background: rgba(16, 185, 129, 0.2);
+    color: #10b981;
+  }
+  
+  .date-cell {
+    font-size: 13px;
+    color: var(--text-muted, #94a3b8);
+  }
+  
+  .user-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    background: rgba(139, 92, 246, 0.15);
+    color: #a78bfa;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 500;
+  }
+  
+  .driver-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    background: rgba(251, 191, 36, 0.15);
+    color: #f59e0b;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 500;
+  }
+  
+  .category-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 10px;
+    background: rgba(99, 102, 241, 0.15);
+    color: #818cf8;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 500;
+  }
+  
+  .empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--text-muted, #64748b);
+  }
+  
+  .empty-state .icon {
+    font-size: 48px;
+    margin-bottom: 16px;
+  }
+  
+  .empty-state p {
+    font-size: 16px;
+  }
+  
+  .tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 20px;
+    border-bottom: 1px solid var(--border-color, rgba(148, 163, 184, 0.2));
+    padding-bottom: 12px;
+  }
+  
+  .tab-btn {
+    padding: 10px 20px;
+    background: transparent;
+    border: 1px solid transparent;
+    color: var(--text-muted, #94a3b8);
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.3s;
+  }
+  
+  .tab-btn:hover {
+    color: var(--text-primary, #e2e8f0);
+    background: var(--bg-hover, rgba(148, 163, 184, 0.1));
+  }
+  
+  .tab-btn.active {
+    background: rgba(59, 130, 246, 0.2);
+    color: #3b82f6;
+    border-color: rgba(59, 130, 246, 0.3);
+  }
+  
+  .tab-content {
+    display: none;
+  }
+  
+  .tab-content.active {
+    display: block;
+  }
+  
+  .file-icon {
+    width: 20px;
+    height: 20px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .filename {
+    max-width: 250px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  
+  .token-copy-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--bg-secondary, #334155);
+    border: 1px solid var(--border-color, #475569);
+    color: var(--text-muted, #94a3b8);
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-family: 'Consolas', monospace;
+    font-size: 12px;
+    transition: all 0.2s;
+  }
+  
+  .token-copy-btn:hover {
+    background: var(--bg-hover, #475569);
+    color: var(--text-primary, #e2e8f0);
+    border-color: #3b82f6;
+  }
+  
+  .token-copy-btn .copy-icon {
+    opacity: 0.6;
+  }
+  
+  .token-copy-btn:hover .copy-icon {
+    opacity: 1;
+  }
+  
+  .copy-toast {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: #10b981;
+    color: white;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-weight: 500;
+    z-index: 9999;
+    animation: fadeInOut 2s ease-in-out;
+  }
+  
+  @keyframes fadeInOut {
+    0% { opacity: 0; transform: translateY(20px); }
+    15% { opacity: 1; transform: translateY(0); }
+    85% { opacity: 1; transform: translateY(0); }
+    100% { opacity: 0; transform: translateY(-20px); }
+  }
+  
+  /* Light theme overrides */
+  [data-theme="light"] .stat-card {
+    background: #ffffff;
+    border-color: #e2e8f0;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  }
+  
+  [data-theme="light"] .section {
+    background: #ffffff;
+    border-color: #e2e8f0;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  }
+  
+  [data-theme="light"] .mgmt-table th {
+    background: #f8fafc;
+    color: #475569;
+  }
+  
+  [data-theme="light"] .mgmt-table tr:hover {
+    background: rgba(59, 130, 246, 0.05);
+  }
+  
+  [data-theme="light"] .token-copy-btn {
+    background: #f1f5f9;
+    border-color: #e2e8f0;
+    color: #475569;
+  }
+  
+  [data-theme="light"] .token-copy-btn:hover {
+    background: #e2e8f0;
+    color: #1e293b;
+  }
+  
+  [data-theme="light"] .tab-btn {
+    color: #64748b;
+  }
+  
+  [data-theme="light"] .tab-btn:hover {
+    color: #1e293b;
+    background: #f1f5f9;
+  }
+  
+  [data-theme="light"] .tab-btn.active {
+    background: rgba(59, 130, 246, 0.1);
+    color: #3b82f6;
+  }
+  
+  [data-theme="light"] .position-link {
+    color: #2563eb;
+  }
+  
+  [data-theme="light"] .date-cell {
+    color: #64748b;
+  }
+  
+  [data-theme="light"] .management-header {
+    border-bottom-color: #e2e8f0;
+  }
+  
+  @media (max-width: 768px) {
+    .management-container {
+      padding: 16px;
+    }
+    
+    .management-header {
+      flex-direction: column;
+      gap: 16px;
+      align-items: flex-start;
+    }
+    
+    .stats-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+</style>
+
+<div class="management-container">
+  <div class="management-header">
+    <h1>🔗 Şoför Link Yönetimi</h1>
+  </div>
+  
+  <% 
+    const activeTokens = tokens.filter(t => t.status === 'active');
+    const expiredTokens = tokens.filter(t => t.status === 'expired');
+    const revokedTokens = tokens.filter(t => t.status === 'revoked');
+    const totalUploads = tokens.reduce((sum, t) => sum + (t.upload_count || 0), 0);
+  %>
+  
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="value"><%= tokens.length %></div>
+      <div class="label">Toplam Token</div>
+    </div>
+    <div class="stat-card success">
+      <div class="value"><%= activeTokens.length %></div>
+      <div class="label">Aktif Token</div>
+    </div>
+    <div class="stat-card revoked">
+      <div class="value"><%= revokedTokens.length %></div>
+      <div class="label">İptal Edilmiş</div>
+    </div>
+    <div class="stat-card danger">
+      <div class="value"><%= expiredTokens.length %></div>
+      <div class="label">Süresi Dolmuş</div>
+    </div>
+    <div class="stat-card warning">
+      <div class="value"><%= totalUploads %></div>
+      <div class="label">Toplam Yükleme</div>
+    </div>
+  </div>
+  
+  <div class="section">
+    <div class="tabs">
+      <button class="tab-btn active" onclick="showTab('tokens')">📋 Tokenler</button>
+      <button class="tab-btn" onclick="showTab('uploads')">📤 Yükleme Geçmişi</button>
+    </div>
+    
+    <!-- Tokens Tab -->
+    <div id="tokens-tab" class="tab-content active">
+      <% if (tokens.length === 0) { %>
+        <div class="empty-state">
+          <div class="icon">🔗</div>
+          <p>Henüz şoför linki oluşturulmamış.</p>
+        </div>
+      <% } else { %>
+        <div class="table-container">
+          <table class="mgmt-table">
+            <thead>
+              <tr>
+                <th>Pozisyon</th>
+                <th>Oluşturan</th>
+                <th>Oluşturulma</th>
+                <th>Bitiş</th>
+                <th>Durum</th>
+                <th>Yüklemeler</th>
+                <th>Token</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% tokens.forEach(token => { 
+                const createdDate = new Date(token.created_at);
+                const expiresDate = new Date(token.expires_at);
+                const formatDate = (d) => {
+                  return d.toLocaleDateString('tr-TR') + ' ' + d.toLocaleTimeString('tr-TR', {hour: '2-digit', minute: '2-digit'});
+                };
+              %>
+                <tr>
+                  <td>
+                    <a href="/loads/position/<%= encodeURIComponent(token.position_no) %>" class="position-link">
+                      <%= token.position_no %>
+                    </a>
+                  </td>
+                  <td>
+                    <span class="user-badge">👤 <%= token.created_by || '-' %></span>
+                  </td>
+                  <td class="date-cell">
+                    <%= formatDate(createdDate) %>
+                  </td>
+                  <td class="date-cell">
+                    <%= formatDate(expiresDate) %>
+                  </td>
+                  <td>
+                    <% if (token.status === 'revoked') { %>
+                      <span class="status-badge revoked">🗑️ İptal Edildi</span>
+                    <% } else if (token.status === 'active') { %>
+                      <span class="status-badge active">✓ Aktif</span>
+                    <% } else { %>
+                      <span class="status-badge expired">✕ Süresi Dolmuş</span>
+                    <% } %>
+                    <% if (token.used_at) { %>
+                      <span class="status-badge used">📤 Kullanıldı</span>
+                    <% } %>
+                  </td>
+                  <td>
+                    <span class="upload-count <%= token.upload_count > 0 ? 'has-uploads' : '' %>">
+                      <%= token.upload_count || 0 %>
+                    </span>
+                  </td>
+                  <td>
+                    <button class="token-copy-btn" onclick="copyToken('<%= token.token %>')" title="Linki kopyala">
+                      <span class="token-short"><%= token.token.substring(0, 12) %>...</span>
+                      <span class="copy-icon">📋</span>
+                    </button>
+                  </td>
+                </tr>
+              <% }); %>
+            </tbody>
+          </table>
+        </div>
+      <% } %>
+    </div>
+    
+    <!-- Uploads Tab -->
+    <div id="uploads-tab" class="tab-content">
+      <% if (uploads.length === 0) { %>
+        <div class="empty-state">
+          <div class="icon">📤</div>
+          <p>Henüz şoför tarafından yükleme yapılmamış.</p>
+        </div>
+      <% } else { %>
+        <div class="table-container">
+          <table class="mgmt-table">
+            <thead>
+              <tr>
+                <th>Pozisyon</th>
+                <th>Dosya</th>
+                <th>Şoför Adı</th>
+                <th>Kategori</th>
+                <th>Yükleme Zamanı</th>
+                <th>Token Oluşturan</th>
+                <th>Token Tarihi</th>
+                <th>Token Linki</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% uploads.forEach(upload => { 
+                const uploadDate = new Date(upload.upload_time);
+                const tokenDate = new Date(upload.token_created_at);
+                const formatDate = (d) => {
+                  return d.toLocaleDateString('tr-TR') + ' ' + d.toLocaleTimeString('tr-TR', {hour: '2-digit', minute: '2-digit'});
+                };
+                const isImage = /\.(jpg|jpeg|png|gif|webp)$/i.test(upload.original_name || upload.filename);
+                const isPdf = /\.pdf$/i.test(upload.original_name || upload.filename);
+              %>
+                <tr>
+                  <td>
+                    <a href="/loads/position/<%= encodeURIComponent(upload.position_no) %>" class="position-link">
+                      <%= upload.position_no %>
+                    </a>
+                  </td>
+                  <td>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                      <span class="file-icon">
+                        <% if (isImage) { %>📷<% } else if (isPdf) { %>📄<% } else { %>📎<% } %>
+                      </span>
+                      <span class="filename" title="<%= upload.original_name || upload.filename %>">
+                        <%= upload.original_name || upload.filename %>
+                      </span>
+                    </div>
+                  </td>
+                  <td>
+                    <% if (upload.driver_name) { %>
+                      <span class="driver-badge">🚛 <%= upload.driver_name %></span>
+                    <% } else { %>
+                      <span style="color: var(--text-muted, #64748b);">-</span>
+                    <% } %>
+                  </td>
+                  <td>
+                    <span class="category-badge"><%= upload.category || 'CMR' %></span>
+                  </td>
+                  <td class="date-cell">
+                    <%= formatDate(uploadDate) %>
+                  </td>
+                  <td>
+                    <span class="user-badge">👤 <%= upload.created_by || '-' %></span>
+                  </td>
+                  <td class="date-cell">
+                    <%= formatDate(tokenDate) %>
+                  </td>
+                  <td>
+                    <% if (upload.token) { %>
+                      <button class="token-copy-btn" onclick="copyToken('<%= upload.token %>')" title="Linki kopyala">
+                        <span class="token-short"><%= upload.token.substring(0, 12) %>...</span>
+                        <span class="copy-icon">📋</span>
+                      </button>
+                    <% } else { %>
+                      <span style="color: var(--text-muted, #64748b);">-</span>
+                    <% } %>
+                  </td>
+                </tr>
+              <% }); %>
+            </tbody>
+          </table>
+        </div>
+      <% } %>
+    </div>
+  </div>
+</div>
+
+<script>
+  function showTab(tabName) {
+    // Hide all tabs
+    document.querySelectorAll('.tab-content').forEach(tab => {
+      tab.classList.remove('active');
+    });
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.classList.remove('active');
+    });
+    
+    // Show selected tab
+    document.getElementById(tabName + '-tab').classList.add('active');
+    event.target.classList.add('active');
+  }
+  
+  function copyToken(token) {
+    const fullUrl = window.location.origin + '/driver-upload/' + token;
+    navigator.clipboard.writeText(fullUrl).then(() => {
+      // Show toast
+      const toast = document.createElement('div');
+      toast.className = 'copy-toast';
+      toast.textContent = 'Link kopyalandı!';
+      document.body.appendChild(toast);
+      setTimeout(() => toast.remove(), 2000);
+    }).catch(err => {
+      console.error('Kopyalama hatası:', err);
+      alert('Kopyalama başarısız oldu');
+    });
+  }
+</script>

@@ -1,0 +1,28 @@
+<%- include('../partials/navbar') %>
+<div class="container" style="padding:18px;">
+  <h2>Rate Calculator (Tahmini Fiyat Hesaplayıcı)</h2>
+
+  <form method="POST" action="/rate-calculator/calc" style="max-width:520px;">
+    <div style="margin-bottom:8px;"><label>Km</label><input name="km" type="number" step="1" class="field-input" value="<%= input && input.km ? input.km : '' %>"></div>
+    <div style="margin-bottom:8px;"><label>Brüt Ağırlık (ton)</label><input name="weight" type="number" step="0.1" class="field-input" value="<%= input && input.weight ? input.weight : '' %>"></div>
+    <div><button class="modal-btn" type="submit">Hesapla</button></div>
+  </form>
+
+  <% if (error) { %>
+    <div style="margin-top:12px;color:#fca5a5"><%= error %></div>
+  <% } %>
+
+  <% if (result) { %>
+    <div style="margin-top:16px; background:rgba(255,255,255,0.02); padding:12px; border-radius:8px;">
+      <h4>Sonuç</h4>
+      <p>Önerilen ücret: <strong><%= result.suggested.toFixed(2) %> (birim para)</strong></p>
+      <p>km bazlı tahmin: <%= result.byKm.toFixed(2) %></p>
+      <p>ton bazlı tahmin: <%= result.byTon.toFixed(2) %></p>
+      <h5>Geçmiş veriler</h5>
+      <p>Toplam gelir: <%= result.avgs.total_revenue %></p>
+      <p>Toplam km: <%= result.avgs.total_km %></p>
+      <p>Ortalama / km: <%= result.avgs.avgPerKm.toFixed(4) %></p>
+      <p>Ortalama / ton: <%= result.avgs.avgPerTon.toFixed(4) %></p>
+    </div>
+  <% } %>
+</div>

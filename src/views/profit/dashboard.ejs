@@ -1,0 +1,1313 @@
+<%- include('../partials/navbar') %>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
+
+<style>
+  .dashboard-page {
+    max-width: 100%;
+    margin: 0 auto;
+    padding: 24px 32px;
+    box-sizing: border-box;
+    background: var(--bg-body, #0a1628);
+    min-height: 100vh;
+  }
+
+  .dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+
+  .dashboard-title {
+    font-size: 28px;
+    font-weight: 800;
+    color: var(--text-primary, #f9fafb);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .dashboard-subtitle {
+    color: var(--text-muted, #9ca3af);
+    font-size: 14px;
+    margin-top: 4px;
+  }
+
+  .rates-badge {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    background: var(--bg-surface-alt, rgba(255,255,255,0.02));
+    border: 1px solid var(--border-subtle, rgba(59, 130, 246, 0.2));
+    padding: 8px 14px;
+    border-radius: 8px;
+    font-size: 12px;
+    color: var(--text-muted, #9ca3af);
+  }
+
+  .rate-item strong {
+    color: var(--accent-primary, #60a5fa);
+  }
+
+  /* Summary Cards */
+  .summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+
+  .summary-card {
+    background: var(--bg-card-solid, rgba(15, 23, 42, 0.9));
+    border: 1px solid var(--border-default, rgba(255,255,255,0.04));
+    border-radius: 16px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    backdrop-filter: blur(10px);
+    transition: all 0.2s;
+  }
+
+  .summary-card:hover {
+    border-color: var(--border-accent, rgba(59, 130, 246, 0.3));
+    transform: translateY(-2px);
+  }
+
+  .summary-card.profit {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(5, 150, 105, 0.05));
+    border-color: rgba(16, 185, 129, 0.2);
+  }
+
+  .summary-card.revenue {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(37, 99, 235, 0.05));
+    border-color: rgba(59, 130, 246, 0.2);
+  }
+
+  .summary-card.costs {
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.15), rgba(220, 38, 38, 0.05));
+    border-color: rgba(239, 68, 68, 0.2);
+  }
+
+  .summary-icon {
+    font-size: 28px;
+    margin-bottom: 4px;
+  }
+
+  .summary-label {
+    font-size: 12px;
+    color: var(--text-muted, #9ca3af);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .summary-value {
+    font-size: 28px;
+    font-weight: 800;
+    color: var(--text-primary, #f9fafb);
+  }
+
+  .summary-value.positive { color: #10b981; }
+  .summary-value.negative { color: #ef4444; }
+
+  .summary-sub {
+    font-size: 11px;
+    color: var(--text-muted, #64748b);
+  }
+
+  /* Charts Grid */
+  .charts-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+    margin-bottom: 24px;
+  }
+
+  @media (max-width: 1200px) {
+    .charts-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .chart-card {
+    background: var(--bg-card-solid, rgba(15, 23, 42, 0.9));
+    border: 1px solid var(--border-default, rgba(255,255,255,0.04));
+    border-radius: 16px;
+    padding: 20px;
+    backdrop-filter: blur(10px);
+  }
+
+  .chart-card.full-width {
+    grid-column: 1 / -1;
+  }
+
+  .chart-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+  }
+
+  .chart-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text-primary, #f9fafb);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .chart-container {
+    position: relative;
+    height: 300px;
+  }
+
+  .chart-container.tall {
+    height: 400px;
+  }
+
+  /* Top List */
+  .top-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .top-list-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border-subtle, rgba(255,255,255,0.05));
+  }
+
+  .top-list-item:last-child {
+    border-bottom: none;
+  }
+
+  .top-list-rank {
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-surface, rgba(30, 41, 59, 0.5));
+    border-radius: 50%;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-muted, #94a3b8);
+    margin-right: 12px;
+  }
+
+  .top-list-rank.gold { background: rgba(251, 191, 36, 0.2); color: #fbbf24; }
+  .top-list-rank.silver { background: rgba(148, 163, 184, 0.2); color: #94a3b8; }
+  .top-list-rank.bronze { background: rgba(180, 83, 9, 0.2); color: #d97706; }
+
+  .top-list-name {
+    flex: 1;
+    font-size: 14px;
+    color: var(--text-primary, #f9fafb);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 200px;
+  }
+
+  .top-list-value {
+    font-size: 14px;
+    font-weight: 700;
+    color: #10b981;
+    margin-left: 12px;
+  }
+
+  .top-list-count {
+    font-size: 11px;
+    color: var(--text-muted, #64748b);
+    margin-left: 8px;
+  }
+
+  /* Positions Button */
+  .positions-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 10px;
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(59, 130, 246, 0.05));
+    border: 1px solid rgba(59, 130, 246, 0.25);
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--accent-primary, #60a5fa);
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-left: 8px;
+  }
+
+  .positions-btn:hover {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.25), rgba(59, 130, 246, 0.1));
+    transform: scale(1.02);
+  }
+
+  .positions-btn svg {
+    width: 12px;
+    height: 12px;
+  }
+
+  [data-theme="light"] .positions-btn {
+    color: #2563eb;
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(59, 130, 246, 0.05));
+  }
+
+  /* Positions Modal */
+  .positions-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.25s ease;
+  }
+
+  .positions-modal-overlay.active {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  .positions-modal {
+    background: var(--bg-card-solid, rgba(15, 23, 42, 0.98));
+    border: 1px solid var(--border-accent, rgba(59, 130, 246, 0.3));
+    border-radius: 16px;
+    padding: 0;
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.05);
+    min-width: 320px;
+    max-width: 480px;
+    max-height: 70vh;
+    display: flex;
+    flex-direction: column;
+    transform: scale(0.9) translateY(20px);
+    transition: all 0.25s ease;
+  }
+
+  .positions-modal-overlay.active .positions-modal {
+    transform: scale(1) translateY(0);
+  }
+
+  .positions-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border-subtle, rgba(255,255,255,0.08));
+  }
+
+  .positions-modal-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text-primary, #f9fafb);
+  }
+
+  .positions-modal-title .modal-icon {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(59, 130, 246, 0.05));
+    border-radius: 10px;
+    font-size: 16px;
+  }
+
+  .positions-modal-close {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-surface, rgba(30, 41, 59, 0.5));
+    border: 1px solid var(--border-default, rgba(255,255,255,0.1));
+    border-radius: 8px;
+    color: var(--text-muted, #9ca3af);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .positions-modal-close:hover {
+    background: rgba(239, 68, 68, 0.15);
+    border-color: rgba(239, 68, 68, 0.3);
+    color: #ef4444;
+  }
+
+  .positions-modal-body {
+    padding: 16px 20px;
+    overflow-y: auto;
+    max-height: 400px;
+  }
+
+  .positions-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+    gap: 10px;
+  }
+
+  .position-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 12px 8px;
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.12), rgba(59, 130, 246, 0.04));
+    border: 1px solid rgba(59, 130, 246, 0.2);
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text-primary, #f9fafb);
+    font-family: 'SF Mono', 'Consolas', monospace;
+    text-decoration: none;
+    transition: all 0.2s;
+    cursor: pointer;
+  }
+
+  .position-link:hover {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.25), rgba(59, 130, 246, 0.1));
+    border-color: rgba(59, 130, 246, 0.4);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
+  }
+
+  .position-link.cost-type {
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.12), rgba(239, 68, 68, 0.04));
+    border-color: rgba(239, 68, 68, 0.2);
+  }
+
+  .position-link.cost-type:hover {
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.25), rgba(239, 68, 68, 0.1));
+    border-color: rgba(239, 68, 68, 0.4);
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
+  }
+
+  .positions-modal-subtitle {
+    font-size: 12px;
+    color: var(--text-muted, #64748b);
+    margin-bottom: 12px;
+  }
+
+  /* Light theme modal */
+  [data-theme="light"] .positions-modal-overlay {
+    background: rgba(0, 0, 0, 0.4);
+  }
+
+  [data-theme="light"] .positions-modal {
+    background: rgba(255, 255, 255, 0.98);
+    border-color: rgba(59, 130, 246, 0.2);
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.2);
+  }
+
+  [data-theme="light"] .positions-modal-title {
+    color: #1e293b;
+  }
+
+  [data-theme="light"] .positions-modal-header {
+    border-color: rgba(0, 0, 0, 0.08);
+  }
+
+  [data-theme="light"] .position-link {
+    color: #1e40af;
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.08), rgba(59, 130, 246, 0.02));
+  }
+
+  [data-theme="light"] .position-link.cost-type {
+    color: #b91c1c;
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.08), rgba(239, 68, 68, 0.02));
+  }
+
+  /* Loading state */
+  .loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(10, 22, 40, 0.9);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+  }
+
+  .loading-spinner {
+    width: 50px;
+    height: 50px;
+    border: 3px solid var(--border-subtle, rgba(59, 130, 246, 0.2));
+    border-top-color: var(--accent-primary, #3b82f6);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+
+  /* Light theme */
+  [data-theme="light"] .dashboard-page {
+    background: #f8fafc;
+  }
+
+  [data-theme="light"] .dashboard-title,
+  [data-theme="light"] .chart-title,
+  [data-theme="light"] .summary-value {
+    color: #1e293b;
+  }
+
+  [data-theme="light"] .summary-card,
+  [data-theme="light"] .chart-card {
+    background: rgba(255, 255, 255, 0.95);
+    border-color: rgba(59, 130, 246, 0.15);
+  }
+
+  [data-theme="light"] .top-list-name {
+    color: #1e293b;
+  }
+
+  [data-theme="light"] .top-list-item {
+    border-color: rgba(0, 0, 0, 0.05);
+  }
+
+  /* FTL/LTL Load Type Badges */
+  .type-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 600;
+    margin-left: 6px;
+  }
+
+  .type-badge.ftl {
+    background: rgba(16, 185, 129, 0.15);
+    color: #10b981;
+    border: 1px solid rgba(16, 185, 129, 0.3);
+  }
+
+  .type-badge.ltl {
+    background: rgba(139, 92, 246, 0.15);
+    color: #a78bfa;
+    border: 1px solid rgba(139, 92, 246, 0.3);
+  }
+
+  .type-badge.mixed {
+    background: rgba(251, 191, 36, 0.15);
+    color: #fbbf24;
+    border: 1px solid rgba(251, 191, 36, 0.3);
+  }
+
+  [data-theme="light"] .type-badge.ftl {
+    background: rgba(16, 185, 129, 0.1);
+    color: #059669;
+  }
+
+  [data-theme="light"] .type-badge.ltl {
+    background: rgba(139, 92, 246, 0.1);
+    color: #7c3aed;
+  }
+
+  [data-theme="light"] .type-badge.mixed {
+    background: rgba(251, 191, 36, 0.1);
+    color: #d97706;
+  }
+
+  /* Back button */
+  .back-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    background: var(--bg-surface, rgba(30, 41, 59, 0.5));
+    border: 1px solid var(--border-default, rgba(255,255,255,0.1));
+    border-radius: 8px;
+    color: var(--text-muted, #9ca3af);
+    text-decoration: none;
+    font-size: 13px;
+    transition: all 0.2s;
+  }
+
+  .back-btn:hover {
+    background: var(--bg-surface-hover, rgba(30, 41, 59, 0.8));
+    color: var(--text-primary, #f9fafb);
+  }
+</style>
+
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="loading-spinner"></div>
+</div>
+
+<!-- Positions Modal -->
+<div class="positions-modal-overlay" id="positionsModal">
+  <div class="positions-modal">
+    <div class="positions-modal-header">
+      <div class="positions-modal-title">
+        <span class="modal-icon">📍</span>
+        <span id="modalTitle">Pozisyonlar</span>
+      </div>
+      <button class="positions-modal-close" onclick="closePositionsModal()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+    </div>
+    <div class="positions-modal-body">
+      <p class="positions-modal-subtitle" id="modalSubtitle">Pozisyona gitmek için tıklayın</p>
+      <div class="positions-grid" id="positionsGrid"></div>
+    </div>
+  </div>
+</div>
+
+<div class="dashboard-page">
+  <div class="dashboard-header">
+    <div>
+      <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 8px;">
+        <a href="/profit<%= selectedYear ? '?year=' + selectedYear : '' %>" class="back-btn">← Listeye Dön</a>
+      </div>
+      <h1 class="dashboard-title">
+        📊 Kar/Zarar Dashboard - <%= selectedYear %>
+      </h1>
+      <p class="dashboard-subtitle">Detaylı finansal analiz ve grafikler</p>
+    </div>
+    <div style="display: flex; align-items: center; gap: 16px;">
+      <div class="rates-badge">
+        <span class="rate-item">EUR: <strong><%= rates.EUR %></strong></span>
+        <span class="rate-item">USD: <strong><%= rates.USD %></strong></span>
+        <span class="rate-item">GBP: <strong><%= rates.GBP %></strong></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Summary Cards -->
+  <div class="summary-grid" id="summaryGrid">
+    <div class="summary-card profit">
+      <span class="summary-icon">💰</span>
+      <span class="summary-label">Toplam Kar</span>
+      <span class="summary-value positive" id="totalProfit">-</span>
+      <span class="summary-sub" id="marginPercent">Kar Marjı: -</span>
+    </div>
+    <div class="summary-card revenue">
+      <span class="summary-icon">📈</span>
+      <span class="summary-label">Toplam Gelir</span>
+      <span class="summary-value" id="totalRevenue">-</span>
+      <span class="summary-sub" id="avgProfit">Ortalama Kar: -</span>
+    </div>
+    <div class="summary-card costs">
+      <span class="summary-icon">📉</span>
+      <span class="summary-label">Toplam Gider</span>
+      <span class="summary-value" id="totalCosts">-</span>
+    </div>
+    <div class="summary-card">
+      <span class="summary-icon">🚛</span>
+      <span class="summary-label">Toplam Sefer</span>
+      <span class="summary-value" id="totalPositions">-</span>
+      <span class="summary-sub" id="statusCount">Aktif: - | Tamamlanan: -</span>
+    </div>
+  </div>
+
+  <!-- Charts -->
+  <div class="charts-grid">
+    <!-- Monthly Profit Trend -->
+    <div class="chart-card full-width">
+      <div class="chart-header">
+        <h3 class="chart-title">📅 Aylık Kar Trendi</h3>
+      </div>
+      <div class="chart-container tall">
+        <canvas id="monthlyChart"></canvas>
+      </div>
+    </div>
+
+    <!-- Top Types -->
+    <div class="chart-card">
+      <div class="chart-header">
+        <h3 class="chart-title">🏆 En Karlı Müşteriler</h3>
+      </div>
+      <div class="chart-container">
+        <canvas id="typesChart"></canvas>
+      </div>
+    </div>
+
+    <!-- Top Locations -->
+    <div class="chart-card">
+      <div class="chart-header">
+        <h3 class="chart-title">🌍 En Karlı Güzergahlar</h3>
+      </div>
+      <div class="chart-container">
+        <canvas id="locationsChart"></canvas>
+      </div>
+    </div>
+
+    <!-- Cost Breakdown -->
+    <div class="chart-card">
+      <div class="chart-header">
+        <h3 class="chart-title">💸 Maliyet Dağılımı</h3>
+      </div>
+      <div class="chart-container">
+        <canvas id="costsChart"></canvas>
+      </div>
+    </div>
+
+    <!-- Top Types List -->
+    <div class="chart-card">
+      <div class="chart-header">
+        <h3 class="chart-title">📋 Müşteri Sıralaması</h3>
+      </div>
+      <ul class="top-list" id="topTypesList"></ul>
+    </div>
+  </div>
+</div>
+
+<script>
+(function() {
+  const isDarkMode = document.documentElement.getAttribute('data-theme') !== 'light';
+  
+  // Chart.js defaults for theme
+  Chart.defaults.color = isDarkMode ? '#94a3b8' : '#64748b';
+  Chart.defaults.borderColor = isDarkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)';
+  
+  let charts = {};
+  let allTypesData = []; // Store for click handling
+  let allCostsData = []; // Store for click handling
+
+  // Modal functions - expose globally
+  window.openPositionsModal = function(title, subtitle, positions, isCostType = false) {
+    const modal = document.getElementById('positionsModal');
+    const grid = document.getElementById('positionsGrid');
+    const titleEl = document.getElementById('modalTitle');
+    const subtitleEl = document.getElementById('modalSubtitle');
+    
+    titleEl.textContent = title;
+    subtitleEl.textContent = subtitle;
+    
+    grid.innerHTML = positions.map(p => {
+      const shortNo = extractPositionNumber(p);
+      return `<a href="/loads/position/${encodeURIComponent(p)}" class="position-link ${isCostType ? 'cost-type' : ''}">${shortNo}</a>`;
+    }).join('');
+    
+    modal.classList.add('active');
+    document.body.style.overflow = 'hidden';
+  };
+
+  window.closePositionsModal = function() {
+    const modal = document.getElementById('positionsModal');
+    modal.classList.remove('active');
+    document.body.style.overflow = '';
+  };
+
+  // Close modal on overlay click
+  document.getElementById('positionsModal').addEventListener('click', function(e) {
+    if (e.target === this) {
+      closePositionsModal();
+    }
+  });
+
+  // Close modal on Escape key
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+      closePositionsModal();
+    }
+  });
+
+  // Load dashboard data
+  loadDashboardData();
+
+  // Year filter function
+  function filterByYear(year) {
+    window.location.href = '/profit/dashboard?year=' + year;
+  }
+
+  // Get selected year from server
+  const serverSelectedYear = '<%= selectedYear %>';
+
+  async function loadDashboardData() {
+    try {
+      // Use server-provided year or get from URL
+      const urlParams = new URLSearchParams(window.location.search);
+      const year = urlParams.get('year') || serverSelectedYear || '';
+      const apiUrl = '/profit/api/dashboard' + (year ? '?year=' + year : '');
+      
+      const response = await fetch(apiUrl);
+      const data = await response.json();
+      
+      if (data.success) {
+        renderSummary(data.summary);
+        renderCharts(data.charts);
+        const listData = (data.charts.topCustomers && data.charts.topCustomers.length)
+          ? data.charts.topCustomers
+          : data.charts.topTypes;
+        renderTopList(listData || []);
+      }
+    } catch (e) {
+      console.error('Failed to load dashboard data:', e);
+    } finally {
+      document.getElementById('loadingOverlay').style.display = 'none';
+    }
+  }
+
+  function renderSummary(summary) {
+    document.getElementById('totalProfit').textContent = formatCurrency(summary.totalProfitEUR);
+    document.getElementById('totalRevenue').textContent = formatCurrency(summary.totalRevenueEUR);
+    document.getElementById('totalCosts').textContent = formatCurrency(summary.totalCostsEUR);
+    document.getElementById('totalPositions').textContent = summary.totalPositions;
+    document.getElementById('marginPercent').textContent = `Kar Marjı: %${summary.marginPercent}`;
+    document.getElementById('avgProfit').textContent = `Ortalama Kar: ${formatCurrency(summary.avgProfitEUR)}`;
+    document.getElementById('statusCount').textContent = `Aktif: ${summary.activeCount} | Tamamlanan: ${summary.completedCount}`;
+
+    // Color the profit value
+    const profitEl = document.getElementById('totalProfit');
+    const profitVal = parseFloat(summary.totalProfitEUR);
+    if (profitVal < 0) {
+      profitEl.classList.remove('positive');
+      profitEl.classList.add('negative');
+    }
+  }
+
+  function renderCharts(charts) {
+    renderMonthlyChart(charts.monthly);
+    const customerChartData = (charts.topCustomers && charts.topCustomers.length)
+      ? charts.topCustomers
+      : charts.topTypes;
+    renderTypesChart(customerChartData || []);
+    renderLocationsChart(charts.topLocations);
+    renderCostsChart(charts.costBreakdown);
+  }
+
+  function renderMonthlyChart(data) {
+    const ctx = document.getElementById('monthlyChart').getContext('2d');
+    
+    if (charts.monthly) charts.monthly.destroy();
+    
+    charts.monthly = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: data.map(d => d.label),
+        datasets: [
+          {
+            label: 'Kar (EUR)',
+            data: data.map(d => d.profit),
+            borderColor: '#10b981',
+            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+            fill: true,
+            tension: 0.4,
+            pointRadius: 4,
+            pointHoverRadius: 6
+          },
+          {
+            label: 'Gelir (EUR)',
+            data: data.map(d => d.revenue),
+            borderColor: '#3b82f6',
+            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+            fill: false,
+            tension: 0.4,
+            pointRadius: 4,
+            pointHoverRadius: 6
+          },
+          {
+            label: 'Gider (EUR)',
+            data: data.map(d => d.costs),
+            borderColor: '#ef4444',
+            backgroundColor: 'rgba(239, 68, 68, 0.1)',
+            fill: false,
+            tension: 0.4,
+            pointRadius: 4,
+            pointHoverRadius: 6
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: {
+          intersect: false,
+          mode: 'index'
+        },
+        plugins: {
+          datalabels: false,
+          legend: {
+            position: 'top',
+            labels: {
+              usePointStyle: true,
+              padding: 20
+            }
+          },
+          tooltip: {
+            callbacks: {
+              label: function(context) {
+                return context.dataset.label + ': ' + formatCurrency(context.raw);
+              }
+            }
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            ticks: {
+              callback: function(value) {
+                return formatCurrency(value);
+              }
+            }
+          }
+        }
+      }
+    });
+  }
+
+  let typesChartData = []; // Store for click handling
+
+  function renderTypesChart(data) {
+    const ctx = document.getElementById('typesChart').getContext('2d');
+    
+    if (charts.types) charts.types.destroy();
+    
+    typesChartData = data; // Store for click handling
+    
+    const colors = ['#10b981', '#3b82f6', '#f59e0b', '#8b5cf6', '#ec4899', '#06b6d4', '#84cc16', '#f97316', '#6366f1', '#14b8a6', '#ef4444', '#a855f7', '#22c55e', '#0ea5e9', '#eab308'];
+    const customerCounts = data.map(d => d.count || 0);
+    const customerRevenues = data.map(d => d.revenue || 0);
+    const customerAvgRevenues = data.map(d => d.avgRevenue || (d.count > 0 ? d.revenue / d.count : 0));
+    
+    charts.types = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: data.map(d => truncate(d.name, 18)),
+        datasets: [{
+          label: 'Toplam Navlun (EUR)',
+          data: customerRevenues,
+          backgroundColor: colors.slice(0, data.length),
+          borderRadius: 6,
+          barThickness: 22
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        indexAxis: 'y',
+        onClick: function(event, elements) {
+          if (elements.length > 0) {
+            const index = elements[0].index;
+            const item = typesChartData[index];
+            if (item.positions && item.positions.length > 0) {
+              const avg = item.avgRevenue || (item.count > 0 ? item.revenue / item.count : 0);
+              const avgFormatted = formatCurrency(avg);
+              openPositionsModal(
+                item.name,
+                `${item.count} yük • Toplam Navlun: ${formatCurrency(item.revenue)} • Ort: ${avgFormatted}`,
+                item.positions,
+                false
+              );
+            }
+          }
+        },
+        plugins: {
+          datalabels: {
+            color: function(context) {
+              const bg = context.dataset && context.dataset.backgroundColor;
+              const c = Array.isArray(bg) ? bg[context.dataIndex] : bg;
+              return getContrastTextColor(c);
+            },
+            anchor: 'start',
+            align: 'end',
+            offset: 8,
+            font: {
+              weight: 'bold',
+              size: 10
+            },
+            textStrokeWidth: 2,
+            textStrokeColor: function(context) {
+              const bg = context.dataset && context.dataset.backgroundColor;
+              const c = Array.isArray(bg) ? bg[context.dataIndex] : bg;
+              const text = getContrastTextColor(c);
+              return text === '#ffffff' ? 'rgba(0, 0, 0, 0.55)' : 'rgba(255, 255, 255, 0.6)';
+            },
+            formatter: function(value, context) {
+              const item = typesChartData[context.dataIndex];
+              const ftl = item.ftlCount || 0;
+              const ltl = item.ltlCount || 0;
+              const avgFtlNavlun = item.avgFtlNavlunEUR || (ftl > 0 ? (item.ftlNavlunEUR || 0) / ftl : 0);
+              const avgFtlLabel = (ftl > 0 && avgFtlNavlun > 0) ? (' / ' + formatCurrency(avgFtlNavlun)) : '';
+              let typeLabel = '';
+              if (ftl > 0 && ltl === 0) typeLabel = ` (${ftl} FTL${avgFtlLabel})`;
+              else if (ltl > 0 && ftl === 0) typeLabel = ` (${ltl} LTL)`;
+              else if (ftl > 0 && ltl > 0) typeLabel = ` (${ftl} FTL${avgFtlLabel}, ${ltl} LTL)`;
+              return (item.count || 0) + ' yük' + typeLabel;
+            },
+            textShadowColor: 'rgba(0, 0, 0, 0.0)',
+            textShadowBlur: 0
+          },
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              title: function(context) {
+                return data[context[0].dataIndex].name;
+              },
+              label: function(context) {
+                const item = data[context.dataIndex];
+                const count = item.count || 0;
+                const ftl = item.ftlCount || 0;
+                const ltl = item.ltlCount || 0;
+                const avg = item.avgRevenue || (count > 0 ? item.revenue / count : 0);
+                const avgFtlNavlun = item.avgFtlNavlunEUR || (ftl > 0 ? (item.ftlNavlunEUR || 0) / ftl : 0);
+                const lines = [
+                  'Toplam Navlun: ' + formatCurrency(item.revenue),
+                  'Ortalama Navlun: ' + formatCurrency(avg),
+                  'Yük Sayısı: ' + count,
+                ];
+                if (ftl > 0 || ltl > 0) {
+                  lines.push('FTL: ' + ftl + ' | Parsiyel: ' + ltl);
+                }
+                if (ftl > 0 && avgFtlNavlun > 0) {
+                  lines.push('FTL Pozisyon Ort Navlun: ' + formatCurrency(avgFtlNavlun));
+                }
+                lines.push('Pozisyon Sayısı: ' + (item.positions ? item.positions.length : 0));
+                lines.push('');
+                lines.push('🖱️ Pozisyonları görmek için tıklayın');
+                return lines;
+              }
+            }
+          }
+        },
+        scales: {
+          x: {
+            beginAtZero: true,
+            ticks: {
+              callback: function(value) {
+                return formatCurrency(value);
+              }
+            }
+          }
+        }
+      }
+    });
+  }
+
+  // Register datalabels plugin
+  Chart.register(ChartDataLabels);
+
+  // Short currency formatter for chart labels
+  function formatShortCurrency(value) {
+    const num = parseFloat(value) || 0;
+    if (num >= 1000) {
+      return '€' + (num / 1000).toFixed(1) + 'K';
+    }
+    return '€' + num.toFixed(0);
+  }
+
+  function formatShortCurrencyWithCode(value, currencyCode) {
+    const num = parseFloat(value) || 0;
+    const code = (currencyCode || 'EUR').toString().trim().toUpperCase();
+    const symbol = (code === 'TRY' || code === 'TL')
+      ? '₺'
+      : code === 'EUR'
+        ? '€'
+        : code === 'USD'
+          ? '$'
+          : code === 'GBP'
+            ? '£'
+            : (code + ' ');
+    if (num >= 1000) {
+      return symbol + (num / 1000).toFixed(1) + 'K';
+    }
+    return symbol + num.toFixed(0);
+  }
+
+  function parseColorToRgb(color) {
+    if (!color) return null;
+    const c = String(color).trim();
+    if (c.startsWith('#')) {
+      let hex = c.slice(1);
+      if (hex.length === 3) hex = hex.split('').map(ch => ch + ch).join('');
+      if (hex.length !== 6) return null;
+      const r = parseInt(hex.slice(0, 2), 16);
+      const g = parseInt(hex.slice(2, 4), 16);
+      const b = parseInt(hex.slice(4, 6), 16);
+      return { r, g, b };
+    }
+    const m = c.match(/rgba?\((\d+)\s*,\s*(\d+)\s*,\s*(\d+)/i);
+    if (m) {
+      return { r: parseInt(m[1], 10), g: parseInt(m[2], 10), b: parseInt(m[3], 10) };
+    }
+    return null;
+  }
+
+  function getContrastTextColor(backgroundColor) {
+    const rgb = parseColorToRgb(backgroundColor);
+    if (!rgb) return '#ffffff';
+    // Relative luminance (sRGB)
+    const r = rgb.r / 255;
+    const g = rgb.g / 255;
+    const b = rgb.b / 255;
+    const lum = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+    return lum > 0.62 ? '#111827' : '#ffffff';
+  }
+
+  let locationsChartData = []; // Store for click handling
+
+  function renderLocationsChart(data) {
+    const ctx = document.getElementById('locationsChart').getContext('2d');
+    
+    if (charts.locations) charts.locations.destroy();
+    
+    locationsChartData = data; // Store for click handling
+    
+    const colors = ['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899', '#06b6d4', '#84cc16', '#f97316', '#6366f1', '#14b8a6'];
+    const counts = data.map(d => d.count || 0);
+    const profits = data.map(d => d.profit || 0);
+    
+    charts.locations = new Chart(ctx, {
+      type: 'doughnut',
+      data: {
+        labels: data.map(d => d.name),
+        datasets: [{
+          data: data.map(d => Math.max(0, d.profit)),
+          backgroundColor: colors.slice(0, data.length),
+          borderWidth: 2,
+          borderColor: isDarkMode ? 'rgba(15, 23, 42, 0.8)' : 'rgba(255, 255, 255, 0.8)',
+          hoverOffset: 10
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        cutout: '40%',
+        onClick: function(event, elements) {
+          if (elements.length > 0) {
+            const index = elements[0].index;
+            const item = locationsChartData[index];
+            if (item.positions && item.positions.length > 0) {
+              openPositionsModal(
+                item.name,
+                `${item.positions.length} pozisyon • ${formatCurrency(item.profit)}`,
+                item.positions,
+                false
+              );
+            }
+          }
+        },
+        plugins: {
+          datalabels: {
+            color: '#fff',
+            font: {
+              weight: 'bold',
+              size: 11
+            },
+            formatter: function(value, context) {
+              const count = counts[context.dataIndex];
+              const profit = formatCurrency(profits[context.dataIndex]);
+              return count + ' sefer\n' + profit;
+            },
+            textAlign: 'center',
+            textShadowColor: 'rgba(0, 0, 0, 0.6)',
+            textShadowBlur: 4
+          },
+          legend: {
+            position: 'right',
+            labels: {
+              usePointStyle: true,
+              padding: 12,
+              font: { size: 11 }
+            }
+          },
+          tooltip: {
+            callbacks: {
+              label: function(context) {
+                const item = data[context.dataIndex];
+                const count = item.count || 0;
+                return context.label + ': ' + formatCurrency(context.raw) + ` (${count} sefer)`;
+              },
+              afterLabel: function(context) {
+                const item = locationsChartData[context.dataIndex];
+                if (item.positions && item.positions.length > 0) {
+                  return '🖱️ Pozisyonları görmek için tıklayın';
+                }
+                return '';
+              }
+            }
+          }
+        }
+      }
+    });
+  }
+
+  let costsChartData = []; // Store for tooltip access
+  const costsColors = ['#ef4444', '#f59e0b', '#8b5cf6', '#ec4899', '#06b6d4', '#10b981'];
+
+  function renderCostsChart(data) {
+    const ctx = document.getElementById('costsChart').getContext('2d');
+    
+    if (charts.costs) charts.costs.destroy();
+    
+    costsChartData = data; // Store data for click handling
+    allCostsData = data;
+    
+    charts.costs = new Chart(ctx, {
+      type: 'pie',
+      data: {
+        labels: data.map(d => d.type),
+        datasets: [{
+          data: data.map(d => d.total),
+          backgroundColor: costsColors.slice(0, data.length),
+          borderWidth: 0,
+          hoverOffset: 10
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        onClick: function(event, elements) {
+          if (elements.length > 0) {
+            const index = elements[0].index;
+            const item = allCostsData[index];
+            if (item.positions && item.positions.length > 0) {
+              openPositionsModal(
+                item.type,
+                `${item.positions.length} pozisyon • ${formatCurrencyWithCode(item.total, item.currency)}`,
+                item.positions,
+                true
+              );
+            }
+          }
+        },
+        plugins: {
+          datalabels: {
+            color: '#fff',
+            font: {
+              weight: 'bold',
+              size: 11
+            },
+            formatter: function(value, context) {
+              const item = costsChartData[context.dataIndex];
+              if (!item) return '';
+              return formatCurrencyWithCode(value, item.currency);
+            },
+            textAlign: 'center',
+            textShadowColor: 'rgba(0, 0, 0, 0.6)',
+            textShadowBlur: 4
+          },
+          legend: {
+            position: 'right',
+            labels: {
+              usePointStyle: true,
+              padding: 12,
+              font: { size: 11 }
+            }
+          },
+          tooltip: {
+            callbacks: {
+              label: function(context) {
+                const item = costsChartData[context.dataIndex];
+                const posCount = (item.positions || []).length;
+                return context.label + ': ' + formatCurrencyWithCode(context.raw, item.currency) + (posCount > 0 ? ` (${posCount} poz)` : '');
+              },
+              afterLabel: function(context) {
+                const item = costsChartData[context.dataIndex];
+                if (item.positions && item.positions.length > 0) {
+                  return '🖱️ Pozisyonları görmek için tıklayın';
+                }
+                return '';
+              }
+            }
+          }
+        }
+      }
+    });
+  }
+
+  function extractPositionNumber(posNo) {
+    if (!posNo) return '';
+    const parts = posNo.split('-');
+    return parts.length > 1 ? parts[parts.length - 1] : posNo;
+  }
+
+  function renderTopList(customers) {
+    const container = document.getElementById('topTypesList');
+    
+    // Sort by total revenue for the list
+    const sortedByRevenue = [...customers].sort((a, b) => (b.revenue || 0) - (a.revenue || 0));
+    allTypesData = sortedByRevenue; // Store for click handling
+    
+    container.innerHTML = sortedByRevenue.slice(0, 15).map((t, i) => {
+      const positions = t.positions || [];
+      const hasPositions = positions.length > 0;
+      const revenue = t.revenue || 0;
+      const count = t.count || 0;
+      const ftl = t.ftlCount || 0;
+      const ltl = t.ltlCount || 0;
+      
+      // Determine load type badge
+      let typeBadge = '';
+      if (ftl > 0 && ltl === 0) {
+        typeBadge = '<span class="type-badge ftl">FTL</span>';
+      } else if (ltl > 0 && ftl === 0) {
+        typeBadge = '<span class="type-badge ltl">LTL</span>';
+      } else if (ftl > 0 && ltl > 0) {
+        typeBadge = '<span class="type-badge mixed">' + ftl + 'F/' + ltl + 'P</span>';
+      }
+      
+      return `
+        <li class="top-list-item">
+          <span class="top-list-rank ${i === 0 ? 'gold' : i === 1 ? 'silver' : i === 2 ? 'bronze' : ''}">${i + 1}</span>
+          <span class="top-list-name" title="${t.name}">${t.name}</span>
+          ${typeBadge}
+          <span class="top-list-value">${formatCurrency(revenue)}</span>
+          <span class="top-list-count">${count} yük</span>
+          ${hasPositions ? `
+            <button class="positions-btn" onclick="openPositionsModal('${t.name.replace(/'/g, "\\'")}', '${count} yük (${ftl} FTL, ${ltl} Parsiyel) • Toplam Navlun: ${formatCurrency(revenue).replace(/'/g, "\\'")}', ${JSON.stringify(positions).replace(/"/g, '&quot;')}, false)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="8" x2="12" y2="12"></line>
+                <line x1="12" y1="16" x2="12.01" y2="16"></line>
+              </svg>
+              ${positions.length}
+            </button>
+          ` : ''}
+        </li>
+      `;
+    }).join('');
+  }
+
+  function formatCurrency(value) {
+    const num = parseFloat(value) || 0;
+    return new Intl.NumberFormat('tr-TR', {
+      style: 'currency',
+      currency: 'EUR',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
+    }).format(num);
+  }
+
+  function formatCurrencyWithCode(value, currencyCode) {
+    const num = parseFloat(value) || 0;
+    const code = (currencyCode || 'EUR').toString().trim().toUpperCase();
+    return new Intl.NumberFormat('tr-TR', {
+      style: 'currency',
+      currency: code === 'TL' ? 'TRY' : code,
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
+    }).format(num);
+  }
+
+  function truncate(str, len) {
+    if (!str) return '-';
+    return str.length > len ? str.substring(0, len) + '…' : str;
+  }
+})();
+</script>

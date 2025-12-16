@@ -1,0 +1,1402 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <!-- Inline theme detection - runs before any CSS to prevent flash -->
+  <script>
+    (function() {
+      var theme = localStorage.getItem('bestfreight-theme') || 'dark';
+      document.documentElement.setAttribute('data-theme', theme);
+    })();
+  </script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Muhasebe - BEST Freight ERP</title>
+  <link rel="stylesheet" href="/css/theme.css">
+  <link rel="stylesheet" href="/css/style.css">
+  <script src="/js/theme.js"></script>
+  <style>
+    /* ===== GLOBAL PAGE STYLES ===== */
+    html, body {
+      background: var(--bg-body, #0a1628) !important;
+      min-height: 100vh;
+    }
+
+    /* ===== FLOATING PARTICLES ===== */
+    .floating-particles {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      overflow: hidden;
+      z-index: -1;
+    }
+
+    .floating-particle {
+      position: absolute;
+      width: 4px;
+      height: 4px;
+      background: var(--accent-primary-soft, rgba(59, 130, 246, 0.6));
+      border-radius: 50%;
+      animation: floatParticle 15s infinite linear;
+    }
+
+    @keyframes floatParticle {
+      0% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+      10% { opacity: 1; }
+      90% { opacity: 1; }
+      100% { transform: translateY(-100vh) rotate(720deg); opacity: 0; }
+    }
+
+    .accounting-page {
+      padding: 20px;
+      max-width: 1400px;
+      margin: 0 auto;
+      position: relative;
+      z-index: 1;
+    }
+
+    .accounting-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 30px;
+      padding: 24px;
+      background: var(--bg-card, rgba(15, 23, 42, 0.6));
+      backdrop-filter: blur(20px);
+      border: 1px solid var(--border-accent, rgba(59, 130, 246, 0.2));
+      border-radius: 16px;
+      box-shadow: var(--shadow-lg, 0 8px 32px rgba(0, 0, 0, 0.3), 0 0 30px rgba(59, 130, 246, 0.1));
+    }
+
+    .accounting-header h1 {
+      color: var(--text-primary, #f9fafb);
+      font-size: 28px;
+      margin: 0;
+      text-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
+    }
+
+    .accounting-header p {
+      color: var(--text-muted, #9ca3af);
+      margin: 8px 0 0 0;
+    }
+
+    .accounting-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 24px;
+      margin-bottom: 30px;
+    }
+
+    .document-card {
+      background: var(--bg-card, rgba(15, 23, 42, 0.6));
+      backdrop-filter: blur(20px);
+      border: 1px solid var(--border-accent, rgba(59, 130, 246, 0.2));
+      border-radius: 16px;
+      padding: 24px;
+      transition: all 0.3s ease;
+      box-shadow: var(--shadow-md, 0 8px 32px rgba(0, 0, 0, 0.2));
+    }
+
+    .document-card:hover {
+      border-color: var(--border-accent-strong, rgba(59, 130, 246, 0.5));
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-xl, 0 12px 40px rgba(0, 0, 0, 0.3), 0 0 40px rgba(59, 130, 246, 0.15));
+    }
+
+    .document-card-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .document-icon {
+      font-size: 32px;
+    }
+
+    .document-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: #f9fafb;
+      text-shadow: 0 0 15px rgba(59, 130, 246, 0.2);
+    }
+
+    .document-description {
+      color: #9ca3af;
+      font-size: 14px;
+      margin-bottom: 20px;
+      line-height: 1.5;
+    }
+
+    .upload-section {
+      border-top: 1px solid rgba(59, 130, 246, 0.2);
+      padding-top: 16px;
+    }
+
+    .file-input-wrapper {
+      position: relative;
+      margin-bottom: 12px;
+    }
+
+    .file-input-label {
+      display: block;
+      padding: 12px 16px;
+      background: rgba(59, 130, 246, 0.2);
+      color: white;
+      border-radius: 10px;
+      cursor: pointer;
+      text-align: center;
+      font-size: 14px;
+      font-weight: 500;
+      transition: all 0.3s ease;
+      border: 1px solid rgba(59, 130, 246, 0.3);
+    }
+
+    .file-input-label:hover {
+      background: rgba(59, 130, 246, 0.3);
+      box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
+    }
+
+    .file-input {
+      display: none;
+    }
+
+    .selected-file {
+      color: #86efac;
+      font-size: 13px;
+      margin-top: 8px;
+      padding: 8px;
+      background: rgba(34, 197, 94, 0.1);
+      border-radius: 8px;
+      border: 1px solid rgba(34, 197, 94, 0.3);
+      display: none;
+    }
+
+    .upload-btn {
+      width: 100%;
+      padding: 12px;
+      background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+    }
+
+    .upload-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 25px rgba(59, 130, 246, 0.4);
+    }
+
+    .upload-btn:disabled {
+      background: #4b5563;
+      cursor: not-allowed;
+      box-shadow: none;
+      transform: none;
+    }
+
+    .files-list {
+      margin-top: 20px;
+      padding-top: 16px;
+      border-top: 1px solid rgba(59, 130, 246, 0.2);
+    }
+
+    .files-list-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: #60a5fa;
+      margin-bottom: 12px;
+    }
+
+    .file-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 14px;
+      background: rgba(2, 6, 23, 0.6);
+      border-radius: 10px;
+      margin-bottom: 8px;
+      border: 1px solid rgba(59, 130, 246, 0.1);
+      transition: all 0.2s ease;
+    }
+
+    .file-item:hover {
+      border-color: rgba(59, 130, 246, 0.3);
+      background: rgba(59, 130, 246, 0.05);
+    }
+
+    .file-item-name {
+      color: #f9fafb;
+      font-size: 13px;
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .file-item-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .file-item-btn {
+      padding: 6px 14px;
+      border: none;
+      border-radius: 8px;
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .file-item-btn.view {
+      background: linear-gradient(135deg, #3b82f6, #2563eb);
+      color: white;
+      box-shadow: 0 2px 10px rgba(59, 130, 246, 0.3);
+    }
+
+    .file-item-btn.delete {
+      background: linear-gradient(135deg, #ef4444, #dc2626);
+      color: white;
+      box-shadow: 0 2px 10px rgba(239, 68, 68, 0.3);
+    }
+
+    .file-item-btn:hover {
+      transform: translateY(-1px);
+    }
+
+    .no-files {
+      color: #6b7280;
+      font-size: 13px;
+      text-align: center;
+      padding: 20px;
+    }
+
+    /* Modern Modal */
+    .modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(2, 6, 23, 0.7);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      z-index: 99999;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .modal-content {
+      background: rgba(15, 23, 42, 0.95);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(59, 130, 246, 0.3);
+      border-radius: 16px;
+      padding: 24px;
+      max-width: 720px;
+      width: 100%;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5), 0 0 40px rgba(59, 130, 246, 0.15);
+      transform: translateY(0);
+      transition: transform 180ms ease, opacity 180ms ease;
+    }
+
+    .modal-header {
+      font-size: 18px;
+      font-weight: 600;
+      color: #f9fafb;
+      margin-bottom: 12px;
+      text-shadow: 0 0 15px rgba(59, 130, 246, 0.2);
+    }
+
+    .modal-message {
+      color: #9ca3af;
+      font-size: 14px;
+      margin-bottom: 20px;
+      line-height: 1.5;
+    }
+
+    .modal-buttons {
+      display: flex;
+      gap: 12px;
+      justify-content: flex-end;
+    }
+
+    .modal-btn {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .modal-btn.cancel {
+      background: rgba(75, 85, 99, 0.5);
+      color: white;
+      border: 1px solid rgba(75, 85, 99, 0.5);
+    }
+
+    .modal-btn.cancel:hover {
+      background: rgba(75, 85, 99, 0.7);
+    }
+
+    .modal-btn.confirm {
+      background: linear-gradient(135deg, #3b82f6, #2563eb);
+      color: white;
+      box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+    }
+
+    .modal-btn.confirm:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 25px rgba(59, 130, 246, 0.4);
+    }
+
+    .modal-btn.delete {
+      background: linear-gradient(135deg, #ef4444, #dc2626);
+      color: white;
+      box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
+    }
+
+    .modal-btn.delete:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 25px rgba(239, 68, 68, 0.4);
+    }
+
+    .modal-icon {
+      font-size: 48px;
+      text-align: center;
+      margin-bottom: 16px;
+    }
+
+    /* Filter button styles */
+    .acct-filter-btn {
+      cursor: pointer;
+      transition: all 0.3s ease;
+      outline: none;
+      padding: 10px 16px;
+      border-radius: 10px;
+      font-weight: 600;
+      border: 1px solid rgba(59, 130, 246, 0.2);
+    }
+
+    .acct-filter-btn:hover {
+      transform: translateY(-2px);
+    }
+
+    .acct-filter-btn.active {
+      box-shadow: 0 8px 30px rgba(59, 130, 246, 0.25);
+      transform: translateY(-2px);
+    }
+
+    .acct-filter-btn.active[data-filter="complete"] {
+      background: linear-gradient(135deg, #059669, #10b981) !important;
+      border-color: rgba(16, 185, 129, 0.5) !important;
+      color: #fff !important;
+    }
+
+    .acct-filter-btn.active[data-filter="incomplete"] {
+      background: linear-gradient(135deg, #ef4444, #dc2626) !important;
+      border-color: rgba(239, 68, 68, 0.5) !important;
+      color: #fff !important;
+    }
+
+    .acct-filter-btn.active[data-filter="all"] {
+      background: linear-gradient(135deg, #3b82f6, #2563eb) !important;
+      border-color: rgba(59, 130, 246, 0.5) !important;
+      color: #fff !important;
+    }
+
+    /* Positions Table Styling */
+    .positions-container {
+      background: rgba(15, 23, 42, 0.6);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(59, 130, 246, 0.2);
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    }
+
+    .positions-container h2 {
+      color: #f9fafb;
+      margin: 0 0 16px 0;
+      font-size: 18px;
+      text-shadow: 0 0 15px rgba(59, 130, 246, 0.2);
+    }
+
+    .positions-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      font-size: 14px;
+    }
+
+    .positions-table thead th {
+      background: rgba(15, 23, 42, 0.9);
+      padding: 14px 12px;
+      text-align: left;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #60a5fa;
+      font-weight: 600;
+      border-bottom: 2px solid rgba(59, 130, 246, 0.3);
+    }
+
+    .positions-table tbody td {
+      padding: 14px 12px;
+      color: #e5e7eb;
+      border-bottom: 1px solid rgba(59, 130, 246, 0.1);
+    }
+
+    .positions-table tbody tr {
+      transition: all 0.2s ease;
+    }
+
+    .positions-table tbody tr:hover {
+      background: rgba(59, 130, 246, 0.1);
+    }
+
+    .positions-table tbody tr:hover td {
+      color: #f9fafb;
+    }
+
+    .positions-table a {
+      color: #60a5fa;
+      text-decoration: none;
+      transition: all 0.2s ease;
+    }
+
+    .positions-table a:hover {
+      color: #93c5fd;
+      text-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
+    }
+
+    .badge-complete {
+      display: inline-block;
+      padding: 4px 12px;
+      background: rgba(34, 197, 94, 0.2);
+      color: #86efac;
+      border: 1px solid rgba(34, 197, 94, 0.4);
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 600;
+      box-shadow: 0 0 10px rgba(34, 197, 94, 0.2);
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 8px 16px;
+      border-radius: 10px;
+      border: none;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.3s ease;
+    }
+
+    .btn-sm {
+      padding: 6px 12px;
+      font-size: 12px;
+    }
+
+    .btn-outline {
+      background: transparent;
+      border: 1px solid rgba(59, 130, 246, 0.3);
+      color: #9ca3af;
+    }
+
+    .btn-outline:hover {
+      border-color: rgba(59, 130, 246, 0.6);
+      color: #f9fafb;
+      box-shadow: 0 0 15px rgba(59, 130, 246, 0.2);
+    }
+
+    /* Search Input */
+    #accounting-search {
+      background: rgba(2, 6, 23, 0.8);
+      border: 1px solid rgba(59, 130, 246, 0.3);
+      color: #e5e7eb;
+      padding: 10px 14px;
+      border-radius: 10px;
+      width: 320px;
+      font-size: 13px;
+      transition: all 0.3s ease;
+    }
+
+    #accounting-search:focus {
+      outline: none;
+      border-color: #3b82f6;
+      box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
+    }
+
+    #accounting-search::placeholder {
+      color: #6b7280;
+    }
+
+    /* Pagination Styles */
+    .pagination {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+      margin-top: 20px;
+      padding: 16px;
+    }
+
+    .pagination a, .pagination span {
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all 0.2s ease;
+    }
+
+    .pagination a {
+      background: rgba(59, 130, 246, 0.15);
+      color: #60a5fa;
+      border: 1px solid rgba(59, 130, 246, 0.3);
+    }
+
+    .pagination a:hover {
+      background: rgba(59, 130, 246, 0.25);
+      border-color: rgba(59, 130, 246, 0.5);
+    }
+
+    .pagination .current {
+      background: linear-gradient(135deg, #3b82f6, #2563eb);
+      color: white;
+      border: 1px solid transparent;
+    }
+
+    .pagination .disabled {
+      background: rgba(75, 85, 99, 0.3);
+      color: #6b7280;
+      border: 1px solid rgba(75, 85, 99, 0.3);
+      pointer-events: none;
+    }
+
+    .pagination-info {
+      color: #9ca3af;
+      font-size: 13px;
+      margin-left: 16px;
+    }
+  </style>
+</head>
+<body>
+<script>
+  // Apply theme to body immediately
+  document.body.setAttribute('data-theme', localStorage.getItem('bestfreight-theme') || 'dark');
+</script>
+
+<!-- Floating Particles -->
+<div class="floating-particles"></div>
+
+<%- include('../partials/navbar') %>
+
+<div class="accounting-page">
+  <div class="accounting-header">
+    <div>
+      <h1>📁 Muhasebe Evrak Yönetimi</h1>
+      <p style="color: #9ca3af; margin: 8px 0 0 0;">İhracat/İthalat AMETA, T1 ve CMR evraklarını yükleyin</p>
+    </div>
+    <div style="display:flex; align-items:center; gap:8px;">
+      <input id="accounting-search" type="text" placeholder="Pozisyon veya İhracat Poz ara..." 
+        style="background:#020617; border:1px solid #1f2937; color:#e5e7eb; padding:8px 10px; border-radius:8px; width:320px; font-size:13px;" />
+      <button id="accounting-clear" class="btn btn-outline btn-sm" style="padding:8px 10px;">Temizle</button>
+    </div>
+  </div>
+  <div style="display:flex; gap:8px; margin-bottom:14px;">
+    <button id="acct-filter-all" class="acct-filter-btn" data-filter="all" onclick="setAccountingFilter('all', this)" style="padding:8px 10px; background:#111827; color:#cbd5e1; border-radius:8px; border:1px solid #1f2937;">Tümü</button>
+    <button id="acct-filter-complete" class="acct-filter-btn" data-filter="complete" onclick="setAccountingFilter('complete', this)" style="padding:8px 10px; background:#042f22; color:#86efac; border-radius:8px; border:1px solid #064e3b;">Bitmiş Dosyalar</button>
+    <button id="acct-filter-incomplete" class="acct-filter-btn" data-filter="incomplete" onclick="setAccountingFilter('incomplete', this)" style="padding:8px 10px; background:#2b0b0b; color:#fecaca; border-radius:8px; border:1px solid #7f1d1d;">Eksik Evraklı Dosyalar</button>
+  </div>
+
+  <!-- Pozisyonlar listesi (sadece Pozisyon ve İhracat Pozisyon) -->
+  <div style="margin-bottom: 20px;">
+    <h2 style="color:#f9fafb; margin: 0 0 8px 0; font-size: 18px; text-shadow: 0 0 15px rgba(59, 130, 246, 0.2);">Pozisyonlar</h2>
+    <div class="positions-container">
+      <% if (positions && positions.length > 0) { %>
+        <div style="display:flex; gap:16px; align-items:center; margin-bottom:8px;">
+          <div style="display:flex; gap:8px; align-items:center;">
+            <span style="width:12px; height:12px; border-radius:50%; display:inline-block; background: linear-gradient(135deg,#60a5fa,#3b82f6); box-shadow: 0 4px 10px rgba(59,130,246,0.12); border:1px solid rgba(59,130,246,0.08);"></span>
+            <span style="color:#9ca3af; font-size:13px;">Yükleme</span>
+          </div>
+          <div style="display:flex; gap:8px; align-items:center;">
+            <span style="width:12px; height:12px; border-radius:50%; display:inline-block; background: linear-gradient(135deg,#86efac,#22c55e); box-shadow: 0 4px 10px rgba(34,197,94,0.12); border:1px solid rgba(34,197,94,0.08);"></span>
+            <span style="color:#9ca3af; font-size:13px;">Boşaltma</span>
+          </div>
+        </div>
+        <table class="positions-table">
+          <thead>
+            <tr>
+            <th style="text-align:left; padding:14px 12px;">Pozisyon</th>
+            <th style="text-align:left; padding:14px 12px;">İhracat Pozisyon</th>
+            <th style="text-align:left; padding:14px 12px;">Plaka</th>
+          <th style="text-align:left; padding:14px 12px;">Yüklenmemiş Evraklar</th>
+                <th style="text-align:center; padding:12px 10px;">
+                  <div style="display:flex; gap:12px; justify-content:center; align-items:center;">
+                    <div style="display:flex; gap:8px; align-items:center;">
+                      <span style="width:10px; height:10px; border-radius:50%; display:inline-block; background: linear-gradient(135deg,#60a5fa,#3b82f6);"></span>
+                      <span style="font-size:12px; color:#60a5fa;">Yükleme</span>
+                    </div>
+                    <div style="display:flex; gap:8px; align-items:center;">
+                      <span style="width:10px; height:10px; border-radius:50%; display:inline-block; background: linear-gradient(135deg,#86efac,#22c55e);"></span>
+                      <span style="font-size:12px; color:#86efac;">Boşaltma</span>
+                    </div>
+                  </div>
+                </th>
+                <th style="text-align:center; padding:14px 12px;">Toplam KM</th>
+                <th style="text-align:right; padding:14px 12px;">İşlem</th>
+            </tr>
+          </thead>
+          <tbody id="accounting-positions-tbody">
+            <% positions.forEach(function(p) { %>
+              <% 
+                // Calculate if row is complete: check missing documents after considering T1 files
+                let mdListForCheck = (p.missing_documents || []).slice();
+                if (p.has_t1_files) { mdListForCheck = mdListForCheck.filter(m => m !== 'T1' && m !== 'CMR'); }
+                const isRowComplete = mdListForCheck.length === 0;
+              %>
+              <tr class="<%= isRowComplete ? 'row-complete' : '' %>">
+                <td><a href="/loads/position/<%= encodeURIComponent(p.position_no) %>"> <%= p.position_no %> </a></td>
+                <td><%= p.ihr_poz || '-' %></td>
+                <td><%= p.plate || '-' %></td>
+                <td>
+                  <% 
+                    // prepare missing documents display; if filesystem T1 present, hide both T1 and CMR from missing list
+                    let mdList = (p.missing_documents || []).slice();
+                    if (p.has_t1_files) { mdList = mdList.filter(m => m !== 'T1' && m !== 'CMR'); }
+                  %>
+                  <% if (mdList && mdList.length > 0) { %>
+                    <span style="color:#ef4444; font-weight:600;"><%= mdList.join(', ') %></span>
+                  <% } else { %>
+                    <span class="badge-complete">Bütün Evraklar Yüklendi</span>
+                  <% } %>
+                  <% if (p.has_t1_files) { %>
+                    <div style="margin-top:6px; font-size:12px; color:#bbf7d0; font-weight:700;">T1/CMR: Yüklü</div>
+                  <% } %>
+                </td>
+                <td style="text-align:center;">
+                  <% if (p.km) { %>
+                    <div style="display:flex; gap:14px; justify-content:center; align-items:center;">
+                      <div style="display:flex; align-items:center; gap:8px;">
+                        <span style="width:14px; height:14px; border-radius:50%; display:inline-block; background: linear-gradient(135deg,#60a5fa,#3b82f6); box-shadow: 0 4px 10px rgba(59,130,246,0.18); border: 2px solid rgba(59,130,246,0.12);"></span>
+                        <span style="color:#e0e7ef; font-weight:700;"><%= ((p.km.loading_count || 0) + (p.km.europe_count || 0)) %></span>
+                      </div>
+                      <div style="display:flex; align-items:center; gap:8px;">
+                        <span style="width:14px; height:14px; border-radius:50%; display:inline-block; background: linear-gradient(135deg,#86efac,#22c55e); box-shadow: 0 4px 10px rgba(34,197,94,0.18); border: 2px solid rgba(34,197,94,0.12);"></span>
+                        <span style="color:#e0e7ef; font-weight:700;"><%= p.km.unloading_count ?? 0 %></span>
+                      </div>
+                      <div style="margin-left:6px; color:#cbd5e1; font-weight:600; font-size:13px;">
+                        <% const loadCount = (p.km.loading_count || 0) + (p.km.europe_count || 0); const unloadCount = (p.km.unloading_count || 0); const totalCount = loadCount + unloadCount; const totalCost = totalCount * 25; %>
+                        <span style="background:rgba(59, 130, 246, 0.15); padding:4px 10px; border-radius:8px; border: 1px solid rgba(59, 130, 246, 0.2);">€<%= totalCost %></span>
+                      </div>
+                    </div>
+                  <% } else { %>
+                    <span style="color:#64748b;">-</span>
+                  <% } %>
+                </td>
+                <td style="text-align:center;">
+                  <% if (p.km) { %>
+                    <% const totalKmVal = (p.km.total_km != null) ? Number(p.km.total_km) : 0; const multiplied = totalKmVal * 0.2; %>
+                    <span style="display:inline-block; background: linear-gradient(135deg,#22c55e,#16a34a); color:#fff; padding:6px 12px; border-radius:10px; font-weight:700; box-shadow: 0 4px 15px rgba(34,197,94,0.3);"> <%= totalKmVal.toFixed(1) %> km</span>
+                    <span style="margin-left:8px; color:#cbd5e1; font-weight:600;">(0.2× = <span style="color:#60a5fa; font-weight:700;"><%= multiplied.toFixed(1) %></span> €)</span>
+                  <% } else { %>
+                    <span style="color:#64748b;">-</span>
+                  <% } %>
+                </td>
+                <td style="text-align:right;"><button onclick="openAccountingUploadMenu('<%= p.position_no %>')" class="btn btn-sm" style="background: linear-gradient(135deg, #3b82f6, #2563eb); color:white; box-shadow: 0 4px 15px rgba(59,130,246,0.3);">Aç</button></td>
+              </tr>
+            <% }); %>
+          </tbody>
+        </table>
+        <div id="accounting-no-results" style="display:none; color:#6b7280; padding:8px;">Sonuç bulunamadı</div>
+        
+        <!-- Pagination -->
+        <% if (typeof totalPages !== 'undefined' && totalPages > 1) { %>
+          <div class="pagination">
+            <% const currentYear = typeof year !== 'undefined' ? year : new Date().getFullYear(); %>
+            <% if (currentPage > 1) { %>
+              <a href="/accounting?page=<%= currentPage - 1 %>&year=<%= currentYear %>">← Önceki</a>
+            <% } else { %>
+              <span class="disabled">← Önceki</span>
+            <% } %>
+            
+            <% 
+              let startPage = Math.max(1, currentPage - 2);
+              let endPage = Math.min(totalPages, currentPage + 2);
+              if (startPage > 1) { %>
+                <a href="/accounting?page=1&year=<%= currentYear %>">1</a>
+                <% if (startPage > 2) { %><span>...</span><% } %>
+            <% } 
+              for (let i = startPage; i <= endPage; i++) { 
+                if (i === currentPage) { %>
+                  <span class="current"><%= i %></span>
+                <% } else { %>
+                  <a href="/accounting?page=<%= i %>&year=<%= currentYear %>"><%= i %></a>
+                <% } 
+              }
+              if (endPage < totalPages) { 
+                if (endPage < totalPages - 1) { %><span>...</span><% } %>
+                <a href="/accounting?page=<%= totalPages %>&year=<%= currentYear %>"><%= totalPages %></a>
+            <% } %>
+            
+            <% if (currentPage < totalPages) { %>
+              <a href="/accounting?page=<%= currentPage + 1 %>&year=<%= currentYear %>">Sonraki →</a>
+            <% } else { %>
+              <span class="disabled">Sonraki →</span>
+            <% } %>
+            
+            <span class="pagination-info">
+              Toplam <%= typeof totalPositions !== 'undefined' ? totalPositions : 0 %> pozisyon
+            </span>
+          </div>
+        <% } %>
+      <% } else { %>
+        <div style="color:#6b7280; padding:8px;">Hiç pozisyon bulunamadı</div>
+      <% } %>
+    </div>
+  </div>
+
+
+</div>
+
+<!-- Success Modal -->
+<div id="successModal" class="modal">
+  <div class="modal-content">
+    <div class="modal-icon">✅</div>
+    <div class="modal-header">Başarılı!</div>
+    <div class="modal-message" id="successMessage"></div>
+    <div class="modal-buttons">
+      <button class="modal-btn confirm" onclick="closeModal('successModal')">Tamam</button>
+    </div>
+  </div>
+</div>
+
+<!-- Error Modal -->
+<div id="errorModal" class="modal">
+  <div class="modal-content">
+    <div class="modal-icon">❌</div>
+    <div class="modal-header">Hata!</div>
+    <div class="modal-message" id="errorMessage"></div>
+    <div class="modal-buttons">
+      <button class="modal-btn confirm" onclick="closeModal('errorModal')">Tamam</button>
+    </div>
+  </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div id="deleteModal" class="modal">
+  <div class="modal-content">
+    <div class="modal-icon">🗑️</div>
+    <div class="modal-header">Dosyayı Sil</div>
+    <div class="modal-message" id="deleteMessage"></div>
+    <div class="modal-buttons">
+      <button class="modal-btn cancel" onclick="closeModal('deleteModal')">İptal</button>
+      <button class="modal-btn delete" onclick="confirmDelete()">Sil</button>
+    </div>
+  </div>
+</div>
+
+<!-- Accounting Upload Menu Modal -->
+<div id="accountingUploadModal" class="modal">
+  <div class="modal-content" style="max-width:900px;">
+    <div class="modal-header">Pozisyon Evrakları - <span id="accModalPosition"></span>
+      <button onclick="closeModal('accountingUploadModal')" style="float:right; background:none; border:none; color:#9ca3af; font-size:22px;">&times;</button>
+    </div>
+    <div class="modal-body" style="display:flex; gap:12px; flex-wrap:wrap;">
+      <!-- Four upload cards similar to screenshot -->
+      <div class="document-card acc-upload-card" data-type="export-ameta" style="flex:1; min-width:200px;">
+        <div class="document-card-header"><span class="document-icon">📤</span><h3 class="document-title">İhracat AMETA</h3></div>
+        <p class="document-description">İhracat AMETA yükleyin</p>
+        <% if (!(currentUser && currentUser.role === 'accounting_readonly')) { %>
+          <input type="file" id="file-export-ameta-pos" />
+          <div style="margin-top:8px;"><button class="upload-btn" onclick="uploadAccountingFiles('export-ameta')">Yükle</button></div>
+        <% } else { %>
+          <div style="margin-top:8px; color:#f3f4f6; font-weight:600;">Yalnızca görüntüleme: Yükleme yetkiniz yok</div>
+        <% } %>
+        <div class="pos-files-list" id="pos-files-export-ameta" style="margin-top:10px; color:#cbd5e1;"></div>
+      </div>
+
+      <div class="document-card acc-upload-card" data-type="import-ameta" style="flex:1; min-width:200px;">
+        <div class="document-card-header"><span class="document-icon">📥</span><h3 class="document-title">İthalat AMETA</h3></div>
+        <p class="document-description">İthalat AMETA yükleyin</p>
+        <% if (!(currentUser && currentUser.role === 'accounting_readonly')) { %>
+          <input type="file" id="file-import-ameta-pos" />
+          <div style="margin-top:8px;"><button class="upload-btn" onclick="uploadAccountingFiles('import-ameta')">Yükle</button></div>
+        <% } else { %>
+          <div style="margin-top:8px; color:#f3f4f6; font-weight:600;">Yalnızca görüntüleme: Yükleme yetkiniz yok</div>
+        <% } %>
+        <div class="pos-files-list" id="pos-files-import-ameta" style="margin-top:10px; color:#cbd5e1;"></div>
+      </div>
+
+      <!-- removed duplicate separate T1 card so only merged T1/CMR card remains -->
+
+      <div class="document-card acc-upload-card" data-type="t1" style="flex:1; min-width:200px;">
+        <div class="document-card-header"><span class="document-icon">🚛</span><h3 class="document-title">T1 / CMR Belgeleri</h3></div>
+        <p class="document-description">Ana pozisyona yüklenmiş T1 / CMR evrakları</p>
+
+        <div style="margin-top:12px;">
+          <div style="font-weight:700; margin-bottom:6px; color:#fbbf24;">T1 / CMR Belgeleri</div>
+          <div class="pos-files-list" id="pos-files-t1" style="margin-top:4px; color:#cbd5e1;"></div>
+        </div>
+      </div>
+  </div>
+</div>
+
+<script>
+// expose read-only flag to client scripts
+window.isAccountingReadOnly = <%= JSON.stringify(!!(currentUser && currentUser.role === 'accounting_readonly')) %>;
+const isReadOnly = window.isAccountingReadOnly;
+let deleteContext = null;
+
+function showModal(modalId, message) {
+  const modal = document.getElementById(modalId);
+  let messageEl;
+  
+  if (modalId === 'successModal') {
+    messageEl = document.getElementById('successMessage');
+  } else if (modalId === 'errorModal') {
+    messageEl = document.getElementById('errorMessage');
+  } else if (modalId === 'deleteModal') {
+    messageEl = document.getElementById('deleteMessage');
+  }
+  
+  if (messageEl) {
+    messageEl.textContent = message;
+  }
+  // Ensure modal is placed at the end of body to avoid being covered by other overlays
+  try {
+    if (modal && modal.parentNode !== document.body) {
+      document.body.appendChild(modal);
+    }
+    // force high z-index for app-level feedback modals
+    modal.style.zIndex = 100500;
+  } catch (e) {
+    // ignore DOM errors
+    console.error('showModal append error:', e);
+  }
+  modal.style.display = 'flex';
+}
+
+// Lightweight toast for success messages to avoid stacking/context issues
+function showToast(message, duration = 3000, type = 'success', position = 'top-right') {
+  const toast = document.createElement('div');
+  toast.className = 'app-toast';
+  toast.innerHTML = `<div style="padding:10px 14px; color:#fff; font-weight:600;">${message}</div>`;
+
+  // choose colors by type
+  let bg = 'linear-gradient(90deg,#059669,#10b981)'; // success green
+  if (type === 'danger' || type === 'error') bg = 'linear-gradient(90deg,#ef4444,#dc2626)';
+  if (type === 'info') bg = 'linear-gradient(90deg,#3b82f6,#2563eb)';
+
+  // position handling
+  const style = {
+    position: 'fixed',
+    right: '20px',
+    borderRadius: '10px',
+    boxShadow: '0 8px 30px rgba(2,6,23,0.6)',
+    zIndex: 999999,
+    opacity: '0',
+    transition: 'opacity 220ms ease, transform 220ms ease'
+  };
+
+  if (position === 'top-right') {
+    style.top = '20px';
+    style.transform = 'translateY(-8px)';
+  } else if (position === 'bottom-right') {
+    style.bottom = '20px';
+    style.transform = 'translateY(8px)';
+  } else if (position === 'top-left') {
+    style.left = '20px';
+    style.top = '20px';
+    style.transform = 'translateY(-8px)';
+  } else {
+    // default bottom-right
+    style.bottom = '20px';
+    style.transform = 'translateY(8px)';
+  }
+
+  Object.assign(style, { background: bg });
+  Object.assign(toast.style, style);
+
+  document.body.appendChild(toast);
+  requestAnimationFrame(() => { toast.style.opacity = '1'; toast.style.transform = 'translateY(0)'; });
+  setTimeout(() => {
+    toast.style.opacity = '0';
+    // animate back
+    if (position && position.startsWith('top')) toast.style.transform = 'translateY(-8px)'; else toast.style.transform = 'translateY(8px)';
+    setTimeout(() => toast.remove(), 250);
+  }, duration);
+}
+
+function closeModal(modalId) {
+  document.getElementById(modalId).style.display = 'none';
+  if (modalId === 'deleteModal') {
+    deleteContext = null;
+  }
+}
+
+// ESC tuşu ile modalları kapat
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') {
+    document.querySelectorAll('.modal').forEach(modal => {
+      modal.style.display = 'none';
+    });
+    deleteContext = null;
+  }
+});
+
+// Modal dışına tıklayınca kapat
+document.querySelectorAll('.modal').forEach(modal => {
+  modal.addEventListener('click', function(e) {
+    if (e.target === this) {
+      this.style.display = 'none';
+      if (this.id === 'deleteModal') {
+        deleteContext = null;
+      }
+    }
+  });
+});
+
+// Her belge tipi için dosya seçimi ve yükleme
+const documentTypes = ['export-ameta', 'import-ameta', 't1', 'cmr'];
+
+documentTypes.forEach(type => {
+  // There are two possible upload UI variants: a global uploader (`file-<type>`, `form-<type>`) or
+  // position-specific inputs (`file-<type>-pos`). On this page we use position-specific inputs,
+  // so gracefully skip binding global handlers when elements are absent to avoid JS runtime errors.
+  const fileInput = document.getElementById(`file-${type}`);
+  const selectedDiv = document.getElementById(`selected-${type}`);
+  const uploadBtn = document.querySelector(`#form-${type} .upload-btn`);
+  const form = document.getElementById(`form-${type}`);
+
+  if (!fileInput || !form || !uploadBtn) {
+    // No global uploader present for this type on this page — skip binding.
+    return;
+  }
+
+  // Dosya seçildiğinde
+  fileInput.addEventListener('change', function() {
+    if (this.files.length > 0) {
+      const fileNames = Array.from(this.files).map(f => f.name).join(', ');
+      if (selectedDiv) {
+        selectedDiv.textContent = `✓ ${this.files.length} dosya seçildi: ${fileNames}`;
+        selectedDiv.style.display = 'block';
+      }
+      uploadBtn.disabled = false;
+    } else {
+      if (selectedDiv) selectedDiv.style.display = 'none';
+      uploadBtn.disabled = true;
+    }
+  });
+
+  // Form submit
+  form.addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    if (!fileInput.files || fileInput.files.length === 0) {
+      showModal('errorModal', 'Lütfen dosya seçin!');
+      return;
+    }
+
+    const formData = new FormData();
+    Array.from(fileInput.files).forEach(file => {
+      formData.append('files', file);
+    });
+    formData.append('type', type);
+
+    uploadBtn.disabled = true;
+    uploadBtn.textContent = 'Yükleniyor...';
+
+    try {
+      const response = await fetch('/accounting/upload', {
+        method: 'POST',
+        body: formData
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        showToast(`${result.files.length} dosya başarıyla yüklendi!`);
+        fileInput.value = '';
+        if (selectedDiv) selectedDiv.style.display = 'none';
+        loadFiles(type);
+      } else {
+        showModal('errorModal', 'Yükleme hatası: ' + result.error);
+      }
+    } catch (error) {
+      console.error('Upload error:', error);
+      showModal('errorModal', 'Yükleme sırasında hata oluştu!');
+    } finally {
+      uploadBtn.disabled = false;
+      uploadBtn.textContent = 'Yükle';
+    }
+  });
+
+  // Dosyaları yükle
+  loadFiles(type);
+});
+
+async function loadFiles(type) {
+  try {
+    const response = await fetch(`/accounting/files/${type}`);
+    const result = await response.json();
+
+    const container = document.getElementById(`files-${type}`);
+
+    if (result.files && result.files.length > 0) {
+      container.innerHTML = result.files.map(file => `
+        <div class="file-item">
+          <span class="file-item-name">${file.name}</span>
+          <div class="file-item-actions">
+            <button class="file-item-btn view" onclick="viewFile('${type}', '${file.name}')">👁️ Görüntüle</button>
+            ${!isReadOnly ? `<button class="file-item-btn delete" onclick="deleteFile('${type}', '${file.name}')">🗑️ Sil</button>` : ''}
+          </div>
+        </div>
+      `).join('');
+    } else {
+      container.innerHTML = '<div class="no-files">Henüz dosya yüklenmedi</div>';
+    }
+  } catch (error) {
+    console.error('Load files error:', error);
+  }
+}
+
+function viewFile(type, filename) {
+  window.open(`/accounting/view/${type}/${encodeURIComponent(filename)}`, '_blank');
+}
+
+function deleteFile(type, filename) {
+  deleteContext = { type, filename };
+  showModal('deleteModal', `"${filename}" dosyasını silmek istediğinizden emin misiniz?`);
+}
+
+async function confirmDelete() {
+  if (!deleteContext) return;
+
+  const { type, filename } = deleteContext;
+
+  try {
+    const response = await fetch(`/accounting/delete/${type}/${encodeURIComponent(filename)}`, {
+      method: 'DELETE'
+    });
+
+    const result = await response.json();
+
+    closeModal('deleteModal');
+
+    if (result.success) {
+      showToast('Dosya başarıyla silindi!', 3000, 'danger', 'top-right');
+      loadFiles(type);
+    } else {
+      showModal('errorModal', 'Silme hatası: ' + result.error);
+    }
+  } catch (error) {
+    console.error('Delete error:', error);
+    closeModal('deleteModal');
+    showModal('errorModal', 'Dosya silinirken hata oluştu!');
+  }
+}
+
+// Accounting positions filter (Pozisyon veya İhracat Poz)
+function filterAccountingPositions() {
+  const input = document.getElementById('accounting-search');
+  if (!input) return;
+  const q = input.value.trim().toLowerCase();
+  const tbody = document.getElementById('accounting-positions-tbody');
+  const noRes = document.getElementById('accounting-no-results');
+  if (!tbody) return;
+  let visible = 0;
+  // determine active filter (all / complete / incomplete)
+  const activeFilterEl = document.querySelector('.acct-filter-btn.active');
+  const activeFilter = activeFilterEl ? activeFilterEl.dataset.filter : 'all';
+  Array.from(tbody.querySelectorAll('tr')).forEach(tr => {
+    const pos = (tr.children[0]?.textContent || '').trim().toLowerCase();
+    const ihr = (tr.children[1]?.textContent || '').trim().toLowerCase();
+    const plate = (tr.children[2]?.textContent || '').trim().toLowerCase();
+    const matchesSearch = !q || pos.includes(q) || ihr.includes(q) || plate.includes(q);
+    // determine completion from rendered DOM: if row has .row-complete class it's complete
+    const isComplete = tr.classList.contains('row-complete');
+
+    let filterMatch = true;
+    if (activeFilter === 'complete') filterMatch = isComplete;
+    else if (activeFilter === 'incomplete') filterMatch = !isComplete;
+
+    const match = matchesSearch && filterMatch;
+    tr.style.display = match ? '' : 'none';
+    if (match) visible += 1;
+  });
+  if (noRes) noRes.style.display = visible === 0 ? 'block' : 'none';
+}
+
+// Helper to set the active accounting filter from inline onclicks
+function setAccountingFilter(filter, btn) {
+  document.querySelectorAll('.acct-filter-btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  // if no btn provided, try to find matching button
+  if (!btn) {
+    const el = document.querySelector(`.acct-filter-btn[data-filter="${filter}"]`);
+    if (el) el.classList.add('active');
+  }
+  filterAccountingPositions();
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  const input = document.getElementById('accounting-search');
+  const clearBtn = document.getElementById('accounting-clear');
+  if (input) input.addEventListener('input', filterAccountingPositions);
+  if (clearBtn) clearBtn.addEventListener('click', function() { input.value = ''; filterAccountingPositions(); input.focus(); });
+  // filter buttons
+  document.querySelectorAll('.acct-filter-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+      document.querySelectorAll('.acct-filter-btn').forEach(b => b.classList.remove('active'));
+      this.classList.add('active');
+      filterAccountingPositions();
+    });
+  });
+  // set default filter to 'all'
+  const defaultBtn = document.getElementById('acct-filter-all');
+  if (defaultBtn) defaultBtn.classList.add('active');
+});
+
+</script>
+
+<script>
+// Open accounting upload menu for a position
+function openAccountingUploadMenu(positionNo) {
+  document.getElementById('accModalPosition').textContent = positionNo;
+  // store on modal element for later
+  const modal = document.getElementById('accountingUploadModal');
+  modal.dataset.positionNo = positionNo;
+  // clear any selected files
+  ['export-ameta','import-ameta','t1','cmr'].forEach(type => {
+    const el = document.getElementById('file-' + type + '-pos');
+    if (el) el.value = '';
+  });
+  // clear unified input/select
+  const unified = document.getElementById('file-pos'); if (unified) unified.value = '';
+  const sel = document.getElementById('file-type-select'); if (sel) sel.value = 't1';
+  modal.style.display = 'flex';
+  // load existing files for this position into modal lists
+  loadPositionFiles(positionNo);
+}
+
+async function uploadAccountingFiles(type) {
+  const modal = document.getElementById('accountingUploadModal');
+  const positionNo = modal.dataset.positionNo;
+  const input = document.getElementById('file-' + type + '-pos');
+  if (!input || !input.files || input.files.length === 0) { showModal('errorModal', 'Lütfen bir dosya seçin'); return; }
+
+  const fd = new FormData();
+  Array.from(input.files).forEach(f => fd.append('files', f));
+  fd.append('type', type);
+  if (positionNo) fd.append('position_no', positionNo);
+
+  try {
+    const res = await fetch('/accounting/upload', { method: 'POST', body: fd });
+    const data = await res.json();
+    if (data.success) {
+      showToast('Yükleme başarılı');
+      // refresh the position files lists in modal
+      if (positionNo) loadPositionFiles(positionNo);
+    } else {
+      showModal('errorModal', 'Yükleme hatası: ' + (data.error || data.message || 'Bilinmeyen hata'));
+    }
+  } catch (err) {
+    showModal('errorModal', 'Yükleme sırasında hata: ' + err.message);
+  }
+}
+</script>
+
+<script>
+// Unified upload for merged T1/CMR card
+async function uploadUnifiedFiles() {
+  const modal = document.getElementById('accountingUploadModal');
+  const positionNo = modal ? modal.dataset.positionNo : '';
+  // no select anymore; default upload type to T1 (uploads go to position T1/GMR)
+  const type = 't1';
+  const input = document.getElementById('file-pos');
+  if (!input || !input.files || input.files.length === 0) { showModal('errorModal', 'Lütfen bir dosya seçin'); return; }
+
+  const fd = new FormData();
+  Array.from(input.files).forEach(f => fd.append('files', f));
+  fd.append('type', type);
+  if (positionNo) fd.append('position_no', positionNo);
+
+  try {
+    const res = await fetch('/accounting/upload', { method: 'POST', body: fd });
+    const data = await res.json();
+    if (data.success) {
+      showToast('Yükleme başarılı');
+      if (positionNo) loadPositionFiles(positionNo);
+    } else {
+      showModal('errorModal', 'Yükleme hatası: ' + (data.error || data.message || 'Bilinmeyen hata'));
+    }
+  } catch (err) {
+    showModal('errorModal', 'Yükleme sırasında hata: ' + (err.message || err));
+  }
+}
+</script>
+</script>
+
+<script>
+// Drag & Drop support for upload cards inside accounting modal
+function setupAccountingDragDrop() {
+  const cards = document.querySelectorAll('.acc-upload-card');
+  cards.forEach(card => {
+    const type = card.dataset.type;
+    card.addEventListener('dragover', function(e) {
+      e.preventDefault();
+      this.style.border = '2px dashed #3b82f6';
+      this.style.background = 'rgba(59,130,246,0.03)';
+    });
+    card.addEventListener('dragleave', function(e) {
+      e.preventDefault();
+      this.style.border = '';
+      this.style.background = '';
+    });
+    card.addEventListener('drop', function(e) {
+      e.preventDefault();
+      this.style.border = '';
+      this.style.background = '';
+      const files = e.dataTransfer.files;
+      if (!files || files.length === 0) return;
+      // If modal has positionNo stored, upload with it
+      const modal = document.getElementById('accountingUploadModal');
+      const positionNo = modal ? modal.dataset.positionNo : '';
+      uploadDroppedFiles(type, files, positionNo);
+    });
+  });
+}
+
+async function uploadDroppedFiles(type, files, positionNo) {
+  const fd = new FormData();
+  Array.from(files).forEach(f => fd.append('files', f));
+  fd.append('type', type);
+  if (positionNo) fd.append('position_no', positionNo);
+
+  try {
+    const res = await fetch('/accounting/upload', { method: 'POST', body: fd });
+    const data = await res.json();
+    if (data.success) {
+      showToast(`${data.files.length} dosya başarıyla yüklendi!`);
+      if (positionNo) loadPositionFiles(positionNo);
+    } else {
+      showModal('errorModal', 'Yükleme hatası: ' + (data.error || data.message || 'Bilinmeyen hata'));
+    }
+  } catch (err) {
+    showModal('errorModal', 'Yükleme sırasında hata: ' + (err.message || err));
+  }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  setupAccountingDragDrop();
+});
+</script>
+
+<script>
+// Load files for a position and render under each modal card
+async function loadPositionFiles(positionNo) {
+  if (!positionNo) return;
+  try {
+    const res = await fetch(`/accounting/position-files/${encodeURIComponent(positionNo)}`);
+    const data = await res.json();
+    if (!data.success) return;
+
+    // categorize files by our type mapping
+    const filesByType = {
+      'export-ameta': [],
+      'import-ameta': [],
+      't1': [],
+      'cmr': []
+    };
+
+    function categoryToType(cat) {
+      if (!cat) return 'export-ameta';
+      const c = cat.toLowerCase();
+      if (c.includes('t1')) return 't1';
+      if (c.includes('cmr')) return 'cmr';
+      // evraklar -> map to export-ameta (could be either)
+      return 'export-ameta';
+    }
+
+    (data.files || []).forEach(f => {
+      // If file was discovered on filesystem (has _fs_path), try to infer its type from path
+      if (f._fs_path) {
+        const p = String(f._fs_path).toLowerCase();
+        let inferred = categoryToType(f.category);
+        if (p.includes('/t1') || p.includes('t1-gmr') || p.includes('t1_gmr')) inferred = 't1';
+        else if (p.includes('/cmr') || p.includes(' cmr')) inferred = 'cmr';
+        filesByType[inferred] = filesByType[inferred] || [];
+        filesByType[inferred].push(f);
+        return;
+      }
+
+      const t = (f.type && filesByType[f.type]) ? f.type : categoryToType(f.category);
+      filesByType[t] = filesByType[t] || [];
+      filesByType[t].push(f);
+    });
+
+    // render into containers
+    ['export-ameta','import-ameta','t1','cmr'].forEach(type => {
+      const container = document.getElementById('pos-files-' + type);
+      if (!container) return;
+      const list = filesByType[type] || [];
+      if (list.length === 0) {
+        container.innerHTML = '<div class="no-files">Henüz dosya yüklenmedi</div>';
+      } else {
+        container.innerHTML = list.map(f => {
+          const fileType = f.type || type;
+          // if file was discovered on filesystem (outside accounting DB), it may include _fs_path
+          const viewBtn = f._fs_path ?
+            `<a class="file-item-btn view" href="${f._fs_path}" target="_blank">👁️</a>` :
+            `<button class="file-item-btn view" onclick="viewFile('${fileType}', '${f.filename}')">👁️</button>`;
+          const deleteBtn = (!isReadOnly && f.type) ? `<button class="file-item-btn delete" onclick="deleteFile('${fileType}', '${f.filename}')">🗑️</button>` : '';
+          return `
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+            <div style="flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${f.original_name || f.filename}</div>
+            <div style="margin-left:8px;">
+              ${viewBtn}
+              ${deleteBtn}
+            </div>
+          </div>
+        `}).join('');
+      }
+    });
+  } catch (err) {
+    console.error('Error loading position files:', err);
+  }
+}
+</script>
+
+<!-- Floating Particles Script -->
+<script>
+// Create floating particles dynamically
+(function() {
+  const container = document.querySelector('.floating-particles');
+  if (!container) return;
+  
+  for (let i = 0; i < 15; i++) {
+    const particle = document.createElement('div');
+    particle.className = 'floating-particle';
+    particle.style.left = Math.random() * 100 + '%';
+    particle.style.animationDelay = Math.random() * 15 + 's';
+    particle.style.animationDuration = (10 + Math.random() * 10) + 's';
+    container.appendChild(particle);
+  }
+})();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,1044 @@
+<style>
+  .load-form {
+    max-width: 1100px;
+    margin: 0 auto 32px;
+    padding: 24px 24px 32px;
+    box-sizing: border-box;
+  }
+
+  .load-form-title {
+    margin: 0 0 8px;
+    font-size: 22px;
+    font-weight: 600;
+    color: #e5e7eb;
+  }
+
+  .load-form-subtitle {
+    font-size: 13px;
+    color: #9ca3af;
+    margin-bottom: 14px;
+  }
+
+  .top-actions {
+    margin-bottom: 10px;
+    display: flex;
+    gap: 8px;
+  }
+
+  .alert-error {
+    background: rgba(127, 29, 29, 0.18);
+    border: 1px solid #b91c1c;
+    color: #fecaca;
+    padding: 8px 10px;
+    border-radius: 6px;
+    font-size: 13px;
+    margin-bottom: 12px;
+  }
+
+  .form-section-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.8fr) minmax(0, 1.4fr);
+    gap: 18px;
+  }
+
+  @media (max-width: 900px) {
+    .form-section-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .form-card {
+    background: rgba(15, 23, 42, 0.9);
+    border: 1px solid #1f2937;
+    border-radius: 10px;
+    padding: 12px 16px 14px;
+    color: #e5e7eb;
+  }
+
+  .form-card h2 {
+    margin: 0 0 10px;
+    font-size: 15px;
+    font-weight: 600;
+    color: #f9fafb;
+  }
+
+  .field-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 10px 18px;
+    font-size: 13px;
+  }
+
+  .field-row {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .field-row.full-width {
+    grid-column: 1 / -1;
+  }
+
+  .field-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #9ca3af;
+  }
+
+  .field-input,
+  .field-select,
+  .field-textarea {
+    background: #020617;
+    border: 1px solid #1f2937;
+    border-radius: 6px;
+    padding: 7px 9px;
+    color: #e5e7eb;
+    font-size: 13px;
+    width: 100%;
+    box-sizing: border-box;
+    outline: none;
+  }
+
+  .field-input::placeholder,
+  .field-textarea::placeholder {
+    color: #6b7280;
+  }
+
+  .field-input[readonly] {
+    background: #020617;
+    opacity: 0.9;
+    cursor: default;
+  }
+
+  .field-textarea {
+    min-height: 70px;
+    resize: vertical;
+  }
+
+  .form-footer {
+    margin-top: 18px;
+  }
+</style>
+
+<%
+  // isEdit gönderilmediyse load.id'ye göre tahmin et
+  const editing = (typeof isEdit !== 'undefined')
+    ? isEdit
+    : !!(load && load.id);
+  
+  // Eğer aynı pozisyona yeni yük ekliyorsak, pozisyon sayfasına dön butonu göster
+  const backUrl = (typeof isSamePositionDuplicate !== 'undefined' && isSamePositionDuplicate && load && load.position_no) 
+    ? `/loads/position/${encodeURIComponent(load.position_no)}` 
+    : '/loads';
+%>
+
+<div class="load-form">
+  <div class="top-actions">
+    <a href="<%= backUrl %>" class="btn btn-outline">← Listeye Dön</a>
+  </div>
+
+  <h1 class="load-form-title">
+    <%= editing ? 'Yükleme Kaydını Düzenle' : 'Yeni Yükleme (YL1 Kaydı)' %>
+  </h1>
+  <div class="load-form-subtitle">
+    Pozisyon numarası otomatik üretilir. Gönderici seçmek zorunludur.
+  </div>
+
+  <% if (errors) { %>
+    <div class="alert-error"><%= errors %></div>
+  <% } %>
+
+  <% if (duplicatePosition) { %>
+    <script>
+      alert('Bu pozisyon numarası zaten kayıtlı. Lütfen farklı bir Pozisyon No girin.');
+    </script>
+  <% } %>
+
+  <form
+  action="<%= isEdit && load.id ? ('/loads/' + load.id) : '/loads' %>"
+  method="POST"
+>
+    <!-- Hidden field: Eğer aynı pozisyona yük ekliyorsak position_no'yu hidden olarak gönder -->
+    <% if (isSamePositionDuplicate && load.position_no) { %>
+      <input type="hidden" name="position_no" value="<%= load.position_no %>" />
+    <% } %>
+
+    <div class="form-section-grid">
+      <!-- SOL KOLON -->
+      <div>
+        <!-- GENEL BİLGİLER -->
+        <div class="form-card">
+          <h2>Genel Bilgiler</h2>
+          <div class="field-grid">
+            <div class="field-row full-width">
+              <label class="field-label">Pozisyon No</label>
+              <input
+                type="text"
+                name="position_no_display"
+                class="field-input"
+                value="<%= load.position_no || '' %>"
+                readonly
+                placeholder="<%= editing ? '' : 'Kaydedince otomatik atanacak' %>"
+              />
+            </div>
+
+            <div class="field-row">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                <label class="field-label" style="margin-bottom: 0;">Gönderici / Müşteri</label>
+                <div style="display: flex; gap: 4px;">
+                  <button 
+                    type="button" 
+                    class="btn btn-sm" 
+                    onclick="deleteSelectedCompany('customer_select')"
+                    style="background: #dc2626; padding: 5px 10px; font-size: 11px; white-space: nowrap;"
+                  >
+                    Sil
+                  </button>
+                  <button 
+                    type="button" 
+                    class="btn btn-sm" 
+                    onclick="openAddCompanyModal('sender')"
+                    style="background: #059669; padding: 5px 10px; font-size: 11px; white-space: nowrap;"
+                  >
+                    + Ekle
+                  </button>
+                </div>
+              </div>
+              <select
+                name="customer_name"
+                id="customer_select"
+                class="field-select"
+                required
+              >
+                <option value="">Seçiniz...</option>
+                <% if (companies && companies.length) { %>
+                  <% companies.forEach(function (company) {
+                       const companyName = company.name || company.company_name || '';
+                       const companyType = company.type || 'both';
+                       if (companyType === 'sender' || companyType === 'both') {
+                  %>
+                    <option
+                      value="<%= companyName %>"
+                      <%= (load.customer_name === companyName) ? 'selected' : '' %>
+                    >
+                      <%= companyName %>
+                    </option>
+                  <% } %>
+                  <% }); %>
+                <% } %>
+              </select>
+            </div>
+
+            <div class="field-row">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                <label class="field-label" style="margin-bottom: 0;">Alıcı</label>
+                <div style="display: flex; gap: 4px;">
+                  <button 
+                    type="button" 
+                    class="btn btn-sm" 
+                    onclick="deleteSelectedCompany('consignee_select')"
+                    style="background: #dc2626; padding: 5px 10px; font-size: 11px; white-space: nowrap;"
+                  >
+                    Sil
+                  </button>
+                  <button 
+                    type="button" 
+                    class="btn btn-sm" 
+                    onclick="openAddCompanyModal('receiver')"
+                    style="background: #0891b2; padding: 5px 10px; font-size: 11px; white-space: nowrap;"
+                  >
+                    + Ekle
+                  </button>
+                </div>
+              </div>
+              <select
+                name="consignee_name"
+                id="consignee_select"
+                class="field-select"
+              >
+                <option value="">Seçiniz...</option>
+                <% if (companies && companies.length) { %>
+                  <% companies.forEach(function (company) {
+                       const companyName = company.name || company.company_name || '';
+                       const companyType = company.type || 'both';
+                       if (companyType === 'receiver' || companyType === 'both') {
+                  %>
+                    <option
+                      value="<%= companyName %>"
+                      <%= (load.consignee_name === companyName) ? 'selected' : '' %>
+                    >
+                      <%= companyName %>
+                    </option>
+                  <% } %>
+                  <% }); %>
+                <% } %>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- YÜKLEME & BOŞALTMA -->
+        <div class="form-card" style="margin-top: 12px;">
+          <h2>Yükleme &amp; Boşaltma</h2>
+          <div class="field-grid">
+            <div class="field-row">
+              <label class="field-label">Yükleme Ülke</label>
+              <input
+                type="text"
+                name="loading_country"
+                class="field-input"
+                value="<%= load.loading_country || '' %>"
+              />
+            </div>
+
+            <!-- Boşaltma Ülke → Varış Gümrüğü -->
+            <div class="field-row">
+              <label class="field-label">Varış Gümrüğü</label>
+              <input
+                type="text"
+                name="unloading_country"
+                class="field-input"
+                value="<%= load.unloading_country || '' %>"
+              />
+            </div>
+
+            <!-- Boşaltma Şehir → Antrepo -->
+            <div class="field-row">
+              <label class="field-label">Antrepo</label>
+              <input
+                type="text"
+                name="unloading_city"
+                class="field-input"
+                value="<%= load.unloading_city || '' %>"
+              />
+            </div>
+
+            <div class="field-row">
+              <label class="field-label">Kap Adedi</label>
+              <input
+                type="number"
+                name="packages"
+                class="field-input"
+                min="0"
+                value="<%= load.packages || '' %>"
+              />
+            </div>
+
+            <div class="field-row">
+              <label class="field-label">LDM</label>
+              <input
+                type="number"
+                step="0.01"
+                name="ldm"
+                class="field-input"
+                value="<%= load.ldm || '' %>"
+              />
+            </div>
+
+            <div class="field-row">
+              <label class="field-label">Brüt Ağırlık (kg)</label>
+              <input
+                type="number"
+                step="0.01"
+                name="gross_weight"
+                class="field-input"
+                value="<%= load.gross_weight || '' %>"
+              />
+            </div>
+
+            <!-- YENİ KUTU: Malzeme Cinsi (goods_description) -->
+            <div class="field-row">
+              <label class="field-label">Malzeme Cinsi</label>
+              <input
+                type="text"
+                name="goods_description"
+                class="field-input"
+                value="<%= load.goods_description || '' %>"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SAĞ KOLON -->
+      <div>
+        <!-- DİĞER BİLGİLER -->
+        <div class="form-card">
+  <h2>Diğer Bilgiler</h2>
+  <div class="field-grid">
+    <div class="field-row">
+      <label class="field-label">Navlun Tutarı</label>
+      <input
+        type="number"
+        step="0.01"
+        name="navlun_amount"
+        class="field-input"
+        value="<%= load.navlun_amount || '' %>"
+      />
+    </div>
+
+    <div class="field-row">
+      <label class="field-label">Navlun Döviz</label>
+      <select
+        name="navlun_currency"
+        class="field-select"
+      >
+        <option value="">Seçiniz...</option>
+        <option value="EUR" <%= load.navlun_currency === 'EUR' ? 'selected' : '' %>>EUR</option>
+        <option value="GBP" <%= load.navlun_currency === 'GBP' ? 'selected' : '' %>>GBP</option>
+        <option value="USD" <%= load.navlun_currency === 'USD' ? 'selected' : '' %>>USD</option>
+        <option value="TRY" <%= load.navlun_currency === 'TRY' ? 'selected' : '' %>>TRY</option>
+      </select>
+    </div>
+
+    <div class="field-row">
+      <label class="field-label">YDG (EUR)</label>
+      <input
+        type="number"
+        step="0.01"
+        name="ydg_amount"
+        class="field-input"
+        value="<%= load.ydg_amount || '' %>"
+      />
+    </div>
+
+    <div class="field-row">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+        <label class="field-label" style="margin-bottom: 0;">Fatura Kime</label>
+        <button 
+          type="button" 
+          class="btn btn-sm" 
+          onclick="openAddInvoiceCompanyModal()"
+          style="background: #7c3aed; padding: 5px 10px; font-size: 11px; white-space: nowrap;"
+        >
+          + Ekle
+        </button>
+      </div>
+      <select
+        name="fatura_kime"
+        id="fatura_kime_select"
+        class="field-select"
+      >
+        <option value="">Seçiniz...</option>
+        <% if (invoiceCompanies && invoiceCompanies.length) { %>
+          <% invoiceCompanies.forEach(function (company) { %>
+            <option
+              value="<%= company.name %>"
+              <%= (load.fatura_kime === company.name) ? 'selected' : '' %>
+            >
+              <%= company.name %>
+            </option>
+          <% }); %>
+        <% } %>
+      </select>
+    </div>
+
+    <div class="field-row">
+      <label class="field-label">Ordino Bedeli (TL)</label>
+      <input
+        type="number"
+        step="0.01"
+        name="ordino_cost"
+        class="field-input"
+        value="<%= load.ordino_cost || '' %>"
+        placeholder="Sadece TL cinsinden"
+      />
+    </div>
+  </div>
+        </div>
+
+        <!-- Malzeme & Notlar KARTI KALDIRILDI -->
+      </div>
+    </div>
+
+    <!-- Hidden fields for vehicle info -->
+    <input type="hidden" name="truck_plate" id="hidden_truck_plate" value="<%= load.truck_plate || '' %>">
+    <input type="hidden" name="trailer_plate" id="hidden_trailer_plate" value="<%= load.trailer_plate || '' %>">
+    <input type="hidden" name="driver_name" id="hidden_driver_name" value="<%= load.driver_name || '' %>">
+    <input type="hidden" name="loading_date" id="hidden_loading_date" value="<%= load.loading_date || '' %>">
+    <input type="hidden" name="unloading_date" id="hidden_unloading_date" value="<%= load.unloading_date || '' %>">
+
+    <div class="form-footer">
+      <button type="submit" class="btn">
+        <%= editing ? 'Kaydı Güncelle' : 'Kaydet' %>
+      </button>
+    </div>
+  </form>
+
+  <!-- Firma Ekleme Modal (Gönderici/Alıcı) -->
+  <div id="addCompanyModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 9999; justify-content: center; align-items: center;">
+    <div style="background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 24px; width: 90%; max-width: 450px; box-shadow: 0 20px 50px rgba(0,0,0,0.5);">
+      <h3 style="margin: 0 0 16px; color: #f1f5f9; font-size: 18px; font-weight: 600;" id="modalTitle">Yeni Firma Ekle</h3>
+      
+      <div style="margin-bottom: 16px;">
+        <label style="display: block; font-size: 12px; color: #94a3b8; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.05em;">
+          Firma Adı
+        </label>
+        <input 
+          type="text" 
+          id="companyNameInput" 
+          placeholder="Firma adını giriniz"
+          style="width: 100%; padding: 10px 12px; background: #0f172a; border: 1px solid #334155; border-radius: 6px; color: #e2e8f0; font-size: 14px; box-sizing: border-box;"
+        />
+      </div>
+
+      <div id="modalMessage" style="display: none; padding: 10px; border-radius: 6px; margin-bottom: 12px; font-size: 13px;"></div>
+
+      <div style="display: flex; gap: 10px; justify-content: flex-end;">
+        <button 
+          type="button" 
+          onclick="closeAddCompanyModal()"
+          style="padding: 10px 20px; background: #334155; color: #e2e8f0; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 500;"
+        >
+          İptal
+        </button>
+        <button 
+          type="button" 
+          id="saveCompanyBtn"
+          onclick="saveCompany()"
+          style="padding: 10px 20px; background: #3b82f6; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 500;"
+        >
+          Kaydet
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let currentCompanyType = 'sender'; // 'sender' or 'receiver'
+
+    function openAddCompanyModal(type) {
+      currentCompanyType = type;
+      const modal = document.getElementById('addCompanyModal');
+      const title = document.getElementById('modalTitle');
+      const input = document.getElementById('companyNameInput');
+      const message = document.getElementById('modalMessage');
+      
+      title.textContent = type === 'sender' ? 'Yeni Gönderici Ekle' : 'Yeni Alıcı Ekle';
+      input.value = '';
+      message.style.display = 'none';
+      modal.style.display = 'flex';
+      
+      setTimeout(() => input.focus(), 100);
+    }
+
+    function closeAddCompanyModal() {
+      document.getElementById('addCompanyModal').style.display = 'none';
+    }
+
+    function showModalMessage(message, isError = false) {
+      const messageDiv = document.getElementById('modalMessage');
+      messageDiv.textContent = message;
+      messageDiv.style.display = 'block';
+      messageDiv.style.background = isError ? 'rgba(127, 29, 29, 0.3)' : 'rgba(5, 150, 105, 0.2)';
+      messageDiv.style.color = isError ? '#fca5a5' : '#6ee7b7';
+      messageDiv.style.border = isError ? '1px solid #b91c1c' : '1px solid #059669';
+    }
+
+    async function saveCompany() {
+      const input = document.getElementById('companyNameInput');
+      const name = input.value.trim();
+      
+      if (!name) {
+        showModalMessage('Firma adı boş olamaz', true);
+        return;
+      }
+
+      const saveBtn = document.getElementById('saveCompanyBtn');
+      saveBtn.disabled = true;
+      saveBtn.textContent = 'Kaydediliyor...';
+
+      try {
+        const response = await fetch('/loads/add-company', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            name: name,
+            type: currentCompanyType
+          })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+          showModalMessage('Firma başarıyla eklendi!', false);
+          
+          // Dropdown'a yeni firmayı ekle
+          const selectId = currentCompanyType === 'sender' ? 'customer_select' : 'consignee_select';
+          const select = document.getElementById(selectId);
+          const option = document.createElement('option');
+          option.value = name;
+          option.textContent = name;
+          option.selected = true;
+          select.appendChild(option);
+
+          // Modal'ı 1 saniye sonra kapat
+          setTimeout(() => {
+            closeAddCompanyModal();
+            saveBtn.disabled = false;
+            saveBtn.textContent = 'Kaydet';
+          }, 1000);
+        } else {
+          showModalMessage(data.error || 'Firma eklenirken hata oluştu', true);
+          saveBtn.disabled = false;
+          saveBtn.textContent = 'Kaydet';
+        }
+      } catch (error) {
+        showModalMessage('Sunucuya bağlanırken hata oluştu', true);
+        saveBtn.disabled = false;
+        saveBtn.textContent = 'Kaydet';
+      }
+    }
+
+    // ESC tuşu ile modal'ı kapat
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        closeAddCompanyModal();
+      }
+    });
+
+    // Enter tuşu ile kaydet
+    document.getElementById('companyNameInput')?.addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') {
+        saveCompany();
+      }
+    });
+
+    // ========== FATURA FİRMALARI ==========
+    function openAddInvoiceCompanyModal() {
+      const modal = document.getElementById('addInvoiceCompanyModal');
+      const input = document.getElementById('invoiceCompanyNameInput');
+      const message = document.getElementById('invoiceModalMessage');
+      
+      input.value = '';
+      message.style.display = 'none';
+      modal.style.display = 'flex';
+      
+      setTimeout(() => input.focus(), 100);
+    }
+
+    function closeAddInvoiceCompanyModal() {
+      document.getElementById('addInvoiceCompanyModal').style.display = 'none';
+    }
+
+    function showInvoiceModalMessage(message, isError = false) {
+      const messageDiv = document.getElementById('invoiceModalMessage');
+      messageDiv.textContent = message;
+      messageDiv.style.display = 'block';
+      messageDiv.style.background = isError ? 'rgba(127, 29, 29, 0.3)' : 'rgba(5, 150, 105, 0.2)';
+      messageDiv.style.color = isError ? '#fca5a5' : '#6ee7b7';
+      messageDiv.style.border = isError ? '1px solid #b91c1c' : '1px solid #059669';
+    }
+
+    async function saveInvoiceCompany() {
+      const input = document.getElementById('invoiceCompanyNameInput');
+      const name = input.value.trim();
+      
+      if (!name) {
+        showInvoiceModalMessage('Firma adı boş olamaz', true);
+        return;
+      }
+
+      const saveBtn = document.getElementById('saveInvoiceCompanyBtn');
+      saveBtn.disabled = true;
+      saveBtn.textContent = 'Kaydediliyor...';
+
+      try {
+        const response = await fetch('/loads/add-invoice-company', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ name: name })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+          showInvoiceModalMessage('Firma başarıyla eklendi!', false);
+          
+          // Dropdown'a yeni firmayı ekle
+          const select = document.getElementById('fatura_kime_select');
+          const option = document.createElement('option');
+          option.value = name;
+          option.textContent = name;
+          option.selected = true;
+          select.appendChild(option);
+
+          // Modal'ı 1 saniye sonra kapat
+          setTimeout(() => {
+            closeAddInvoiceCompanyModal();
+            saveBtn.disabled = false;
+            saveBtn.textContent = 'Kaydet';
+          }, 1000);
+        } else {
+          showInvoiceModalMessage(data.error || 'Firma eklenirken hata oluştu', true);
+          saveBtn.disabled = false;
+          saveBtn.textContent = 'Kaydet';
+        }
+      } catch (error) {
+        showInvoiceModalMessage('Sunucuya bağlanırken hata oluştu', true);
+        saveBtn.disabled = false;
+        saveBtn.textContent = 'Kaydet';
+      }
+    }
+
+    // ESC tuşu ile invoice modal'ı da kapat
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        closeAddInvoiceCompanyModal();
+      }
+    });
+
+    // Enter tuşu ile kaydet
+    document.getElementById('invoiceCompanyNameInput')?.addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') {
+        saveInvoiceCompany();
+      }
+    });
+  </script>
+
+  <!-- Fatura Firması Ekleme Modal -->
+  <div id="addInvoiceCompanyModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 9999; justify-content: center; align-items: center;">
+    <div style="background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 24px; width: 90%; max-width: 450px; box-shadow: 0 20px 50px rgba(0,0,0,0.5);">
+      <h3 style="margin: 0 0 16px; color: #f1f5f9; font-size: 18px; font-weight: 600;">Yeni Fatura Firması Ekle</h3>
+      
+      <div style="margin-bottom: 16px;">
+        <label style="display: block; font-size: 12px; color: #94a3b8; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.05em;">
+          Firma Adı
+        </label>
+        <input 
+          type="text" 
+          id="invoiceCompanyNameInput" 
+          placeholder="Firma adını giriniz"
+          style="width: 100%; padding: 10px 12px; background: #0f172a; border: 1px solid #334155; border-radius: 6px; color: #e2e8f0; font-size: 14px; box-sizing: border-box;"
+        />
+      </div>
+
+      <div id="invoiceModalMessage" style="display: none; padding: 10px; border-radius: 6px; margin-bottom: 12px; font-size: 13px;"></div>
+
+      <div style="display: flex; gap: 10px; justify-content: flex-end;">
+        <button 
+          type="button" 
+          onclick="closeAddInvoiceCompanyModal()"
+          style="padding: 10px 20px; background: #334155; color: #e2e8f0; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 500;"
+        >
+          İptal
+        </button>
+        <button 
+          type="button" 
+          id="saveInvoiceCompanyBtn"
+          onclick="saveInvoiceCompany()"
+          style="padding: 10px 20px; background: #7c3aed; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 500;"
+        >
+          Kaydet
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Bilgiler Modal -->
+<div id="infoModal" class="modal-overlay">
+  <div class="modal-container" style="max-width: 800px;">
+    <div class="modal-header-custom">
+      <h2 style="margin: 0; font-size: 18px; color: #f9fafb;">Pozisyon Bilgileri</h2>
+      <button class="modal-close-btn" onclick="closeInfoModal()">&times;</button>
+    </div>
+    <div class="modal-body-custom">
+      <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px;">
+        <!-- Çekici Plakası -->
+        <div class="field-row">
+          <label class="field-label">🚚 Çekici Plakası</label>
+          <select id="modal_truck_plate" class="field-select" onchange="updateModalDriver()">
+            <option value="">Seçiniz...</option>
+            <% if (trucks && trucks.length) { %>
+              <% trucks.forEach(function(truck) { %>
+                <option value="<%= truck.plate %>" data-driver="<%= truck.driver_name || '' %>" <%= (load.truck_plate === truck.plate) ? 'selected' : '' %>>
+                  <%= truck.plate %>
+                </option>
+              <% }) %>
+            <% } %>
+          </select>
+        </div>
+
+        <!-- Dorse Plakası -->
+        <div class="field-row">
+          <label class="field-label">🚛 Dorse Plakası</label>
+          <select id="modal_trailer_plate" class="field-select">
+            <option value="">Seçiniz...</option>
+            <% if (trailers && trailers.length) { %>
+              <% trailers.forEach(function(trailer) { %>
+                <option value="<%= trailer.plate %>" <%= (load.trailer_plate === trailer.plate) ? 'selected' : '' %>>
+                  <%= trailer.plate %>
+                </option>
+              <% }) %>
+            <% } %>
+          </select>
+        </div>
+
+        <!-- Şoför Adı -->
+        <div class="field-row">
+          <label class="field-label">👨‍✈️ Şoför Adı</label>
+          <input type="text" id="modal_driver_name" class="field-input" value="<%= load.driver_name || '' %>" placeholder="Çekici seçince otomatik dolar" readonly style="background: #0f172a;">
+        </div>
+
+        <!-- Yükleme Tarihi -->
+        <div class="field-row">
+          <label class="field-label">📅 Yükleme Tarihi</label>
+          <input type="date" id="modal_loading_date" class="field-input" value="<%= load.loading_date || '' %>">
+        </div>
+
+        <!-- Varış Tarihi -->
+        <div class="field-row">
+          <label class="field-label">📅 Varış Tarihi</label>
+          <input type="date" id="modal_unloading_date" class="field-input" value="<%= load.unloading_date || '' %>">
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer-custom">
+      <button class="btn" onclick="saveInfoModal()" style="background: #22c55e; color: white;">✔ Kaydet</button>
+      <button class="btn btn-outline" onclick="closeInfoModal()">İptal</button>
+    </div>
+  </div>
+</div>
+
+<!-- Delete Company Modal -->
+<div id="deleteCompanyModal" class="modal-overlay">
+  <div class="modal-container" style="max-width: 500px;">
+    <div class="modal-header-custom">
+      <h2 style="margin: 0; font-size: 18px; color: #f9fafb;">Şirketi Sil</h2>
+      <button class="modal-close-btn" onclick="closeDeleteCompanyModal()">×</button>
+    </div>
+    <div class="modal-body-custom">
+      <div style="margin-bottom: 16px; padding: 12px; background: #020617; border: 1px solid #1f2937; border-radius: 8px;">
+        <div style="font-size: 13px; color: #9ca3af; margin-bottom: 6px;">Silinecek Şirket:</div>
+        <div id="deleteCompanyName" style="font-size: 16px; font-weight: 600; color: #f9fafb;"></div>
+      </div>
+      <p style="color: #cbd5e1; margin: 0;">Bu şirketi silmek istediğinizden emin misiniz?</p>
+    </div>
+    <div class="modal-footer-custom">
+      <button class="btn btn-outline" onclick="closeDeleteCompanyModal()">İptal</button>
+      <button class="btn" onclick="confirmDeleteCompany()" style="background: #ef4444; color: white;">Sil</button>
+    </div>
+  </div>
+</div>
+
+<style>
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 99999;
+    width: 100%;
+    height: 100%;
+    background: rgba(2, 6, 23, 0.6);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    align-items: center;
+    justify-content: center;
+  }
+
+  .modal-overlay.active {
+    display: flex;
+  }
+
+  .modal-container {
+    background: linear-gradient(180deg,#0b1220 0%, #0f1724 100%);
+    border: 1px solid rgba(148,163,184,0.04);
+    border-radius: 12px;
+    width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 14px 40px rgba(2,6,23,0.6);
+  }
+
+  .modal-header-custom {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 24px;
+    border-bottom: 1px solid #1f2937;
+  }
+
+  .modal-close-btn {
+    background: none;
+    border: none;
+    font-size: 28px;
+    color: #9ca3af;
+    cursor: pointer;
+    line-height: 1;
+  }
+
+  .modal-close-btn:hover {
+    color: #ef4444;
+  }
+
+  .modal-body-custom {
+    padding: 24px;
+  }
+
+  .modal-footer-custom {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+    padding: 16px 24px;
+    border-top: 1px solid #1f2937;
+  }
+</style>
+
+<script>
+  function openInfoModal() {
+    document.getElementById('infoModal').classList.add('active');
+  }
+
+  function closeInfoModal() {
+    document.getElementById('infoModal').classList.remove('active');
+  }
+
+  function updateModalDriver() {
+    const truckSelect = document.getElementById('modal_truck_plate');
+    const driverInput = document.getElementById('modal_driver_name');
+    const selectedOption = truckSelect.options[truckSelect.selectedIndex];
+    const driverName = selectedOption.getAttribute('data-driver') || '';
+    driverInput.value = driverName;
+  }
+
+  function saveInfoModal() {
+    // Modal'daki değerleri hidden inputlara aktar
+    document.getElementById('hidden_truck_plate').value = document.getElementById('modal_truck_plate').value;
+    document.getElementById('hidden_trailer_plate').value = document.getElementById('modal_trailer_plate').value;
+    document.getElementById('hidden_driver_name').value = document.getElementById('modal_driver_name').value;
+    document.getElementById('hidden_loading_date').value = document.getElementById('modal_loading_date').value;
+    document.getElementById('hidden_unloading_date').value = document.getElementById('modal_unloading_date').value;
+    
+    closeInfoModal();
+    
+    // Görsel feedback
+    const btn = document.querySelector('button[onclick="openInfoModal()"]');
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '✅ Kaydedildi';
+    btn.style.background = '#22c55e';
+    
+    setTimeout(() => {
+      btn.innerHTML = originalText;
+      btn.style.background = '#3b82f6';
+    }, 2000);
+  }
+
+  // Modal dışına tıklayınca kapat
+  document.getElementById('infoModal').addEventListener('click', function(e) {
+    if (e.target === this) {
+      closeInfoModal();
+    }
+  });
+
+  // Delete company modal değişkenleri
+  let deleteCompanySelectId = null;
+  let deleteCompanyValue = null;
+
+  // Seçili şirketi sil
+  function deleteSelectedCompany(selectId) {
+    const selectElement = document.getElementById(selectId);
+    const selectedValue = selectElement.value;
+    
+    if (!selectedValue) {
+      showTempMessage('Lütfen silmek istediğiniz şirketi seçin', 'warning');
+      return;
+    }
+    
+    // Modal'ı göster
+    deleteCompanySelectId = selectId;
+    deleteCompanyValue = selectedValue;
+    document.getElementById('deleteCompanyName').textContent = selectedValue;
+    document.getElementById('deleteCompanyModal').classList.add('active');
+  }
+
+  function closeDeleteCompanyModal() {
+    document.getElementById('deleteCompanyModal').classList.remove('active');
+    deleteCompanySelectId = null;
+    deleteCompanyValue = null;
+  }
+
+  function confirmDeleteCompany() {
+    if (!deleteCompanySelectId || !deleteCompanyValue) return;
+    
+    const selectElement = document.getElementById(deleteCompanySelectId);
+    
+    // Şirketi sil
+    fetch('/loads/delete-company', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ companyName: deleteCompanyValue })
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.success) {
+        // Dropdown'dan kaldır
+        const option = selectElement.querySelector(`option[value="${deleteCompanyValue}"]`);
+        if (option) {
+          option.remove();
+        }
+        selectElement.value = '';
+        closeDeleteCompanyModal();
+        showTempMessage('Şirket başarıyla silindi', 'success');
+      } else {
+        closeDeleteCompanyModal();
+        showTempMessage('Silme işlemi başarısız: ' + (data.message || 'Bilinmeyen hata'), 'error');
+      }
+    })
+    .catch(err => {
+      closeDeleteCompanyModal();
+      showTempMessage('Silme işlemi sırasında hata oluştu: ' + err.message, 'error');
+    });
+  }
+
+  // Geçici mesaj göster
+  function showTempMessage(message, type) {
+    const messageDiv = document.createElement('div');
+    messageDiv.style.cssText = `
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      padding: 12px 20px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      z-index: 10001;
+      animation: slideIn 0.3s ease;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    `;
+    
+    if (type === 'success') {
+      messageDiv.style.background = 'rgba(34, 197, 94, 0.95)';
+      messageDiv.style.color = 'white';
+      messageDiv.style.border = '1px solid #22c55e';
+    } else if (type === 'error') {
+      messageDiv.style.background = 'rgba(239, 68, 68, 0.95)';
+      messageDiv.style.color = 'white';
+      messageDiv.style.border = '1px solid #ef4444';
+    } else if (type === 'warning') {
+      messageDiv.style.background = 'rgba(245, 158, 11, 0.95)';
+      messageDiv.style.color = 'white';
+      messageDiv.style.border = '1px solid #f59e0b';
+    }
+    
+    messageDiv.textContent = message;
+    document.body.appendChild(messageDiv);
+    
+    setTimeout(() => {
+      messageDiv.style.animation = 'slideOut 0.3s ease';
+      setTimeout(() => messageDiv.remove(), 300);
+    }, 3000);
+  }
+
+  // Modal dışına tıklayınca kapat
+  document.getElementById('deleteCompanyModal').addEventListener('click', function(e) {
+    if (e.target === this) {
+      closeDeleteCompanyModal();
+    }
+  });
+</script>

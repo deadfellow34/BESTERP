@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Changelog - Best Freight</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/theme.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="/css/changelog.css">
+</head>
+<body>
+  <%- include('partials/navbar') %>
+
+  <div class="changelog-page">
+    <div class="changelog-container">
+      <div class="changelog-header">
+        <h1><i class="fas fa-rocket"></i> Changelog</h1>
+        <p>Best Freight sistem güncellemeleri ve değişiklik kayıtları</p>
+      </div>
+
+      <div class="timeline">
+        <!-- v2.6.0 -->
+        <div class="version-block">
+          <div class="version-header">
+            <span class="version-number">v3.0</span>
+            <span class="version-date">8 Aralık 2025</span>
+          </div>
+
+          <div class="change-category">
+            <div class="category-title new">
+              <span class="icon-wrapper"><i class="fas fa-plus"></i></span>
+              Yeni Özellikler
+              <span class="category-label">15 yeni</span>
+            </div>
+            <ul class="change-list">
+              <li><strong>📱 Şoför Mobil Uygulaması:</strong> Android için şoför takip uygulaması geliştirildi. Şoförler canlı konum paylaşımı, evrak görüntüleme ve mesajlaşma yapabiliyor.</li>
+              <li><strong>🛰️ Gerçek Zamanlı GPS Takibi:</strong> Şoför konumları harita üzerinde canlı olarak takip edilebiliyor. Konum geçmişi ve rota görüntüleme.</li>
+              <li><strong>💬 Şoför Mesajlaşma Sistemi:</strong> Şoförlerle anlık mesajlaşma özelliği eklendi. Mobil uygulamadan ve web panelinden mesaj gönderip alabilme.</li>
+              <li><strong>📄 Luca e-Fatura Entegrasyonu (BETA):</strong> Luca muhasebe yazılımı ile e-fatura entegrasyonu başlatıldı. Otomatik fatura çekme, görüntüleme ve pozisyonlara eşleştirme.</li>
+              <li><strong>🔐 Şoför PIN Sistemi:</strong> Her şoför için benzersiz PIN kodu ile güvenli mobil uygulama girişi.</li>
+              <li><strong>📎 Şoför Evrak Yükleme Linki:</strong> Pozisyon sayfasından şoföre özel evrak yükleme linki oluşturulabiliyor. Şoför CMR ve diğer evrakları mobil uygulamadan yükleyebiliyor.</li>
+              <li><strong>🔑 CMR Link Token Sunucu Kaydı:</strong> Şoför CMR yükleme linkleri artık sunucu tarafında veritabanına kaydediliyor. Token doğrulama ve güvenlik kontrolü.</li>
+              <li><strong>📧 Vize Mail Servisi:</strong> Vize takip sistemi için otomatik mail gönderim servisi 1 hafta olarak güncellendi. Vize süresi dolan veya yaklaşan araçlar için hatırlatma mailleri.</li>
+              <li><strong>🗺️ Şoför Harita Sayfası:</strong> /drivers/map sayfası eklendi. Tüm aktif şoförlerin konumları tek haritada görüntüleniyor.</li>
+              <li><strong>⚡ better-sqlite3 Veritabanı Motoru:</strong> sqlite3 yerine better-sqlite3 kullanılmaya başlandı. 10x performans artışı sağlandı.</li>
+              <li><strong>📊 Şoför Konum Geçmişi:</strong> Son 24 saat, 7 gün veya tüm konum geçmişi görüntülenebiliyor.</li>
+              <li><strong>🔔 Konum Bildirimleri:</strong> Şoför belirli bir bölgeye girdiğinde veya çıktığında bildirim alabilme (Geofencing).</li>
+              <li><strong>📡 Offline Mod Desteği:</strong> Mobil uygulama internet olmadığında konum verilerini yerel olarak kaydedip, bağlantı geldiğinde senkronize ediyor.</li>
+              <li><strong>🎯 Hız Takibi:</strong> Şoförlerin anlık hız bilgisi görüntüleniyor. Hız limiti aşımlarında uyarı.</li>
+              <li><strong>🗑️ Pozisyon Tam Silme:</strong> Pozisyon silindiğinde tüm ilişkili veriler siliniyor: yükler, masraflar, evraklar ve uploads klasörü dahil.</li>
+            </ul>
+          </div>
+
+          <div class="change-category">
+            <div class="category-title improved">
+              <span class="icon-wrapper"><i class="fas fa-wrench"></i></span>
+              İyileştirmeler
+              <span class="category-label">8 iyileştirme</span>
+            </div>
+            <ul class="change-list">
+              <li><strong>KM Modal Açıklama Detayları:</strong> Herstal mazot hesabında tüm formül açıklamaları eklendi: DD + HERSTAL (+1750 KM), TOPLAM + EXTRA (+125 KM), HARCANAN MAZOT (x0.3 İLE HESAPLANIYOR), KALAN MAZOT (1450 - HARCANAN MAZOT), HERSTAL MAZOT (500 LT'ye TAMAMLANACAK), SHELL MOSONMAGYAR ALINACAK MAZOT.</li>
+              <li><strong>MACAR Hesaplama Düzeltmesi:</strong> MACAR formülü 1050 - X olarak güncellendi. Herstal alındıktan sonra tank 500 lt üzerinden hesaplanıyor (1050 - 500 = 550 lt).</li>
+              <li><strong>YL PDF KM Yuvarlaması:</strong> Tüm KM değerleri 20'nin katına yuvarlanarak gösteriliyor (Modal ile birebir aynı).</li>
+              <li><strong>YL PDF Mazot Detayları:</strong> Herstal hesabında "HARCADI", "kaldı", "alınacak" gibi açıklayıcı metinler eklendi.</li>
+              <li><strong>Session Store Performansı:</strong> Özel better-sqlite3 session store yazıldı. 15 dakikada bir otomatik temizlik.</li>
+              <li><strong>WAL Mode Aktif:</strong> Veritabanı WAL (Write-Ahead Logging) modunda çalışıyor. Eşzamanlı okuma/yazma performansı artırıldı.</li>
+              <li><strong>Luca API Token Yönetimi:</strong> Otomatik token yenileme ve session yönetimi eklendi.</li>
+              <li><strong>Şoför Listesi Performansı:</strong> Şoför listesi sayfalama ve arama özelliği ile optimize edildi.</li>
+            </ul>
+          </div>
+
+          <div class="change-category">
+            <div class="category-title fixed">
+              <span class="icon-wrapper"><i class="fas fa-bug"></i></span>
+              Hata Düzeltmeleri
+              <span class="category-label">5 düzeltme</span>
+            </div>
+            <ul class="change-list">
+              <li><strong>MACAR Hesabı Herstal Dahil Edilmeme:</strong> MACAR hesabı Herstal'dan alınan mazotu dahil etmiyordu. Artık Herstal alındıktan sonraki tank değeri (500 lt) üzerinden hesaplanıyor.</li>
+              <li><strong>YL PDF Değer Tutarsızlığı:</strong> Modal'daki yuvarlanmış değerler YL PDF'e yansımıyordu. Artık birebir aynı değerler gösteriliyor.</li>
+              <li><strong>Session Timeout Sorunu:</strong> connect-sqlite3 paketinden kaynaklanan session kaybolması düzeltildi.</li>
+              <li><strong>Veritabanı Kilitleme:</strong> Yoğun kullanımda veritabanı kilitleme sorunu better-sqlite3 ile çözüldü.</li>
+              <li><strong>Pozisyon Silme - Masraf Kalma Sorunu:</strong> Pozisyon silindiğinde masraflar ve evraklar silinmiyordu. Artık pozisyon silindiğinde tüm ilişkili veriler (yükler, masraflar, evraklar, KM verileri) ve uploads klasörü tamamen siliniyor.</li>
+            </ul>
+          </div>
+
+          <details class="files-affected">
+            <summary>📁 Etkilenen Dosyalar (18)</summary>
+            <pre><code><span class="file-path">src/config/db.js (YENİDEN YAZILDI - better-sqlite3)</span>
+<span class="file-path">src/config/sessionStore.js (YENİ)</span>
+<span class="file-path">src/controllers/driverApiController.js (YENİ)</span>
+<span class="file-path">src/controllers/loadController.js</span>
+<span class="file-path">src/models/driverLocationModel.js (YENİ)</span>
+<span class="file-path">src/models/driverMessageModel.js (YENİ)</span>
+<span class="file-path">src/routes/driverApiRoutes.js (YENİ)</span>
+<span class="file-path">src/routes/lucaRoutes.js (YENİ)</span>
+<span class="file-path">src/services/lucaService.js (YENİ)</span>
+<span class="file-path">src/models/lucaInvoiceModel.js (YENİ)</span>
+<span class="file-path">src/views/luca/index.ejs (YENİ)</span>
+<span class="file-path">src/views/drivers/map.ejs (YENİ)</span>
+<span class="file-path">src/views/loads/position.ejs</span>
+<span class="file-path">src/views/loads/yl.ejs</span>
+<span class="file-path">src/views/changelog.ejs</span>
+<span class="file-path">src/server.js</span>
+<span class="file-path">package.json</span>
+<span class="file-path">Android App (ayrı repo)</span></code></pre>
+          </details>
+        </div>
+
+        <!-- v2.5.0 -->
+        <div class="version-block">
+          <div class="version-header">
+            <span class="version-number">v2.5.0</span>
+            <span class="version-date">3-4 Aralık 2025</span>
+          </div>
+
+          <div class="change-category">
+            <div class="category-title new">
+              <span class="icon-wrapper"><i class="fas fa-plus"></i></span>
+              Yeni Özellikler
+              <span class="category-label">14 yeni</span>
+            </div>
+            <ul class="change-list">
+              <li><strong>YL PDF KM Entegrasyonu:</strong> ARAÇ KM BİLGİLERİ tablosu YL PDF'e tamamen entegre edildi. Yükleme, boşaltma ve diğer tüm KM segmentleri artık PDF çıktısında görünüyor.</li>
+              <li><strong>KM Özet Bölümü:</strong> YL PDF'te 6 kutucuklu özet alanı eklendi - Yükleme KM (Mavi), Boşaltma KM (Yeşil), Çıkış KM (Turuncu), Avrupa KM (Mor), İngiltere KM (Bordo) ve Toplam KM (Koyu Yeşil) gösterimi.</li>
+              <li><strong>Mazot Hesapları Entegrasyonu:</strong> İngiltere Çıkış mazot hesabı ve Avrupa Mazot hesabı YL PDF'e eklendi. Litre, fiyat ve toplam maliyet detaylı gösteriliyor.</li>
+              <li><strong>Yükleme/Boşaltma Sayaçları:</strong> KM tablosu altında "Yükleme: X" ve "Boşaltma: Y" segment sayıları eklendi.</li>
+              <li><strong>avrupa_data Veritabanı Kolonu:</strong> position_km tablosuna avrupa_data TEXT kolonu eklendi. Avrupa mazot hesap verileri (başlangıç, son nokta, litre, fiyat vb.) artık kalıcı olarak saklanıyor.</li>
+              <li><strong>Evrak Bölümü Yeniden Tasarımı:</strong> Position sayfasındaki evrak kartları tamamen yeniden tasarlandı. Her evrak türü için özel renk kodları, hover efektleri ve modern görünüm eklendi.</li>
+              <li><strong>Türkçe Evrak İsimleri:</strong> Tüm evrak lokalizasyonu Türkçeleştirildi </li>
+              <li><strong>Evrak Durum Göstergesi:</strong> Her evrak için "Yüklendi" / "Bekliyor" durumu badge olarak gösteriliyor. Yüklenen evraklar yeşil, bekleyenler turuncu renkte.</li>
+              <li><strong>Evrak Kartı Animasyonları:</strong> Evrak kartlarına hover'da scale ve gölge animasyonları eklendi. Tıklanabilir alanlar belirginleştirildi.</li>
+              <li><strong>Evrak Grid Düzeni:</strong> Evraklar responsive grid yapısında düzenlendi. Mobilde tek sütun, tablette 2 sütun, masaüstünde 3-4 sütun görünümü.</li>
+              <li><strong>Evrak İkon Sistemi:</strong> Her evrak tipine özel ikon eklendi.</li>
+              <li><strong>Evrak Renk Kodlaması:</strong> Evrak kartlarına kategori bazlı renk kodları eklendi - Nakliye belgeleri mavi, mali belgeler yeşil, gümrük belgeleri mor.</li>
+              <li><strong>Changelog Sayfası:</strong> /changelog rotası eklendi. Tüm sistem güncellemeleri timeline görünümünde listeleniyor. Modern ve responsive tasarım.</li>
+              <li><strong>Changelog Menü Butonu:</strong> Navbar'daki kullanıcı dropdown menüsüne "📋 Changelog" butonu eklendi (Kayıtlar ve Çıkış arasında).</li>
+            </ul>
+          </div>
+
+          <div class="change-category">
+            <div class="category-title improved">
+              <span class="icon-wrapper"><i class="fas fa-wrench"></i></span>
+              İyileştirmeler
+              <span class="category-label">12 iyileştirme</span>
+            </div>
+            <ul class="change-list">
+              <li><strong>Checkbox Sunucu Senkronizasyonu:</strong> KM Modal'daki tüm checkbox durumları (Herstal, Avrupa vb.) artık sunucudan yükleniyor. localStorage tamamen kaldırıldı, veri tutarlılığı sağlandı.</li>
+              <li><strong>YL PDF Yazdırma Optimizasyonu:</strong> Yazdırma için ikonlar ve renkli arka planlar kaldırıldı. Tamamen siyah-beyaz yazıcı uyumlu tasarım.</li>
+              <li><strong>Başlık Vurgulama Sistemi:</strong> PDF'lerde tüm başlıklar bold ve underline formatıyla vurgulandı. Okunabilirlik artırıldı.</li>
+              <li><strong>PDF Boyut Optimizasyonu:</strong> YL PDF içerik boyutu sayfanın %70'ini kaplayacak şekilde ayarlandı. @page margin değerleri optimize edildi.</li>
+              <li><strong>Rozvadov Güzergah Etiketi:</strong> Avrupa hesaplamalarında "Son Nokta → Macaristan (Rozvadov üzerinden)" açıklaması eklendi. Kullanıcı için daha anlaşılır.</li>
+              <li><strong>Evrak Kartı Hover Efektleri:</strong> Evrak kartlarına yumuşak geçişli hover efektleri eklendi. Tıklanabilir alanlar daha belirgin.</li>
+              <li><strong>Position Sayfa Performansı:</strong> Position sayfasının yüklenme süresi optimize edildi. Gereksiz API çağrıları azaltıldı.</li>
+              <li><strong>KM Modal Responsiveness:</strong> KM hesaplama modalı mobil cihazlarda daha iyi görüntülenecek şekilde düzenlendi.</li>
+              <li><strong>Evrak Bölümü Scroll:</strong> Çok sayıda evrak olduğunda bölüm kaydırılabilir hale getirildi. Max-height sınırı eklendi.</li>
+              <li><strong>Tema Uyumluluğu:</strong> Tüm yeni bileşenler hem koyu hem açık tema ile tam uyumlu çalışıyor. CSS değişkenleri kullanıldı.</li>
+              <li><strong>Evrak Bölüm Başlığı:</strong> "📎 EVRAKLAR" başlığı modern tasarımla yenilendi. Alt çizgi ve ikon eklendi.</li>
+              <li><strong>Evrak Yükleme Butonu:</strong> "Evrak Yükle" butonu gradient tasarımla güncellendi. Hover efekti eklendi.</li>
+            </ul>
+          </div>
+
+          <div class="change-category">
+            <div class="category-title fixed">
+              <span class="icon-wrapper"><i class="fas fa-bug"></i></span>
+              Hata Düzeltmeleri
+              <span class="category-label">6 düzeltme</span>
+            </div>
+            <ul class="change-list">
+              <li><strong>Checkbox Sıfırlanma Hatası:</strong> 2-3 dakika sonra checkbox'ların otomatik sıfırlanması sorunu tamamen düzeltildi. localStorage ile sunucu verisi çakışması giderildi.</li>
+              <li><strong>avrupaData NULL Sorunu:</strong> Eski kayıtlarda Avrupa mazot hesabının görünmemesi düzeltildi. NULL kontrolü ve varsayılan değer ataması eklendi.</li>
+              <li><strong>KM Modal - YL PDF Veri Tutarsızlığı:</strong> KM Modal'da kaydedilen veriler ile YL PDF'te gösterilen veriler arasındaki uyumsuzluk giderildi.</li>
+              <li><strong>Evrak Yükleme Hatası:</strong> Bazı evrak tiplerinde yaşanan yükleme hatası düzeltildi. Dosya uzantısı kontrolü iyileştirildi.</li>
+              <li><strong>PDF Sayfa Taşması:</strong> Uzun içeriklerde PDF'in sayfa dışına taşması engellendi. page-break-inside: avoid kuralları eklendi.</li>
+              <li><strong>Evrak Silme Onayı:</strong> Evrak silme işleminde onay modalı düzgün çalışmıyordu, düzeltildi.</li>
+            </ul>
+          </div>
+
+          <details class="files-affected">
+            <summary>📁 Etkilenen Dosyalar (14)</summary>
+            <pre><code><span class="file-path">src/views/loads/yl.ejs</span>
+<span class="file-path">src/views/loads/position.ejs</span>
+<span class="file-path">src/views/changelog.ejs (YENİ)</span>
+<span class="file-path">src/views/partials/navbar.ejs</span>
+<span class="file-path">src/controllers/loadController.js</span>
+<span class="file-path">src/models/positionKmModel.js</span>
+<span class="file-path">src/routes/positionKmRoutes.js</span>
+<span class="file-path">src/server.js</span>
+<span class="file-path">src/public/css/changelog.css (YENİ)</span>
+<span class="file-path">src/public/css/position.css</span>
+<span class="file-path">src/public/css/documents.css</span>
+<span class="file-path">src/public/css/theme.css</span>
+<span class="file-path">migrations/add_avrupa_data.js</span>
+<span class="file-path">src/utils/documentTypes.js</span></code></pre>
+          </details>
+        </div>
+
+        <!-- v2.4.x -->
+        <div class="version-block purple">
+          <div class="version-header">
+            <span class="version-number purple">v2.4.0</span>
+            <span class="version-date">Kasım 2025</span>
+          </div>
+
+          <div class="change-category">
+            <div class="category-title new">
+              <span class="icon-wrapper"><i class="fas fa-plus"></i></span>
+              Yeni Özellikler
+              <span class="category-label">8 yeni</span>
+            </div>
+            <ul class="change-list">
+              <li><strong>Finans Dropdown Menü:</strong> Navbar'da Profit, Araç & Sefer Bilgisi ve Muhasebe linkleri tek bir "💰 Finans" dropdown altında birleştirildi.</li>
+              <li><strong>VizeBest PDF Word-Wrap:</strong> VizeBest PDF'te NOTLAR kolonunda uzun metinlerin taşması engellendi. Otomatik satır kaydırma eklendi.</li>
+              <li><strong>Mühür Seçim Vurgulama:</strong> Mühür listesinde seçilen mühür yeşil arka plan ile vurgulanıyor. Görsel geri bildirim iyileştirildi.</li>
+              <li><strong>KM Özet Renk Kodlaması:</strong> KM özet kutularında İngiltere=Bordo (#881337), Avrupa=Mor (#7c3aed), Toplam=Yeşil (#166534) renkleri uygulandı.</li>
+              <li><strong>AMETA PDF Ölçek Düzeltmesi:</strong> AMETA PDF %80 ölçeğe ayarlandı. Sayfa taşması engellendi.</li>
+              <li><strong>Online Kullanıcı Listesi:</strong> Navbar'da anlık online kullanıcı sayısı ve detaylı liste gösteriliyor. Socket.IO ile gerçek zamanlı güncelleme.</li>
+              <li><strong>Dönem Seçici:</strong> Navbar'da yıl seçici eklendi. Tüm sayfalarda seçilen yıl korunuyor.</li>
+              <li><strong>Tema Değiştirici:</strong> Koyu/Açık tema arasında geçiş yapabilen toggle butonu eklendi.</li>
+            </ul>
+          </div>
+
+          <div class="change-category">
+            <div class="category-title improved">
+              <span class="icon-wrapper"><i class="fas fa-wrench"></i></span>
+              İyileştirmeler
+              <span class="category-label">5 iyileştirme</span>
+            </div>
+            <ul class="change-list">
+              <li><strong>Navbar Responsive Tasarım:</strong> Navbar mobil cihazlarda daha iyi görüntülenecek şekilde yeniden düzenlendi.</li>
+              <li><strong>Dropdown Menü Animasyonları:</strong> Tüm dropdown menülere yumuşak açılma/kapanma animasyonları eklendi.</li>
+              <li><strong>Kur Gösterimi:</strong> Navbar'da EUR ve GBP kurları gerçek zamanlı gösteriliyor.</li>
+              <li><strong>Tarih/Saat Gösterimi:</strong> Navbar'da GMT+3 saat diliminde anlık tarih ve saat gösteriliyor.</li>
+              <li><strong>Form Validasyonları:</strong> Tüm formlarda client-side validasyon iyileştirildi.</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- v2.3.x -->
+        <div class="version-block green">
+          <div class="version-header">
+            <span class="version-number green">v2.3.0</span>
+            <span class="version-date">Ekim 2025</span>
+          </div>
+
+          <div class="change-category">
+            <div class="category-title new">
+              <span class="icon-wrapper"><i class="fas fa-plus"></i></span>
+              Yeni Özellikler
+              <span class="category-label">6 yeni</span>
+            </div>
+            <ul class="change-list">
+              <li><strong>KM Hesaplama Modalı:</strong> Position sayfasına ARAÇ KM hesaplama modalı eklendi. Yükleme, boşaltma ve diğer segmentler için km girişi.</li>
+              <li><strong>Herstal Checkbox:</strong> İngiltere çıkışlarında Herstal üzerinden geçiş için özel hesaplama seçeneği.</li>
+              <li><strong>Avrupa Mazot Hesabı:</strong> Avrupa üzerinden yapılan seferlerde ayrı mazot hesabı bölümü.</li>
+              <li><strong>Profit Sayfası:</strong> Sefer karlılık analizi sayfası eklendi. Gelir, gider ve kar marjı hesaplamaları.</li>
+              <li><strong>VizeBest Modülü:</strong> Vize takip sistemi tamamen yenilendi. Manuel veri girişi ve PDF çıktısı.</li>
+              <li><strong>Araç & Sefer Bilgisi:</strong> Araç ve sefer detaylarını gösteren yeni sayfa eklendi.</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- v2.2.x -->
+        <div class="version-block orange">
+          <div class="version-header">
+            <span class="version-number orange">v2.2.0</span>
+            <span class="version-date">Eylül 2025</span>
+          </div>
+
+          <div class="change-category">
+            <div class="category-title new">
+              <span class="icon-wrapper"><i class="fas fa-plus"></i></span>
+              Yeni Özellikler
+              <span class="category-label">5 yeni</span>
+            </div>
+            <ul class="change-list">
+              <li><strong>Muhasebe Modülü:</strong> Muhasebe evrak yönetim sistemi eklendi. Fatura, makbuz ve diğer mali evrakların takibi.</li>
+              <li><strong>Veritabanı Yönetimi:</strong> /database sayfası eklendi. Backup alma, restore yapma ve veri yönetimi.</li>
+              <li><strong>Mail Alıcı Yönetimi:</strong> /mail-data sayfası eklendi. Müşteri mail listesi yönetimi.</li>
+              <li><strong>Sistem Logları:</strong> /logs sayfası eklendi. Tüm sistem işlemlerinin kayıtları.</li>
+              <li><strong>Otomatik Yedekleme:</strong> Her 12 saatte bir otomatik veritabanı yedeği alınıyor.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="changelog-footer">
+        <a href="/" class="back-btn">
+          <i class="fas fa-arrow-left"></i>
+          Ana Sayfaya Dön
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/theme.js"></script>
+</body>
+</html>

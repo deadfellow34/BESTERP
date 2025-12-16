@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#1e3a5f">
+  <title>Evrak Yükle - BEST Freight</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    html, body {
+      overscroll-behavior-y: contain;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+      background: linear-gradient(135deg, #1e3a5f 0%, #0f1f35 100%);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      color: #e5e7eb;
+    }
+    
+    .container {
+      width: 100%;
+      max-width: 400px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 20px;
+      padding: 30px 25px;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    }
+    
+    .logo {
+      text-align: center;
+      margin-bottom: 25px;
+    }
+    
+    .logo h1 {
+      font-size: 24px;
+      font-weight: 700;
+      color: #60a5fa;
+      letter-spacing: -0.5px;
+    }
+    
+    .logo .subtitle {
+      font-size: 12px;
+      color: #94a3b8;
+      margin-top: 4px;
+    }
+    
+    .position-info {
+      background: rgba(59, 130, 246, 0.1);
+      border: 1px solid rgba(59, 130, 246, 0.2);
+      border-radius: 12px;
+      padding: 12px 16px;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+    
+    .position-info .label {
+      font-size: 11px;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    .position-info .value {
+      font-size: 18px;
+      font-weight: 600;
+      color: #ef4444;
+      margin-top: 4px;
+    }
+    
+    .position-info .trailer-plate {
+      margin-top: 8px;
+      padding-top: 8px;
+      border-top: 1px solid rgba(59, 130, 246, 0.2);
+    }
+    
+    .position-info .plate-label {
+      font-size: 12px;
+      color: #94a3b8;
+    }
+    
+    .position-info .plate-value {
+      font-size: 14px;
+      font-weight: 600;
+      color: #fbbf24;
+      margin-left: 6px;
+    }
+    
+    .driver-name-container {
+      margin-bottom: 20px;
+    }
+    
+    .driver-name-label {
+      display: block;
+      font-size: 13px;
+      color: #94a3b8;
+      margin-bottom: 8px;
+    }
+    
+    .driver-name-input {
+      width: 100%;
+      padding: 14px 16px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 12px;
+      color: #e5e7eb;
+      font-size: 16px;
+      outline: none;
+      transition: all 0.3s ease;
+    }
+    
+    .driver-name-input:focus {
+      border-color: #60a5fa;
+      background: rgba(59, 130, 246, 0.1);
+    }
+    
+    .driver-name-input::placeholder {
+      color: #64748b;
+    }
+    
+    .instructions {
+      text-align: center;
+      margin-bottom: 25px;
+      background: rgba(16, 185, 129, 0.15);
+      border: 2px solid rgba(16, 185, 129, 0.4);
+      border-radius: 12px;
+      padding: 16px;
+    }
+    
+    .instructions p {
+      font-size: 15px;
+      color: #34d399;
+      line-height: 1.5;
+      font-weight: 600;
+    }
+    
+    .upload-area {
+      border: 2px dashed rgba(96, 165, 250, 0.4);
+      border-radius: 16px;
+      padding: 30px 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      background: rgba(59, 130, 246, 0.05);
+      margin-bottom: 20px;
+    }
+    
+    .upload-area:hover,
+    .upload-area.dragover {
+      border-color: #60a5fa;
+      background: rgba(59, 130, 246, 0.1);
+    }
+    
+    .upload-area .upload-icon {
+      font-size: 48px;
+      margin-bottom: 12px;
+    }
+    
+    .upload-area .upload-text {
+      font-size: 16px;
+      color: #e5e7eb;
+      font-weight: 500;
+      margin-bottom: 6px;
+    }
+    
+    .upload-area .upload-hint {
+      font-size: 13px;
+      color: #94a3b8;
+    }
+    
+    .file-input {
+      display: none;
+    }
+    
+    .preview-container {
+      margin-bottom: 20px;
+    }
+    
+    .preview-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    
+    .preview-item {
+      position: relative;
+      width: 80px;
+      height: 80px;
+      border-radius: 10px;
+      overflow: hidden;
+      border: 2px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .preview-item img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    
+    .preview-item .remove-btn {
+      position: absolute;
+      top: 4px;
+      right: 4px;
+      width: 22px;
+      height: 22px;
+      background: rgba(239, 68, 68, 0.9);
+      border: none;
+      border-radius: 50%;
+      color: white;
+      font-size: 14px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .file-count {
+      text-align: center;
+      font-size: 13px;
+      color: #94a3b8;
+      margin-top: 10px;
+    }
+    
+    .submit-btn {
+      width: 100%;
+      padding: 16px;
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      border: none;
+      border-radius: 12px;
+      color: white;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+    
+    .submit-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(16, 185, 129, 0.3);
+    }
+    
+    .submit-btn:disabled {
+      background: #4b5563;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+    
+    .submit-btn .spinner {
+      width: 20px;
+      height: 20px;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      display: none;
+    }
+    
+    .submit-btn.loading .spinner {
+      display: block;
+    }
+    
+    .submit-btn.loading .btn-text {
+      display: none;
+    }
+    
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    
+    .footer {
+      text-align: center;
+      margin-top: 20px;
+      font-size: 11px;
+      color: #64748b;
+    }
+    
+    /* Camera specific styles for mobile */
+    @media (max-width: 480px) {
+      .container {
+        padding: 25px 20px;
+      }
+      
+      .upload-area {
+        padding: 25px 15px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="logo">
+      <h1>BEST Nakliyat</h1>
+      <div class="subtitle">Evrak Yükleme Sistemi &copy; Aytuğ Yayman </div>
+    </div>
+    
+    <div class="position-info">
+      <div class="label">Pozisyon No</div>
+      <div class="value"><%= positionNo %></div>
+      <% if (trailerPlate) { %>
+      <div class="trailer-plate">
+        <span class="plate-label">Dorse:</span>
+        <span class="plate-value"><%= trailerPlate %></span>
+      </div>
+      <% } %>
+    </div>
+    
+    <div class="instructions">
+      <p>İMZA VE KAŞELİ CMR'NİN fotoğrafını çekin veya galeriden seçin. ÇEKTİĞİNİZ FOTOĞRAF OKUNABİLİR OLMALIDIR!</p>
+    </div>
+    
+    <form id="uploadForm" action="/driver-upload/<%= token %>" method="POST" enctype="multipart/form-data">
+      <div class="driver-name-container">
+        <label class="driver-name-label" for="driverName">Şoför Adı</label>
+        <input type="text" 
+               name="driverName" 
+               id="driverName" 
+               class="driver-name-input" 
+               placeholder="Adınızı ve soyadınızı girin"
+               value=""
+               required>
+      </div>
+      
+      <div class="upload-area" id="uploadArea">
+        <div class="upload-icon">📷</div>
+        <div class="upload-text">Fotoğraf Çek veya Seç</div>
+        <div class="upload-hint">Birden fazla dosya seçebilirsiniz</div>
+      </div>
+      
+      <input type="file" 
+             name="files" 
+             id="fileInput" 
+             class="file-input" 
+             accept="image/*,application/pdf" 
+             multiple>
+      
+      <div class="preview-container" id="previewContainer" style="display: none;">
+        <div class="preview-list" id="previewList"></div>
+        <div class="file-count" id="fileCount"></div>
+      </div>
+      
+      <button type="submit" class="submit-btn" id="submitBtn" disabled>
+        <span class="spinner"></span>
+        <span class="btn-text">📤 Yükle</span>
+      </button>
+    </form>
+    
+    <div class="footer">
+      BEST Nakliyat ERP Sistemi &copy; 2025
+    </div>
+  </div>
+
+  <script>
+    const uploadArea = document.getElementById('uploadArea');
+    const fileInput = document.getElementById('fileInput');
+    const previewContainer = document.getElementById('previewContainer');
+    const previewList = document.getElementById('previewList');
+    const fileCount = document.getElementById('fileCount');
+    const submitBtn = document.getElementById('submitBtn');
+    const uploadForm = document.getElementById('uploadForm');
+    
+    let selectedFiles = [];
+    
+    // Click on upload area opens file picker
+    uploadArea.addEventListener('click', () => {
+      fileInput.click();
+    });
+    
+    // Drag and drop
+    uploadArea.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      uploadArea.classList.add('dragover');
+    });
+    
+    uploadArea.addEventListener('dragleave', () => {
+      uploadArea.classList.remove('dragover');
+    });
+    
+    uploadArea.addEventListener('drop', (e) => {
+      e.preventDefault();
+      uploadArea.classList.remove('dragover');
+      const files = Array.from(e.dataTransfer.files);
+      addFiles(files);
+    });
+    
+    // File input change
+    fileInput.addEventListener('change', (e) => {
+      const files = Array.from(e.target.files);
+      addFiles(files);
+    });
+    
+    function addFiles(files) {
+      files.forEach(file => {
+        if (file.type.startsWith('image/') || file.type === 'application/pdf') {
+          selectedFiles.push(file);
+        }
+      });
+      updatePreview();
+    }
+    
+    function updatePreview() {
+      previewList.innerHTML = '';
+      
+      if (selectedFiles.length === 0) {
+        previewContainer.style.display = 'none';
+        submitBtn.disabled = true;
+        return;
+      }
+      
+      previewContainer.style.display = 'block';
+      submitBtn.disabled = false;
+      
+      selectedFiles.forEach((file, index) => {
+        const item = document.createElement('div');
+        item.className = 'preview-item';
+        
+        if (file.type.startsWith('image/')) {
+          const img = document.createElement('img');
+          img.src = URL.createObjectURL(file);
+          item.appendChild(img);
+        } else {
+          // PDF placeholder
+          item.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;width:100%;height:100%;background:#374151;color:#9ca3af;font-size:24px;">📄</div>';
+        }
+        
+        const removeBtn = document.createElement('button');
+        removeBtn.type = 'button';
+        removeBtn.className = 'remove-btn';
+        removeBtn.innerHTML = '×';
+        removeBtn.onclick = () => {
+          selectedFiles.splice(index, 1);
+          updatePreview();
+        };
+        item.appendChild(removeBtn);
+        
+        previewList.appendChild(item);
+      });
+      
+      fileCount.textContent = `${selectedFiles.length} dosya seçildi`;
+    }
+    
+    // Form submit
+    uploadForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      
+      const driverNameInput = document.getElementById('driverName');
+      const driverName = driverNameInput.value.trim();
+      
+      if (!driverName) {
+        alert('Lütfen adınızı girin.');
+        driverNameInput.focus();
+        return;
+      }
+      
+      if (selectedFiles.length === 0) return;
+      
+      submitBtn.classList.add('loading');
+      submitBtn.disabled = true;
+      
+      // Create FormData and add files + driver name
+      const formData = new FormData();
+      formData.append('driverName', driverName);
+      selectedFiles.forEach(file => {
+        formData.append('files', file);
+      });
+      
+      fetch(uploadForm.action, {
+        method: 'POST',
+        body: formData
+      })
+      .then(response => response.text())
+      .then(html => {
+        document.body.innerHTML = html;
+      })
+      .catch(err => {
+        console.error('Upload error:', err);
+        submitBtn.classList.remove('loading');
+        submitBtn.disabled = false;
+        alert('Yükleme sırasında bir hata oluştu. Lütfen tekrar deneyin.');
+      });
+    });
+  </script>
+</body>
+</html>

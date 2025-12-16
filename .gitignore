@@ -1,0 +1,36 @@
+# Node modülleri
+node_modules/
+
+# Loglar
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Derleme / geçici klasörler (varsa)
+dist/
+build/
+tmp/
+
+# Ortam değişkenleri ve gizli dosyalar
+.env
+.env.*
+
+# SQLite / DB dosyaları
+*.db
+*.sqlite
+*.sqlite3
+data/*.db
+database/*.db
+backups/*.db
+
+# Yüklenen evrak ve fotoğraflar
+uploads/
+upload/
+public/uploads/
+public/images/uploads/
+storage/
+files/
+docs/
+backups/

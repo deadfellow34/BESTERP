@@ -1,0 +1,3187 @@
+﻿<style>
+  /* ===== GLOBAL PAGE STYLES ===== */
+  html, body {
+    background: var(--bg-body, #0a1628) !important;
+    min-height: 100vh;
+  }
+
+  /* ===== MODERN SELECT/DROPDOWN STYLES ===== */
+  .modern-select {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%2360a5fa' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10l-5 5z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    padding-right: 40px !important;
+  }
+
+  .modern-select option {
+    background: var(--bg-surface, #0f172a) !important;
+    color: var(--text-primary, #e5e7eb) !important;
+    padding: 12px 16px !important;
+    border-bottom: 1px solid var(--border-subtle, rgba(59, 130, 246, 0.1));
+  }
+
+  .modern-select option:hover,
+  .modern-select option:focus,
+  .modern-select option:checked {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.3), rgba(37, 99, 235, 0.4)) !important;
+    color: #fff !important;
+  }
+
+  /* Firefox specific */
+  @-moz-document url-prefix() {
+    .modern-select option {
+      background: var(--bg-surface, #0f172a) !important;
+      color: var(--text-primary, #e5e7eb) !important;
+    }
+  }
+
+  .loads-page {
+    padding: 0px 20px 30px;
+    min-height: 100vh;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ===== CONNECTION STATUS ===== */
+  .connection-status {
+    position: fixed;;
+    top: 15px;
+    right: 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    background: var(--bg-surface-glass, rgba(15, 23, 42, 0.8));
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--border-accent, rgba(59, 130, 246, 0.3));
+    border-radius: 50px;
+    font-size: 12px;
+    color: var(--text-muted, #94a3b8);
+    z-index: 1000;
+    transition: all 0.3s ease;
+  }
+
+  .connection-status.online {
+    border-color: rgba(34, 197, 94, 0.5);
+    box-shadow: 0 0 15px rgba(34, 197, 94, 0.2);
+  }
+
+  .connection-status.offline {
+    border-color: rgba(239, 68, 68, 0.5);
+    box-shadow: 0 0 15px rgba(239, 68, 68, 0.2);
+  }
+
+  .status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+  }
+
+  .connection-status.online .status-dot {
+    background: #22c55e;
+    box-shadow: 0 0 10px #22c55e;
+  }
+
+  .connection-status.offline .status-dot {
+    background: #ef4444;
+    box-shadow: 0 0 10px #ef4444;
+    animation: none;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(1.2); }
+  }
+
+  /* ===== FLOATING PARTICLES ===== */
+  .floating-particles {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    overflow: hidden;
+    z-index: -1;
+  }
+
+  .floating-particle {
+    position: absolute;
+    width: 4px;
+    height: 4px;
+    background: var(--accent-primary-soft, rgba(59, 130, 246, 0.6));
+    border-radius: 50%;
+    animation: floatParticle 15s infinite linear;
+  }
+
+  @keyframes floatParticle {
+    0% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+    10% { opacity: 1; }
+    90% { opacity: 1; }
+    100% { transform: translateY(-100vh) rotate(720deg); opacity: 0; }
+  }
+
+  /* Modern Animasyonlu Tır Sistemi */
+  .truck-animation-container {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 70px;
+    pointer-events: none;
+    z-index: 9999;
+    overflow: hidden;
+    background: var(--truck-container-bg, linear-gradient(to top, rgba(15, 23, 42, 0.95) 0%, rgba(15, 23, 42, 0.7) 100%));
+  }
+
+  /* Yol Zemini */
+  .road-surface {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 30px;
+    background: var(--road-bg, linear-gradient(to top, #1a1a2e 0%, #16213e 100%));
+    border-top: 2px solid #fbbf24;
+    box-shadow: 0 -3px 10px rgba(251, 191, 36, 0.3);
+  }
+
+  /* Yol Çizgileri */
+  .road-lines {
+    position: absolute;
+    bottom: 12px;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background: repeating-linear-gradient(90deg, #fbbf24 0px, #fbbf24 30px, transparent 30px, transparent 60px);
+    opacity: 0.8;
+  }
+
+  @keyframes roadMove {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-80px); }
+  }
+
+  /* Şoför İsim Etiketi */
+  .driver-label {
+    position: absolute;
+    top: -8px;
+    left: 35px;
+    background: #2563eb;
+    color: white;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 11px;
+    font-weight: 600;
+    white-space: nowrap;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.4);
+    z-index: 9999;
+  }
+
+  /* Ters tırlardaki isim ve logoyu düzelt */
+  .truck.truck-reverse .driver-label {
+    transform: scaleX(-1);
+  }
+
+  .truck.truck-reverse svg text {
+    transform: scaleX(-1);
+    transform-origin: center;
+    transform-box: fill-box;
+  }
+
+  /* Tır Ana Konteyner */
+  .truck {
+    position: absolute;
+    bottom: 0px;
+    left: -200px;
+    filter: drop-shadow(0 3px 8px rgba(0, 0, 0, 0.5));
+    transform: scale(1);
+    transform-origin: bottom left;
+    pointer-events: auto;
+    cursor: pointer;
+  }
+
+  .truck.truck-1 {
+    animation: driveTruck1 18s linear infinite;
+    z-index: 5;
+  }
+
+  .truck.truck-2 {
+    animation: driveTruck2 22s linear infinite;
+    animation-delay: 6s;
+    z-index: 4;
+    bottom: 0px;
+  }
+
+  .truck.truck-3 {
+    animation: driveTruck3 25s linear infinite;
+    animation-delay: 12s;
+    z-index: 3;
+    bottom: 0px;
+  }
+
+  @keyframes driveTruck1 {
+    0% { transform: translateX(0) scale(1); }
+    100% { transform: translateX(calc(100vw + 400px)) scale(1); }
+  }
+
+  @keyframes driveTruck2 {
+    0% { transform: translateX(0) scale(1); }
+    100% { transform: translateX(calc(100vw + 400px)) scale(1); }
+  }
+
+  @keyframes driveTruck3 {
+    0% { transform: translateX(0) scale(1); }
+    100% { transform: translateX(calc(100vw + 400px)) scale(1); }
+  }
+
+  /* Karşı Yönden Gelen Tırlar */
+  .truck.truck-reverse {
+    transform: scale(1) scaleX(-1);
+    transform-origin: bottom right;
+    right: -200px;
+    left: auto;
+  }
+
+  .truck.truck-4 {
+    animation: driveTruckReverse1 20s linear infinite;
+    z-index: 2;
+    bottom: 0px;
+  }
+
+  .truck.truck-5 {
+    animation: driveTruckReverse2 24s linear infinite;
+    animation-delay: 10s;
+    z-index: 1;
+    bottom: 0px;
+  }
+
+  @keyframes driveTruckReverse1 {
+    0% { transform: translateX(0) scale(1) scaleX(-1); }
+    100% { transform: translateX(calc(-100vw - 400px)) scale(1) scaleX(-1); }
+  }
+
+  @keyframes driveTruckReverse2 {
+    0% { transform: translateX(0) scale(1) scaleX(-1); }
+    100% { transform: translateX(calc(-100vw - 400px)) scale(1) scaleX(-1); }
+  }
+
+  /* Işık İzi Efekti */
+  .light-trail {
+    position: absolute;
+    width: 150px;
+    height: 8px;
+    background: linear-gradient(to left, rgba(251, 191, 36, 0.6) 0%, rgba(251, 191, 36, 0) 100%);
+    border-radius: 4px;
+    filter: blur(3px);
+    animation: trailPulse 0.5s ease-in-out infinite alternate;
+  }
+
+  @keyframes trailPulse {
+    0% { opacity: 0.4; width: 120px; }
+    100% { opacity: 0.8; width: 150px; }
+  }
+
+  /* Duman/Egzoz Efekti */
+  .exhaust-smoke {
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    background: radial-gradient(circle, rgba(200, 200, 200, 0.6) 0%, transparent 70%);
+    border-radius: 50%;
+    animation: smokeRise 1s ease-out infinite;
+  }
+
+  .exhaust-smoke:nth-child(1) { animation-delay: 0s; }
+  .exhaust-smoke:nth-child(2) { animation-delay: 0.3s; }
+  .exhaust-smoke:nth-child(3) { animation-delay: 0.6s; }
+
+  @keyframes smokeRise {
+    0% { 
+      transform: translate(0, 0) scale(1); 
+      opacity: 0.6; 
+    }
+    100% { 
+      transform: translate(-30px, -25px) scale(2.5); 
+      opacity: 0; 
+    }
+  }
+
+  /* Dönen Tekerlekler */
+  .wheel {
+    transform-box: fill-box;
+    transform-origin: center center;
+    animation: wheelSpin 0.3s linear infinite;
+  }
+
+  @keyframes wheelSpin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+
+  /* Far Işıkları */
+  .headlight-beam {
+    position: absolute;
+    width: 80px;
+    height: 30px;
+    background: linear-gradient(to right, rgba(255, 255, 200, 0.4) 0%, rgba(255, 255, 200, 0) 100%);
+    clip-path: polygon(0 40%, 100% 0%, 100% 100%, 0 60%);
+    animation: headlightFlicker 2s ease-in-out infinite;
+  }
+
+  @keyframes headlightFlicker {
+    0%, 100% { opacity: 0.7; }
+    50% { opacity: 0.9; }
+  }
+
+  /* Yıldızlar / Parçacıklar */
+  .road-particles {
+    position: absolute;
+    bottom: 30px;
+    left: 0;
+    width: 100%;
+    height: 30px;
+    overflow: hidden;
+  }
+
+  .particle {
+    position: absolute;
+    width: 2px;
+    height: 2px;
+    background: rgba(251, 191, 36, 0.5);
+    border-radius: 50%;
+    animation: particleMove 3s linear infinite;
+  }
+
+  @keyframes particleMove {
+    0% { 
+      transform: translateX(100vw) translateY(0); 
+      opacity: 0;
+    }
+    10% { opacity: 1; }
+    90% { opacity: 1; }
+    100% { 
+      transform: translateX(-50px) translateY(-15px); 
+      opacity: 0;
+    }
+  }
+
+  /* Arka Plan Şehir Silüeti */
+  .city-silhouette {
+    position: absolute;
+    bottom: 28px;
+    left: 0;
+    width: 100%;
+    height: 30px;
+    background: 
+      linear-gradient(to bottom, transparent 0%, rgba(15, 23, 42, 0.9) 100%),
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1000 60'%3E%3Cpath fill='%231e293b' d='M0,60 L0,40 L30,40 L30,25 L50,25 L50,40 L80,40 L80,15 L100,15 L100,40 L130,40 L130,30 L150,30 L150,40 L180,40 L180,20 L200,20 L200,10 L220,10 L220,40 L250,40 L250,35 L280,35 L280,40 L320,40 L320,18 L340,18 L340,40 L380,40 L380,28 L400,28 L400,40 L440,40 L440,12 L460,12 L460,40 L500,40 L500,22 L520,22 L520,40 L560,40 L560,32 L580,32 L580,40 L620,40 L620,8 L640,8 L640,40 L680,40 L680,26 L700,26 L700,40 L740,40 L740,18 L760,18 L760,40 L800,40 L800,30 L820,30 L820,40 L860,40 L860,14 L880,14 L880,40 L920,40 L920,24 L940,24 L940,40 L1000,40 L1000,60 Z'/%3E%3C/svg%3E");
+    background-size: 100% 100%;
+    opacity: 0.3;
+  }
+
+  /* ===== MODERN HEADER STYLES ===== */
+  .loads-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 16px;
+    margin-bottom: 6px;
+    margin-top: -10px;
+    padding: 8px 20px;
+    background: rgba(15, 23, 42, 0.6);
+    backdrop-filter: blur(10px);
+    border-radius: 16px;
+    border: 1px solid rgba(59, 130, 246, 0.2);
+    box-shadow: var(--shadow-lg, 0 8px 32px rgba(0, 0, 0, 0.2));
+  }
+
+  .loads-header-left h1 {
+    margin: 0 0 4px 0;
+    font-size: 26px;
+    font-weight: 700;
+    background: linear-gradient(135deg, #60a5fa, #3b82f6, #2563eb);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .loads-header-left p {
+    margin: 0;
+    font-size: 13px;
+    color: var(--text-muted, #94a3b8);
+    line-height: 1.4;
+  }
+
+  .loads-header-right {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 10px;
+    margin-top: 0;
+  }
+
+  .loads-stat-pill {
+    font-size: 13px;
+    color: var(--text-muted, #94a3b8);
+    padding: 5px 12px;
+    border-radius: 10px;
+    background: var(--bg-surface-glass, rgba(15, 23, 42, 0.6));
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--border-accent, rgba(59, 130, 246, 0.3));
+    transition: all 0.3s ease;
+  }
+
+  .loads-stat-pill:hover {
+    border-color: var(--border-accent-strong, rgba(59, 130, 246, 0.5));
+    box-shadow: 0 0 20px rgba(59, 130, 246, 0.2);
+  }
+
+  .loads-stat-pill strong {
+    color: var(--accent-primary-light, #60a5fa);
+    font-weight: 600;
+  }
+
+  .loads-table-card {
+    background: var(--bg-card, rgba(15, 23, 42, 0.6));
+    backdrop-filter: blur(10px);
+    border-radius: 12px;
+    border: 1px solid var(--border-accent, rgba(59, 130, 246, 0.2));
+    padding: 8px;
+    box-sizing: border-box;
+    box-shadow: var(--shadow-lg, 0 8px 32px rgba(0, 0, 0, 0.2));
+  }
+
+  /* ===== MODERN TABLE STYLES ===== */
+  .loads-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: 15px;
+    background: var(--bg-card, rgba(15, 23, 42, 0.6));
+    backdrop-filter: blur(10px);
+    border-radius: 16px;
+    overflow: hidden;
+    border: 1px solid var(--border-accent, rgba(59, 130, 246, 0.2));
+    box-shadow: var(--shadow-xl, 0 8px 32px rgba(0, 0, 0, 0.3), 0 0 40px rgba(59, 130, 246, 0.05));
+  }
+
+  .loads-table thead th {
+    text-align: left;
+    padding: 6px 8px;
+    font-weight: 700;
+    color: var(--table-header-text, #94a3b8);
+    background: var(--table-header-bg, rgba(10, 22, 40, 0.8));
+    border-bottom: 2px solid var(--border-accent, rgba(59, 130, 246, 0.3));
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    position: relative;
+  }
+
+  .loads-table thead th:hover {
+    color: var(--table-header-text-hover, #e2e8f0);
+    cursor: pointer;
+  }
+
+  .loads-table thead th::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.5), transparent);
+  }
+
+  /* Make Pozisyon column compact (max 340px) */
+  .loads-table th:first-child,
+  .loads-table td:first-child {
+    width: 340px;
+    max-width: 340px;
+    white-space: nowrap;
+    overflow: visible;
+    text-overflow: ellipsis;
+    position: relative;
+  }
+
+  /* Konum sütunu - dar genişlik */
+  .loads-table th:nth-child(3),
+  .loads-table td:nth-child(3) {
+    width: 50px !important;
+    max-width: 80px !important;
+    min-width: 50px !important;
+    padding: 4px 6px !important;
+  }
+
+  /* Çekici/Dorse sütunu genişliği artırıldı (%15 daha geniş) */
+  .loads-table th:nth-child(4),
+  .loads-table td:nth-child(4) {
+    min-width: 180px;
+    white-space: nowrap;
+  }
+
+  .loads-table tbody td {
+    padding: 7px 8px;
+    border-bottom: 1px solid var(--border-subtle, rgba(59, 130, 246, 0.1));
+    color: var(--table-cell-text, #e5e7eb);
+    vertical-align: middle;
+    background: var(--table-row-bg, rgba(15, 23, 42, 0.4));
+    transition: all 0.2s ease;
+    font-weight: 500;
+  }
+
+  /* Completed row: modern green styling */
+  .loads-table tbody tr.completed-row,
+  .loads-table tbody tr[data-completed="1"] {
+    background: linear-gradient(135deg, rgba(22, 163, 74, 0.3), rgba(21, 128, 61, 0.2)) !important;
+    color: #ffffff !important;
+    font-weight: 600 !important;
+    box-shadow: inset 0 0 30px rgba(34, 197, 94, 0.1), 0 0 20px rgba(34, 197, 94, 0.1) !important;
+  }
+  .loads-table tbody tr.completed-row td,
+  .loads-table tbody tr[data-completed="1"] td {
+    background: transparent !important;
+    color: #ffffff !important;
+    border-bottom-color: rgba(34, 197, 94, 0.2) !important;
+    font-weight: 600 !important;
+  }
+
+  .loads-table tbody tr:last-child td {
+    border-bottom: none;
+  }
+
+  .loads-table tbody tr:not(.no-expense-row):not(.completed-row):hover {
+    background: var(--table-row-hover, rgba(59, 130, 246, 0.1)) !important;
+    box-shadow: inset 0 0 30px rgba(59, 130, 246, 0.05);
+  }
+
+  .loads-table tbody tr:not(.no-expense-row):not(.completed-row):hover td {
+    background: transparent;
+  }
+
+  /* Row click-to-open */
+  .loads-table tbody tr.clickable-position-row {
+    cursor: pointer;
+  }
+  
+  /* No-expense / negative state: modern red styling */
+  .loads-table tbody tr.no-expense-row,
+  .loads-table tbody tr[data-no-expense="1"] {
+    background: linear-gradient(135deg, rgba(220, 38, 38, 0.3), rgba(185, 28, 28, 0.2)) !important;
+    color: #ffffff !important;
+    font-weight: 600 !important;
+    box-shadow: inset 0 0 30px rgba(239, 68, 68, 0.1), 0 0 20px rgba(239, 68, 68, 0.1) !important;
+  }
+  .loads-table tbody tr.no-expense-row td,
+  .loads-table tbody tr[data-no-expense="1"] td {
+    background: transparent !important;
+    color: #ffffff !important;
+    border-bottom-color: rgba(239, 68, 68, 0.2) !important;
+    font-weight: 600 !important;
+  }
+
+  /* Row hover with glow effect */
+  .loads-table tbody tr:not(.no-expense-row):not(.completed-row):hover td {
+    color: var(--text-primary, #f8fafc);
+  }
+
+  /* Driver name styling */
+  .driver-name-text {
+    color: var(--driver-name-color, #EDEB8D);
+    font-weight: 700;
+  }
+
+  /* Driver location styling */
+  .driver-location-cell {
+    font-size: 11px;
+    white-space: nowrap;
+  }
+  .driver-location-cell .location-text {
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 4px;
+  }
+  .driver-location-cell .location-moving {
+    background: #22c55e;
+    color: white !important;
+  }
+  .driver-location-cell .location-stopped {
+    background: #3b82f6;
+    color: white !important;
+  }
+  .driver-location-cell .location-offline {
+    background: #ef4444;
+    color: white !important;
+  }
+  .driver-location-cell .location-coords {
+    color: #f59e0b !important; /* Turuncu - koordinat */
+  }
+  .driver-location-cell .location-empty {
+    color: #6b7280 !important; /* Gri - boş */
+  }
+  .driver-location-cell .distance-text {
+    color: #64748b !important;
+    font-size: 10px;
+    margin-left: 4px;
+  }
+  .location-loading {
+    color: #6b7280;
+    animation: pulse 1.5s infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 0.5; }
+    50% { opacity: 1; }
+  }
+
+  /* Type badge styling */
+  .type-badge-text {
+    color: var(--type-badge-color, #3b82f6);
+    font-weight: 700;
+  }
+
+  .filter-btn {
+    transition: all 0.3s ease;
+    background: var(--bg-surface-glass, rgba(15, 23, 42, 0.6)) !important;
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--border-accent, rgba(59, 130, 246, 0.3)) !important;
+    border-radius: 12px !important;
+    box-shadow: var(--shadow-md, 0 4px 15px rgba(0, 0, 0, 0.2));
+    position: relative;
+    overflow: hidden;
+  }
+
+  .filter-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.2), transparent);
+    transition: left 0.5s ease;
+  }
+
+  .filter-btn:hover::before {
+    left: 100%;
+  }
+
+  .filter-btn:hover {
+    background: rgba(59, 130, 246, 0.2) !important;
+    border-color: rgba(59, 130, 246, 0.5) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(59, 130, 246, 0.3);
+  }
+
+  .filter-btn.active {
+    background: linear-gradient(135deg, #3b82f6, #2563eb) !important;
+    border-color: transparent !important;
+    box-shadow: 0 0 25px rgba(59, 130, 246, 0.5), 0 4px 15px rgba(59, 130, 246, 0.3);
+  }
+
+  /* Modern Uyarı İkonu Stilleri */
+  .warning-badge-wrapper {
+    position: relative;
+    display: inline-block;
+    vertical-align: middle;
+    margin-right: 10px;
+  }
+  
+  .warning-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    border-radius: 8px;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(245, 158, 11, 0.4), inset 0 1px 0 rgba(255,255,255,0.2);
+    transition: all 0.2s ease;
+    animation: warningPulse 2s ease-in-out infinite;
+    position: relative;
+  }
+  
+  .warning-badge:hover {
+    transform: scale(1.1);
+    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.5), inset 0 1px 0 rgba(255,255,255,0.3);
+  }
+  
+  .warning-badge::before {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.3), transparent);
+    z-index: -1;
+  }
+  
+  .warning-badge-icon {
+    font-size: 16px;
+    font-weight: 700;
+    color: #1a1a1a;
+    text-shadow: 0 1px 0 rgba(255,255,255,0.3);
+    line-height: 1;
+  }
+  
+  .warning-badge-count {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    min-width: 16px;
+    height: 16px;
+    padding: 0 4px;
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    border-radius: 8px;
+    font-size: 10px;
+    font-weight: 700;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 4px rgba(239, 68, 68, 0.4);
+    border: 1.5px solid #1f2937;
+  }
+  
+  /* Uyarı Tooltip */
+  .warning-tooltip {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    margin-top: 8px;
+    background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+    border: 1px solid rgba(148, 163, 184, 0.3);
+    border-radius: 10px;
+    padding: 12px 14px;
+    min-width: 220px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255,255,255,0.08);
+    z-index: 99999;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.15s ease, visibility 0.15s ease, transform 0.15s ease;
+    pointer-events: none;
+    white-space: nowrap;
+  }
+  
+  .warning-tooltip::after {
+    content: '';
+    position: absolute;
+    bottom: 100%;
+    left: 20px;
+    border: 8px solid transparent;
+    border-bottom-color: #1e293b;
+  }
+  
+  .warning-badge-wrapper:hover .warning-tooltip {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transform: translateY(4px);
+  }
+  
+  .warning-tooltip-title {
+    font-size: 11px;
+    font-weight: 600;
+    color: #f59e0b;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  
+  .warning-tooltip-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 0;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.1);
+    font-size: 12px;
+    color: #e2e8f0;
+  }
+  
+  .warning-tooltip-item:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+  }
+  
+  .warning-tooltip-icon {
+    width: 18px;
+    height: 18px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    flex-shrink: 0;
+  }
+  
+  .warning-tooltip-icon.mrn { background: rgba(239, 68, 68, 0.2); color: #f87171; }
+  .warning-tooltip-icon.doc { background: rgba(59, 130, 246, 0.2); color: #60a5fa; }
+  .warning-tooltip-icon.navlun { background: rgba(16, 185, 129, 0.2); color: #34d399; }
+  .warning-tooltip-icon.t1 { background: rgba(168, 85, 247, 0.2); color: #c084fc; }
+  .warning-tooltip-icon.navlun_fatura_no { background: rgba(251, 191, 36, 0.2); color: #fbbf24; }
+  
+  @keyframes warningPulse {
+    0%, 100% { box-shadow: 0 2px 8px rgba(245, 158, 11, 0.4), inset 0 1px 0 rgba(255,255,255,0.2); }
+    50% { box-shadow: 0 2px 16px rgba(245, 158, 11, 0.6), inset 0 1px 0 rgba(255,255,255,0.2); }
+  }
+
+  .loads-pos {
+    font-weight: 600;
+    color: #f9fafb;
+    white-space: nowrap;
+  }
+
+  .no-expense-indicator {
+    display: inline-block;
+    margin-left: 8px; /* same spacing as Tamamlandı */
+    color: #b91c1c;
+    font-size: 13px;
+    font-weight: 700;
+    white-space: nowrap;
+    vertical-align: middle;
+    /* Removed pill background, padding, border-radius to show plain text only */
+    background: transparent !important;
+    padding: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    max-width: none !important;
+    overflow: visible !important;
+    text-overflow: unset !important;
+  }
+
+  /* Make sure the pill contrasts with the row background when the row is red or green */
+  /* Ensure plain text is readable on red or green rows */
+  .loads-table tbody tr.no-expense-row .no-expense-indicator,
+  .loads-table tbody tr[data-no-expense="1"] .no-expense-indicator {
+    color: #ffffff !important; /* white text for readability on red background */
+    background: transparent !important;
+  }
+
+  .loads-table tbody tr.completed-row .no-expense-indicator,
+  .loads-table tbody tr[data-completed="1"] .no-expense-indicator {
+    color: #ffffff !important; /* white text on green background */
+    background: transparent !important;
+  }
+
+  .loads-small {
+    font-size: 14px;
+    color: var(--table-cell-text, #d1d5db);
+  }
+
+  .grupaj-text {
+    cursor: pointer;
+    position: relative;
+    color: var(--grupaj-color, #60a5fa);
+    font-weight: 600;
+  }
+
+  .type-badge-text {
+    color: var(--type-badge-color, #3b82f6);
+    font-weight: 700;
+  }
+
+  /* ===== MODERN GRUPAJ TOOLTIP ===== */
+  .grupaj-tooltip {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    margin-top: 8px;
+    background: rgba(15, 23, 42, 0.98);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(59, 130, 246, 0.3);
+    border-radius: 14px;
+    padding: 12px 16px;
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.5), 0 0 30px rgba(59, 130, 246, 0.1);
+    z-index: 9999;
+    min-width: 220px;
+    white-space: nowrap;
+  }
+
+  .grupaj-text:hover .grupaj-tooltip {
+    display: block;
+    animation: tooltipFadeIn 0.2s ease;
+  }
+
+  @keyframes tooltipFadeIn {
+    from { opacity: 0; transform: translateX(-50%) translateY(-5px); }
+    to { opacity: 1; transform: translateX(-50%) translateY(0); }
+  }
+
+  .grupaj-tooltip-item {
+    font-size: 13px;
+    color: #e5e7eb;
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(59, 130, 246, 0.2);
+    transition: all 0.2s ease;
+  }
+
+  .grupaj-tooltip-item:hover {
+    color: #60a5fa;
+    padding-left: 5px;
+  }
+
+  .grupaj-tooltip-item:last-child {
+    border-bottom: none;
+  }
+
+  /* ===== MODERN ACTION BUTTONS ===== */
+  .loads-actions {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-start;
+    align-items: center;
+    width: 100%;
+  }
+
+  .loads-actions .btn {
+    padding: 8px 16px;
+    border-radius: 10px;
+    font-size: 13px;
+    transition: all 0.3s ease;
+  }
+
+  .loads-actions .btn:hover {
+    transform: translateY(-2px);
+  }
+
+  .btn-danger {
+    background: linear-gradient(135deg, #ef4444, #dc2626) !important;
+    border: none !important;
+    color: white !important;
+    box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
+  }
+
+  .btn-danger:hover {
+    background: linear-gradient(135deg, #dc2626, #b91c1c) !important;
+    box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4), 0 0 25px rgba(239, 68, 68, 0.3) !important;
+  }
+
+  .loads-empty-row td {
+    text-align: center;
+    padding: 24px 8px;
+    color: #64748b;
+    font-size: 16px;
+    background: rgba(15, 23, 42, 0.4);
+  }
+
+  /* ===== MODERN SEARCH BAR ===== */
+  .search-bar-container {
+    margin-bottom: 4px;
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  .search-bar {
+    position: relative;
+    width: 100%;
+    max-width: 450px;
+  }
+
+  .search-input {
+    width: 100%;
+    padding: 10px 40px 10px 14px;
+    background: rgba(15, 23, 42, 0.6);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(59, 130, 246, 0.3);
+    border-radius: 10px;
+    color: #e5e7eb;
+    font-size: 14px;
+    outline: none;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  }
+
+  .search-input:focus {
+    border-color: rgba(59, 130, 246, 0.6);
+    box-shadow: 0 0 25px rgba(59, 130, 246, 0.3), 0 4px 15px rgba(0, 0, 0, 0.2);
+  }
+
+  .search-input::placeholder {
+    color: #64748b;
+  }
+
+  .search-icon {
+    position: absolute;
+    right: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #3b82f6;
+    font-size: 20px;
+    pointer-events: none;
+    filter: drop-shadow(0 0 5px rgba(59, 130, 246, 0.5));
+  }
+
+  .no-results {
+    padding: 50px 20px;
+    text-align: center;
+    color: #94a3b8;
+    font-size: 16px;
+    background: rgba(15, 23, 42, 0.4);
+    border-radius: 12px;
+    border: 1px solid rgba(59, 130, 246, 0.2);
+  }
+
+  @media (max-width: 900px) {
+    .loads-page {
+      padding: 8px 12px 24px;
+    }
+
+    .loads-header {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .loads-header-right {
+      align-items: flex-start;
+    }
+
+    .loads-table {
+      font-size: 12px;
+    }
+
+    .loads-table thead th {
+      padding: 4px 6px;
+      font-size: 11px;
+    }
+
+    .loads-table tbody td {
+      padding: 6px 4px;
+    }
+
+    .search-bar {
+      max-width: 100%;
+    }
+  }
+
+  /* ===== MODERN PAGINATION ===== */
+  .pagination-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    margin-top: 20px;
+    margin-bottom: 100px;
+    padding: 16px;
+    position: relative;
+    z-index: 10;
+    background: rgba(15, 23, 42, 0.4);
+    backdrop-filter: blur(10px);
+    border-radius: 16px;
+    border: 1px solid rgba(59, 130, 246, 0.2);
+  }
+
+  .pagination-btn {
+    min-width: 42px;
+    height: 42px;
+    padding: 0 14px;
+    border: 1px solid rgba(59, 130, 246, 0.3);
+    background: rgba(15, 23, 42, 0.6);
+    color: #e5e7eb;
+    border-radius: 12px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .pagination-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.2), transparent);
+    transition: left 0.4s ease;
+  }
+
+  .pagination-btn:hover:not(:disabled)::before {
+    left: 100%;
+  }
+
+  .pagination-btn:hover:not(:disabled) {
+    background: rgba(59, 130, 246, 0.2);
+    border-color: rgba(59, 130, 246, 0.5);
+    box-shadow: 0 0 20px rgba(59, 130, 246, 0.2);
+    transform: translateY(-2px);
+  }
+
+  .pagination-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  .pagination-btn.active {
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+    border-color: transparent;
+    color: white;
+    box-shadow: 0 0 25px rgba(59, 130, 246, 0.4), 0 4px 15px rgba(59, 130, 246, 0.3);
+  }
+
+  .pagination-info {
+    color: #94a3b8;
+    font-size: 14px;
+    margin: 0 16px;
+  }
+
+  .pagination-dots {
+    color: #64748b;
+    font-size: 16px;
+    padding: 0 6px;
+  }
+
+  #paginationNumbers {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+  }
+</style>
+
+<!-- Floating Particles -->
+<div class="floating-particles">
+  <div class="floating-particle" style="left: 5%; animation-delay: 0s;"></div>
+  <div class="floating-particle" style="left: 15%; animation-delay: 2s;"></div>
+  <div class="floating-particle" style="left: 25%; animation-delay: 4s;"></div>
+  <div class="floating-particle" style="left: 35%; animation-delay: 1s;"></div>
+  <div class="floating-particle" style="left: 45%; animation-delay: 3s;"></div>
+  <div class="floating-particle" style="left: 55%; animation-delay: 5s;"></div>
+  <div class="floating-particle" style="left: 65%; animation-delay: 2.5s;"></div>
+  <div class="floating-particle" style="left: 75%; animation-delay: 4.5s;"></div>
+  <div class="floating-particle" style="left: 85%; animation-delay: 1.5s;"></div>
+  <div class="floating-particle" style="left: 95%; animation-delay: 3.5s;"></div>
+</div>
+
+<!-- Connection Status -->
+<div class="connection-status online" id="connectionStatus">
+  <div class="status-dot"></div>
+  <span id="connectionText">Çevrimiçi</span>
+</div>
+
+<%- include('../partials/navbar') %>
+
+<div class="loads-page">
+  <!-- Alerts Dashboard Widget -->
+  <%- include('../partials/alerts-widget') %>
+  
+  <div class="loads-header">
+    <div class="loads-header-left">
+      <h1>Pozisyon/Araç Kayıtları <span style="font-size: 18px; color: var(--accent-primary, #3b82f6); font-weight: 600;">(<%= typeof year !== 'undefined' ? year : new Date().getFullYear() %>)</span></h1>
+      <p>
+        Pozisyonlar aşağıda listelenir. Satırın sağ tarafındaki aç butonuna tıklayarak pozisyonu açabilir, düzenle butonu ile pozisyon bilgilerini güncelleyebilirsiniz..
+      </p>
+    </div>
+
+    <div class="loads-header-right" style="flex-direction: row; align-items: center; gap: 12px;">
+      <div class="loads-stat-pill">
+        Toplam Eşya: <strong><%= (loads && loads.length) ? loads.length : 0 %></strong>
+      </div>
+      <div class="loads-stat-pill">
+        Toplam Sefer: <strong><%= (groupedLoads && groupedLoads.length) ? groupedLoads.length : 0 %></strong>
+      </div>
+      <button id="openNewLoadBtn" class="btn">+ Yeni Yükleme</button>
+    </div>
+  </div>
+
+  <!-- Modern Filtre Butonları ve Arama Barı -->
+  <div style="display: flex; justify-content: space-between; align-items: center; margin: 0 0 4px 0; flex-wrap: wrap; gap: 10px;">
+    <div class="filter-buttons-container" style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
+      <button onclick="filterByType('all')" id="filterAll" class="filter-btn active" style="padding: 8px 14px; color: white; cursor: pointer; font-size: 13px; font-weight: 600;">
+        📋 Tümü
+      </button>
+      <button onclick="filterByType('no-expense')" id="filterNoExpense" class="filter-btn" style="padding: 8px 14px; color: white; cursor: pointer; font-size: 13px; font-weight: 600;">
+        🚫 Masrafı Eksik
+      </button>
+      <button onclick="filterByType('completed')" id="filterCompleted" class="filter-btn" style="padding: 8px 14px; color: white; cursor: pointer; font-size: 13px; font-weight: 600;">
+        ✅ Tamamlanmış Pozisyonlar
+      </button>
+      <button onclick="filterByType('open')" id="filterOpen" class="filter-btn" style="padding: 8px 14px; color: white; cursor: pointer; font-size: 13px; font-weight: 600;">
+        📂 Açık Pozisyonlar
+      </button>
+    </div>
+    <div class="search-bar" style="max-width: 350px;">
+      <input 
+        type="text" 
+        id="searchInput" 
+        class="search-input" 
+        placeholder="Plaka, MRN, Mühür No, İhr Poz, UID ile ara..."
+        onkeyup="filterPositions()"
+        onkeydown="handleSearchKey(event)"
+      />
+      <span class="search-icon">🔍</span>
+    </div>
+  </div>
+  <div class="loads-table-card" style="margin-top: 0; padding: 4px;">
+    <% 
+      function formatEjsDate(d) {
+        if (!d && d !== 0) return '-';
+        var s = String(d).trim();
+        // yyyy-mm-dd or yyyy-mm-ddTHH:MM:SS
+        var m = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
+        if (m) return m[3] + '.' + m[2] + '.' + m[1];
+        // dd.mm.yyyy
+        m = s.match(/^(\d{2})\.(\d{2})\.(\d{4})/);
+        if (m) return m[1] + '.' + m[2] + '.' + m[3];
+        // dd/mm/yyyy
+        m = s.match(/^(\d{2})\/(\d{2})\/(\d{4})/);
+        if (m) return m[1] + '.' + m[2] + '.' + m[3];
+        // fallback to Date parse
+        var dt = new Date(s);
+        if (!isNaN(dt.getTime())) {
+          var dd = dt.getDate(); if (dd < 10) dd = '0' + dd;
+          var mm = dt.getMonth() + 1; if (mm < 10) mm = '0' + mm;
+          var yyyy = dt.getFullYear();
+          return dd + '.' + mm + '.' + yyyy;
+        }
+        return s;
+      }
+    %>
+    <% if (groupedLoads && groupedLoads.length > 0) { %>
+      <table class="loads-table">
+        <thead>
+          <tr>
+              <th style="cursor:pointer; user-select:none;" title="Pozisyona göre sırala" onclick="sortByColumn(0,'position')">
+                Pozisyon <span class="sort-ind" data-col="0" style="font-size:12px; margin-left:6px; color:#6b7280;">⇅</span>
+              </th>
+            <th style="cursor:pointer; user-select:none;" onclick="sortByColumn(1,'string')">Tür <span class="sort-ind" data-col="1">⇅</span></th>
+            <th style="cursor:pointer; user-select:none; width: 56px; max-width: 56px;" onclick="sortByColumn(2,'string')">Konum <span class="sort-ind" data-col="2">⇅</span></th>
+            <th style="cursor:pointer; user-select:none;" onclick="sortByColumn(3,'string')">Çekici / Dorse <span class="sort-ind" data-col="3">⇅</span></th>
+            <th style="cursor:pointer; user-select:none;" onclick="sortByColumn(4,'string')">Gönderici <span class="sort-ind" data-col="4">⇅</span></th>
+            <th style="cursor:pointer; user-select:none;" onclick="sortByColumn(5,'string')">Alıcı <span class="sort-ind" data-col="5">⇅</span></th>
+            <th style="cursor:pointer; user-select:none;" onclick="sortByColumn(6,'string')">Yükleme <span class="sort-ind" data-col="6">⇅</span></th>
+            <th style="cursor:pointer; user-select:none;" onclick="sortByColumn(7,'string')">Boşaltma <span class="sort-ind" data-col="7">⇅</span></th>
+            <th style="cursor:pointer; user-select:none;" onclick="sortByColumn(8,'number')">Toplam Kap <span class="sort-ind" data-col="8">⇅</span></th>
+            <th style="cursor:pointer; user-select:none;" onclick="sortByColumn(9,'number')">Toplam Kilo <span class="sort-ind" data-col="9">⇅</span></th>
+            <th style="cursor:pointer; user-select:none;" onclick="sortByColumn(10,'string')">Mühür No <span class="sort-ind" data-col="10">⇅</span></th>
+            <th style="cursor:pointer; user-select:none;" onclick="sortByColumn(11,'date')">Çıkış Tarihi <span class="sort-ind" data-col="11">⇅</span></th>
+            <th style="cursor:pointer; user-select:none;" onclick="sortByColumn(12,'number')">Yük Sayısı <span class="sort-ind" data-col="12">⇅</span></th>
+            <th style="width: 180px;">İşlem</th>
+          </tr>
+        </thead>
+        <tbody>
+          <%
+            // Ülke kısaltmaları - performans için döngü dışında tanımlandı
+            const countryAbbr = {
+              'belçika': 'BE', 'belgium': 'BE', 'belgique': 'BE',
+              'almanya': 'DE', 'germany': 'DE', 'deutschland': 'DE',
+              'hollanda': 'NL', 'netherlands': 'NL', 'nederland': 'NL',
+              'fransa': 'FR', 'france': 'FR',
+              'ingiltere': 'GB', 'İngiltere': 'GB', 'england': 'GB', 'uk': 'GB', 'united kingdom': 'GB',
+              'italya': 'IT', 'italy': 'IT', 'italia': 'IT',
+              'ispanya': 'ES', 'spain': 'ES', 'españa': 'ES',
+              'polonya': 'PL', 'poland': 'PL', 'polska': 'PL',
+              'avusturya': 'AT', 'austria': 'AT', 'österreich': 'AT',
+              'macaristan': 'HU', 'hungary': 'HU', 'magyarország': 'HU',
+              'çekya': 'CZ', 'czech': 'CZ', 'czechia': 'CZ',
+              'romanya': 'RO', 'romania': 'RO', 'românia': 'RO',
+              'bulgaristan': 'BG', 'bulgaria': 'BG', 'българия': 'BG',
+              'yunanistan': 'GR', 'greece': 'GR', 'ελλάδα': 'GR',
+              'portekiz': 'PT', 'portugal': 'PT',
+              'danimarka': 'DK', 'denmark': 'DK', 'danmark': 'DK',
+              'isveç': 'SE', 'sweden': 'SE', 'sverige': 'SE',
+              'norveç': 'NO', 'norway': 'NO', 'norge': 'NO',
+              'finlandiya': 'FI', 'finland': 'FI', 'suomi': 'FI',
+              'isviçre': 'CH', 'switzerland': 'CH', 'schweiz': 'CH',
+              'lüksemburg': 'LU', 'luxembourg': 'LU',
+              'slovakya': 'SK', 'slovakia': 'SK', 'slovensko': 'SK',
+              'slovenya': 'SI', 'slovenia': 'SI', 'slovenija': 'SI',
+              'hırvatistan': 'HR', 'croatia': 'HR', 'hrvatska': 'HR',
+              'sırbistan': 'RS', 'serbia': 'RS', 'србија': 'RS',
+              'türkiye': 'TR', 'turkey': 'TR'
+            };
+            
+            function getCountryCode(cityName) {
+              if (!cityName) return null;
+              const lower = cityName.toLowerCase().trim();
+              if (countryAbbr[lower]) return countryAbbr[lower];
+              for (const [key, code] of Object.entries(countryAbbr)) {
+                if (lower.includes(key) || key.includes(lower)) return code;
+              }
+              return null;
+            }
+            
+            // Fatura kime alanının geçerli bir firma adı olup olmadığını kontrol eder
+            // " ve - karakterleri firma adı olarak sayılmaz
+            function isValidFaturaKime(val) {
+              if (!val) return false;
+              const trimmed = String(val).trim();
+              return trimmed !== '' && trimmed !== '"' && trimmed !== '-' && trimmed !== '""';
+            }
+          %>
+          <% groupedLoads.forEach(function(group) { 
+            const currentYear = typeof year !== 'undefined' ? year : (typeof selectedYear !== 'undefined' ? selectedYear : new Date().getFullYear());
+            const isCompleted = group.loads[0]?.status === 'completed';
+            const isNoExpense = group.loads[0]?.no_expense === 1;
+            
+            let rowClasses = [];
+            rowClasses.push('clickable-position-row');
+            if (isNoExpense) rowClasses.push('no-expense-row');
+            if (isCompleted) rowClasses.push('completed-row');
+            const classAttr = rowClasses.length ? (' class="' + rowClasses.join(' ') + '"') : '';
+          %>
+            <tr<%= classAttr %> data-href="/loads/position/<%= encodeURIComponent(group.position_no) %>?year=<%= currentYear %>" data-no-expense="<%= isNoExpense ? '1' : '0' %>" data-completed="<%= isCompleted ? '1' : '0' %>" data-seal="<%= group.loads[0]?.seal_code || '' %>" data-mrn="<%= group.loads[0]?.mrn_no || '' %>" data-ihr="<%= group.loads[0]?.ihr_poz || '' %>" data-uid="<%= group.loads[0]?.uid || '' %>" data-load-id="<%= group.loads[0]?.id || '' %>">
+              <td class="loads-pos">
+                <% 
+                  const repLoad = group.loads && group.loads[0] ? group.loads[0] : null;
+                  const mrnMissing = !repLoad || !repLoad.mrn_no || String(repLoad.mrn_no).trim() === '';
+                  // documents presence for the whole position (any category)
+                  const docsMissing = !group.has_documents;
+                  // Navlun: check if navlun_amount or navlun_currency present on representative load
+                  // Consider uploaded Navlun documents (group.docs_by_category['Navlun']) as satisfying this too
+                  const navlunFieldMissing = !repLoad || (!repLoad.navlun_amount && !repLoad.navlun_currency);
+                  const navlunDocsPresent = group.docs_by_category && Number(group.docs_by_category['Navlun'] || 0) > 0;
+                  const navlunMissing = navlunFieldMissing && !navlunDocsPresent;
+                  // T1/CMR: check representative load for t1_mrn or similar fields OR uploaded T1/GMR docs
+                  const t1FieldMissing = !repLoad || (!repLoad.t1_mrn && !repLoad.t1 && !repLoad.t1_gmr);
+                  const t1DocsPresent = group.docs_by_category && Number(group.docs_by_category['T1/GMR'] || 0) > 0;
+                  const t1Missing = t1FieldMissing && !t1DocsPresent;
+                  const warningItems = [];
+                  if (mrnMissing) warningItems.push({ type: 'mrn', icon: '🔢', text: 'MRN numarası eklenmedi' });
+                  if (docsMissing) warningItems.push({ type: 'doc', icon: '📄', text: 'Evrak yüklenmedi' });
+                  if (navlunMissing) warningItems.push({ type: 'navlun', icon: '💰', text: 'Navlun yüklenmedi' });
+                  if (t1Missing) warningItems.push({ type: 't1', icon: '📋', text: 'T1/CMR yüklenmedi' });
+                  
+                  // Navlun fatura no kontrolü - navlun bilgisi varsa ama fatura no yoksa
+                  // Tüm yükleri kontrol et (birden fazla yük olabilir)
+                  const allLoads = group.loads || [];
+                  // Herhangi bir yükte navlun bilgisi var ama fatura no yok mu kontrol et
+                  const navlunFaturaNoMissing = allLoads.some(load => {
+                    const hasNavlunInfo = (load.navlun_amount && String(load.navlun_amount).trim() !== '') || isValidFaturaKime(load.fatura_kime);
+                    const hasFaturaNo = load.fatura_no && String(load.fatura_no).trim() !== '';
+                    return hasNavlunInfo && !hasFaturaNo;
+                  });
+                  if (navlunFaturaNoMissing) warningItems.push({ type: 'navlun_fatura_no', icon: '🧾', text: 'Navlun fatura numarası girilmedi' });
+                  
+                  const showBadge = warningItems.length > 0;
+                %>
+                <% if (showBadge) { %>
+                  <div class="warning-badge-wrapper">
+                    <div class="warning-badge">
+                      <span class="warning-badge-icon">!</span>
+                      <span class="warning-badge-count"><%= warningItems.length %></span>
+                    </div>
+                    <div class="warning-tooltip">
+                      <div class="warning-tooltip-title">
+                        <span>⚠️</span> Eksik Bilgiler
+                      </div>
+                      <% warningItems.forEach(function(item) { %>
+                        <div class="warning-tooltip-item">
+                          <span class="warning-tooltip-icon <%= item.type %>"><%= item.icon %></span>
+                          <span><%= item.text %></span>
+                        </div>
+                      <% }); %>
+                    </div>
+                  </div>
+                <% } %>
+                <strong><%= group.position_no %></strong>
+                <% const posIhr = group.loads && group.loads[0] ? group.loads[0].ihr_poz : null; %>
+                <% if (posIhr) { %>
+                  <div style="display:inline-block; margin-left:10px; background: rgba(59,130,246,0.12); color:#bfdbfe; padding:4px 8px; border-radius:6px; font-size:12px; font-weight:700;">
+                    İhr Poz: <span style="color:#e6f0ff;"><%= posIhr %></span>
+                  </div>
+                <% } %>
+                <% if (isCompleted) { %>
+                  <span style="color: #22c55e; margin-left: 8px; font-size: 12px;">✓ Tamamlandı</span>
+                <% } %>
+                <% if (isNoExpense) { %>
+                  <span class="no-expense-indicator">Masrafı eksik </span>
+                <% } %>
+              </td>
+              <td>
+                <span class="loads-small">
+                  <% if (typeof group.type !== 'undefined' && group.type !== null && group.type !== '') { %>
+                    <span class="type-badge-text"><%= group.type %></span>
+                  <% } else { %>
+                    -
+                  <% } %>
+                </span>
+              </td>
+              <td>
+                <span class="loads-small driver-location-cell" data-truck-plate="<%= group.truck_plate || '' %>">
+                  <span class="location-loading">...</span>
+                </span>
+              </td>
+              <td>
+                <span class="loads-small">
+                  <% if (group.truck_plate) { %>
+                    <%= group.truck_plate %>
+                    <% if (group.trailer_plate) { %>
+                      / <%= group.trailer_plate %>
+                    <% } %>
+                    <% const driverName = group.loads[0]?.driver_name; %>
+                    <% if (driverName) { %>
+                      <br><span class="driver-name-text"><%= driverName %></span>
+                    <% } %>
+                  <% } else { %>
+                    -
+                  <% } %>
+                </span>
+              </td>
+              <td>
+                <span class="loads-small">
+                  <% if (group.loads.length > 1) { 
+                    const uniqueCustomers = [...new Set(group.loads.map(l => l.customer_name).filter(Boolean))];
+                    if (uniqueCustomers.length > 1) { %>
+                      <span class="grupaj-text">
+                        Grupaj
+                        <div class="grupaj-tooltip">
+                          <% uniqueCustomers.forEach(function(customer) { %>
+                            <div class="grupaj-tooltip-item"><%= customer %></div>
+                          <% }); %>
+                        </div>
+                      </span>
+                    <% } else { %>
+                      <%= uniqueCustomers[0] || '-' %>
+                    <% } %>
+                  <% } else { %>
+                    <%= group.loads[0]?.customer_name || '-' %>
+                  <% } %>
+                </span>
+              </td>
+              <td>
+                <span class="loads-small">
+                  <% if (group.loads.length > 1) { 
+                    const uniqueConsignees = [...new Set(group.loads.map(l => l.consignee_name).filter(Boolean))];
+                    if (uniqueConsignees.length > 1) { %>
+                      <span class="grupaj-text">
+                        Grupaj
+                        <div class="grupaj-tooltip">
+                          <% uniqueConsignees.forEach(function(consignee) { %>
+                            <div class="grupaj-tooltip-item"><%= consignee %></div>
+                          <% }); %>
+                        </div>
+                      </span>
+                    <% } else { %>
+                      <%= uniqueConsignees[0] || '-' %>
+                    <% } %>
+                  <% } else { %>
+                    <%= group.loads[0]?.consignee_name || '-' %>
+                  <% } %>
+                </span>
+              </td>
+              <td>
+                <span class="loads-small">
+                  <% 
+                    const uniqueLoadingCities = [...new Set(group.loads.map(l => l.loading_city).filter(Boolean))];
+                    if (uniqueLoadingCities.length > 1) { 
+                      // Birden fazla ise kısaltmaları göster
+                      const abbreviations = uniqueLoadingCities.map(city => getCountryCode(city) || city.substring(0, 2).toUpperCase());
+                      const uniqueAbbr = [...new Set(abbreviations)];
+                    %>
+                      <span class="grupaj-text">
+                        <%= uniqueAbbr.join('+') %>
+                        <div class="grupaj-tooltip">
+                          <% uniqueLoadingCities.forEach(function(city) { %>
+                            <div class="grupaj-tooltip-item"><%= city %></div>
+                          <% }); %>
+                        </div>
+                      </span>
+                    <% } else { %>
+                      <%= uniqueLoadingCities[0] || '-' %>
+                    <% } %>
+                </span>
+              </td>
+              <td>
+                <span class="loads-small">
+                  <% 
+                    // Ülke ve şehir bilgilerini al
+                    const unloadingLocations = group.loads.map(l => {
+                      const country = l.unloading_country || '';
+                      const city = l.unloading_city || '';
+                      if (country && city) return country + ' / ' + city;
+                      return country || city || '';
+                    }).filter(Boolean);
+                    const uniqueUnloadingLocations = [...new Set(unloadingLocations)];
+                    
+                    // Sadece ülke bilgilerini al
+                    const unloadingCountries = group.loads.map(l => l.unloading_country).filter(Boolean);
+                    const uniqueUnloadingCountries = [...new Set(unloadingCountries)];
+                    
+                    if (uniqueUnloadingLocations.length > 1) { 
+                      // Birden fazla ise sadece ülke adlarını + ile göster
+                    %>
+                      <span class="grupaj-text">
+                        <%= uniqueUnloadingCountries.join('+') || '-' %>
+                        <div class="grupaj-tooltip">
+                          <% uniqueUnloadingLocations.forEach(function(loc) { %>
+                            <div class="grupaj-tooltip-item"><%= loc %></div>
+                          <% }); %>
+                        </div>
+                      </span>
+                    <% } else { %>
+                      <%= uniqueUnloadingLocations[0] || '-' %>
+                    <% } %>
+                </span>
+              </td>
+              <td>
+                <span class="loads-small">
+                  <% 
+                    const totalPackages = group.loads.reduce((sum, load) => {
+                      const packages = parseInt(load.packages) || 0;
+                      return sum + packages;
+                    }, 0);
+                  %>
+                  <strong><%= totalPackages %></strong>
+                </span>
+              </td>
+              <td>
+                <span class="loads-small">
+                  <% 
+                    const totalWeight = group.loads.reduce((sum, load) => {
+                      const weight = parseFloat(load.gross_weight) || 0;
+                      return sum + weight;
+                    }, 0);
+                  %>
+                  <strong><%= totalWeight.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) %> Kg</strong>
+                </span>
+              </td>
+              <td>
+                <span class="loads-small">
+                  <%= group.loads[0]?.seal_code || '-' %>
+                </span>
+              </td>
+              <td>
+                  <span class="loads-small">
+                  <%= formatEjsDate(group.display_exit_date_formatted || group.display_exit_date || group.exit_date || group.loading_date) %>
+                </span>
+              </td>
+              <td>
+                <span class="loads-small"><strong><%= group.loads.length %></strong></span>
+              </td>
+              <td>
+                <div class="loads-actions">
+                  <a href="/loads/position/<%= encodeURIComponent(group.position_no) %>?year=<%= currentYear %>" class="btn btn-outline btn-sm">
+                    Aç
+                  </a>
+                  <button type="button" class="btn btn-outline btn-sm" onclick="openEditModal('<%= group.loads[0]?.id %>')">Düzenle</button>
+                  <button 
+                    type="button" 
+                    class="btn btn-danger btn-sm"
+                    onclick="openDeletePositionModal('<%= group.position_no %>', '<%= group.loads.length %>')"
+                  >
+                    Sil
+                  </button>
+                  
+                </div>
+              </td>
+            </tr>
+          <% }); %>
+        </tbody>
+      </table>
+      
+      <!-- Pagination -->
+      <div class="pagination-container" id="paginationContainer">
+        <button class="pagination-btn" id="prevPageBtn" onclick="goToPage(currentPage - 1)">← Önceki</button>
+        <div id="paginationNumbers"></div>
+        <button class="pagination-btn" id="nextPageBtn" onclick="goToPage(currentPage + 1)">Sonraki →</button>
+        <span class="pagination-info" id="paginationInfo"></span>
+      </div>
+    <% } else { %>
+      <div style="padding: 20px; text-align: center; color: #6b7280;">
+        Hiç yükleme kaydı bulunamadı. Sağ üstten "Yeni Yükleme" ile ilk kaydınızı oluşturabilirsiniz.
+      </div>
+    <% } %>
+  </div>
+</div>
+<!-- New Load Modal (quick create) -->
+<div id="newLoadModal" class="modal-overlay" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.75); backdrop-filter:blur(8px); z-index:10000; justify-content:center; align-items:center;">
+  <div class="modal-content" style="max-width:720px; width:94%; padding:28px; background: linear-gradient(180deg, rgba(10, 22, 40, 0.95), rgba(15, 23, 42, 0.98)); color:#e6eef6; border-radius:20px; box-shadow: 0 25px 80px rgba(0,0,0,0.6), 0 0 60px rgba(59, 130, 246, 0.15); border:1px solid rgba(59, 130, 246, 0.3); backdrop-filter:blur(20px);">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:18px;">
+      <div style="font-weight:800; font-size:24px; background: linear-gradient(135deg, #60a5fa, #3b82f6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">➕ Yeni Yükleme Oluştur</div>
+      <button onclick="hideNewLoadModal()" style="background:rgba(239, 68, 68, 0.2); border:1px solid rgba(239, 68, 68, 0.4); color:#f87171; width:36px; height:36px; border-radius:10px; font-size:20px; cursor:pointer; transition:all 0.3s; display:flex; align-items:center; justify-content:center;" onmouseover="this.style.background='rgba(239, 68, 68, 0.4)'; this.style.boxShadow='0 0 20px rgba(239, 68, 68, 0.3)';" onmouseout="this.style.background='rgba(239, 68, 68, 0.2)'; this.style.boxShadow='none';">×</button>
+    </div>
+
+    <div style="display:flex; flex-direction:column; gap:14px;">
+      <div>
+        <label style="font-size:14px; color:#94a3b8; margin-bottom:8px; display:block; font-weight:600; text-transform:uppercase; letter-spacing:0.05em;">🆔 İthalat Pozisyon Numarası</label>
+        <input id="new_position_no" type="text" placeholder="(Boş bırakılırsa otomatik atanır)" class="modern-input" style="padding:14px 16px; font-size:15px; border-radius:12px; border:1px solid rgba(59, 130, 246, 0.3); background:rgba(15, 23, 42, 0.6); color:#e5e7eb; width:100%; transition:all 0.3s; outline:none;" onfocus="this.style.borderColor='rgba(59, 130, 246, 0.6)'; this.style.boxShadow='0 0 20px rgba(59, 130, 246, 0.2)';" onblur="this.style.borderColor='rgba(59, 130, 246, 0.3)'; this.style.boxShadow='none';" />
+      </div>
+
+      <div style="display:grid; grid-template-columns: 1fr 1fr; gap:14px;">
+        <div>
+          <label style="font-size:14px; color:#94a3b8; display:block; margin-bottom:8px; font-weight:600; text-transform:uppercase; letter-spacing:0.05em;">🚚 Çekici Plakası</label>
+          <select id="new_truck_select" class="modern-select" style="width:100%; padding:14px 16px; border-radius:12px; border:1px solid rgba(59, 130, 246, 0.3); background:rgba(15, 23, 42, 0.6); color:#e5e7eb; cursor:pointer; transition:all 0.3s; outline:none;" onfocus="this.style.borderColor='rgba(59, 130, 246, 0.6)'; this.style.boxShadow='0 0 20px rgba(59, 130, 246, 0.2)';" onblur="this.style.borderColor='rgba(59, 130, 246, 0.3)'; this.style.boxShadow='none';">
+            <option value="">Seçiniz...</option>
+            <% if (typeof trucks !== 'undefined' && trucks && trucks.length) { %>
+              <% trucks.forEach(function(truck) { %>
+                <option value="<%= truck.plate %>" data-driver="<%= truck.driver_name || '' %>"><%= truck.plate %></option>
+              <% }); %>
+            <% } %>
+          </select>
+        </div>
+
+        <div>
+          <label style="font-size:14px; color:#94a3b8; display:block; margin-bottom:8px; font-weight:600; text-transform:uppercase; letter-spacing:0.05em;">🚛 Dorse Plakası</label>
+          <select id="new_trailer_select" class="modern-select" style="width:100%; padding:14px 16px; border-radius:12px; border:1px solid rgba(59, 130, 246, 0.3); background:rgba(15, 23, 42, 0.6); color:#e5e7eb; cursor:pointer; transition:all 0.3s; outline:none;" onfocus="this.style.borderColor='rgba(59, 130, 246, 0.6)'; this.style.boxShadow='0 0 20px rgba(59, 130, 246, 0.2)';" onblur="this.style.borderColor='rgba(59, 130, 246, 0.3)'; this.style.boxShadow='none';">
+            <option value="">Seçiniz...</option>
+            <% if (typeof trailers !== 'undefined' && trailers && trailers.length) { %>
+              <% trailers.forEach(function(trailer) { %>
+                <option value="<%= trailer.plate %>"><%= trailer.plate %></option>
+              <% }); %>
+            <% } %>
+          </select>
+        </div>
+      </div>
+
+      <label style="font-size:14px; color:#94a3b8; margin-top:6px; font-weight:600; text-transform:uppercase; letter-spacing:0.05em;">👨‍✈️ Şoför Adı</label>
+      <input id="new_driver_name" type="text" placeholder="Çekici seçince otomatik dolar" readonly style="padding:14px 16px; font-size:15px; border-radius:12px; border:1px solid rgba(59, 130, 246, 0.2); background:rgba(15, 23, 42, 0.4); color:#94a3b8;" />
+      <label style="font-size:14px; color:#94a3b8; margin-top:6px; font-weight:600; text-transform:uppercase; letter-spacing:0.05em;">🏷️ Kategorileştirme</label>
+      <input id="new_naming" type="text" placeholder="- " style="padding:14px 16px; font-size:15px; border-radius:12px; border:1px solid rgba(59, 130, 246, 0.3); background:rgba(15, 23, 42, 0.6); color:#e5e7eb; transition:all 0.3s; outline:none;" onfocus="this.style.borderColor='rgba(59, 130, 246, 0.6)'; this.style.boxShadow='0 0 20px rgba(59, 130, 246, 0.2)';" onblur="this.style.borderColor='rgba(59, 130, 246, 0.3)'; this.style.boxShadow='none';" />
+
+      <label style="font-size:14px; color:#94a3b8; margin-top:6px; font-weight:600; text-transform:uppercase; letter-spacing:0.05em;">📁 İhracat Pozisyonu</label>
+      <input id="new_ihr_poz" type="text" placeholder="İthalat pozisyonuna ait İhracat Pozisyon numarasını giriniz." style="padding:14px 16px; font-size:15px; border-radius:12px; border:1px solid rgba(59, 130, 246, 0.3); background:rgba(15, 23, 42, 0.6); color:#e5e7eb; transition:all 0.3s; outline:none;" onfocus="this.style.borderColor='rgba(59, 130, 246, 0.6)'; this.style.boxShadow='0 0 20px rgba(59, 130, 246, 0.2)';" onblur="this.style.borderColor='rgba(59, 130, 246, 0.3)'; this.style.boxShadow='none';" />
+
+      <div style="display:grid; grid-template-columns: 1fr; gap:12px;">
+        <div>
+          <label style="font-size:14px; color:#94a3b8; display:block; margin-bottom:8px; font-weight:600; text-transform:uppercase; letter-spacing:0.05em;">📅 Yükleme Tarihi</label>
+          <input id="new_loading_date" type="date" style="width:100%; padding:14px 16px; border-radius:12px; border:1px solid rgba(59, 130, 246, 0.3); background:rgba(15, 23, 42, 0.6); color:#e5e7eb; transition:all 0.3s; outline:none;" onfocus="this.style.borderColor='rgba(59, 130, 246, 0.6)'; this.style.boxShadow='0 0 20px rgba(59, 130, 246, 0.2)';" onblur="this.style.borderColor='rgba(59, 130, 246, 0.3)'; this.style.boxShadow='none';" />
+        </div>
+      </div>
+
+      <div style="display:flex; gap:12px; justify-content:flex-end; margin-top:12px;">
+        <button class="btn btn-outline" onclick="hideNewLoadModal()" style="background:transparent; padding:12px 24px; border-radius:12px;">İptal</button>
+        <button id="createNewLoadBtn" class="btn" onclick="createNewLoadFromModal(this)" style="padding:12px 24px; border-radius:12px;">Kaydet</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="newLoadToast" style="position:fixed; top:20px; right:20px; z-index:12000; background: linear-gradient(135deg, #10b981, #059669); color:#fff; padding:14px 20px; border-radius:12px; display:none; box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4); border: 1px solid rgba(255,255,255,0.2);"></div>
+
+<script>
+  // Pagination Değişkenleri
+  const ROWS_PER_PAGE = 17;
+  let currentPage = 1;
+  let totalRows = 0;
+  let totalPages = 1;
+  let allRows = [];
+  let filteredRows = [];
+
+  // Sayfa yüklendiğinde pagination'ı başlat
+  document.addEventListener('DOMContentLoaded', function() {
+    initPagination();
+    initRowClickNavigation();
+  });
+
+  function initRowClickNavigation() {
+    const tbody = document.querySelector('.loads-table tbody');
+    if (!tbody) return;
+
+    tbody.addEventListener('dblclick', function(e) {
+      const interactive = e.target.closest('a, button, input, select, textarea, label');
+      if (interactive) return;
+
+      const row = e.target.closest('tr[data-href]');
+      if (!row) return;
+      const href = row.getAttribute('data-href');
+      if (!href) return;
+      window.location.href = href;
+    });
+  }
+
+  function initPagination() {
+    const tbody = document.querySelector('.loads-table tbody');
+    if (!tbody) return;
+    
+    allRows = Array.from(tbody.querySelectorAll('tr'));
+    filteredRows = [...allRows];
+    totalRows = filteredRows.length;
+    totalPages = Math.ceil(totalRows / ROWS_PER_PAGE);
+    currentPage = 1;
+    
+    showPage(currentPage);
+    renderPaginationNumbers();
+    updatePaginationInfo();
+  }
+
+  function showPage(page) {
+    if (page < 1) page = 1;
+    if (page > totalPages) page = totalPages;
+    currentPage = page;
+    
+    const start = (page - 1) * ROWS_PER_PAGE;
+    const end = start + ROWS_PER_PAGE;
+    
+    filteredRows.forEach((row, index) => {
+      if (index >= start && index < end) {
+        row.style.display = '';
+      } else {
+        row.style.display = 'none';
+      }
+    });
+    
+    // Prev/Next butonlarını güncelle
+    const prevBtn = document.getElementById('prevPageBtn');
+    const nextBtn = document.getElementById('nextPageBtn');
+    if (prevBtn) prevBtn.disabled = currentPage <= 1;
+    if (nextBtn) nextBtn.disabled = currentPage >= totalPages;
+    
+    renderPaginationNumbers();
+    updatePaginationInfo();
+  }
+
+  function goToPage(page) {
+    showPage(page);
+  }
+
+  function renderPaginationNumbers() {
+    const container = document.getElementById('paginationNumbers');
+    if (!container) return;
+    
+    container.innerHTML = '';
+    
+    if (totalPages <= 7) {
+      // Az sayfa varsa hepsini göster
+      for (let i = 1; i <= totalPages; i++) {
+        container.appendChild(createPageButton(i));
+      }
+    } else {
+      // İlk sayfa
+      container.appendChild(createPageButton(1));
+      
+      if (currentPage > 3) {
+        container.appendChild(createDots());
+      }
+      
+      // Ortadaki sayfalar
+      let startPage = Math.max(2, currentPage - 1);
+      let endPage = Math.min(totalPages - 1, currentPage + 1);
+      
+      if (currentPage <= 3) {
+        endPage = 4;
+      }
+      if (currentPage >= totalPages - 2) {
+        startPage = totalPages - 3;
+      }
+      
+      for (let i = startPage; i <= endPage; i++) {
+        container.appendChild(createPageButton(i));
+      }
+      
+      if (currentPage < totalPages - 2) {
+        container.appendChild(createDots());
+      }
+      
+      // Son sayfa
+      container.appendChild(createPageButton(totalPages));
+    }
+  }
+
+  function createPageButton(page) {
+    const btn = document.createElement('button');
+    btn.className = 'pagination-btn' + (page === currentPage ? ' active' : '');
+    btn.textContent = page;
+    btn.onclick = () => goToPage(page);
+    return btn;
+  }
+
+  function createDots() {
+    const span = document.createElement('span');
+    span.className = 'pagination-dots';
+    span.textContent = '...';
+    return span;
+  }
+
+  function updatePaginationInfo() {
+    const info = document.getElementById('paginationInfo');
+    if (!info) return;
+    
+    const start = totalRows > 0 ? (currentPage - 1) * ROWS_PER_PAGE + 1 : 0;
+    const end = Math.min(currentPage * ROWS_PER_PAGE, totalRows);
+    info.textContent = `${start}-${end} / ${totalRows} kayıt`;
+  }
+
+  // Open modal when header button clicked
+  document.getElementById('openNewLoadBtn').addEventListener('click', function() {
+    const truckSel = document.getElementById('new_truck_select');
+    const trailerSel = document.getElementById('new_trailer_select');
+    if (truckSel) truckSel.selectedIndex = 0;
+    if (trailerSel) trailerSel.selectedIndex = 0;
+    document.getElementById('new_driver_name').value = '';
+    const namingEl = document.getElementById('new_naming');
+    if (namingEl) namingEl.value = '';
+    const posEl = document.getElementById('new_position_no'); if (posEl) posEl.value = '';
+    document.getElementById('new_loading_date').value = '';
+    document.getElementById('newLoadModal').style.display = 'flex';
+  });
+
+  function hideNewLoadModal() {
+    document.getElementById('newLoadModal').style.display = 'none';
+    // reset edit mode
+    window.editMode = false;
+    window.editLoadId = null;
+    const createBtn = document.getElementById('createNewLoadBtn');
+    if (createBtn) createBtn.textContent = 'Kaydet';
+  }
+
+  function showNewLoadToast(msg, success = true) {
+    const t = document.getElementById('newLoadToast');
+    t.textContent = msg;
+    t.style.background = success ? '#10b981' : '#ef4444';
+    t.style.display = 'block';
+    setTimeout(() => { t.style.display = 'none'; }, 2500);
+  }
+
+  function createNewLoadFromModal(btn) {
+    const truck = document.getElementById('new_truck_select') ? document.getElementById('new_truck_select').value : '';
+    const trailer = document.getElementById('new_trailer_select') ? document.getElementById('new_trailer_select').value : '';
+    const driver = document.getElementById('new_driver_name') ? document.getElementById('new_driver_name').value.trim() : '';
+    const ihrPoz = document.getElementById('new_ihr_poz') ? document.getElementById('new_ihr_poz').value.trim() : '';
+    const positionNoInput = document.getElementById('new_position_no') ? document.getElementById('new_position_no').value.trim() : '';
+    const naming = document.getElementById('new_naming') ? document.getElementById('new_naming').value.trim() : '';
+    const loadingDate = document.getElementById('new_loading_date').value;
+
+    // Require at least one plate (çekici veya dorse) AND a loading date
+    if (!((truck && truck.trim() !== '') || (trailer && trailer.trim() !== '')) || !loadingDate) {
+      showNewLoadToast('Bilgileri doldurun', false);
+      // focus the missing field for convenience
+      if (!loadingDate) {
+        const ld = document.getElementById('new_loading_date');
+        if (ld) ld.focus();
+      } else {
+        const sel = document.getElementById('new_truck_select');
+        if (sel) sel.focus();
+      }
+      return;
+    }
+
+    btn.disabled = true;
+    const originalText = btn.textContent;
+    btn.textContent = (window.editMode ? 'Güncelleniyor...' : 'Kaydediliyor...');
+
+    const payload = {
+      // Do not send a default `customer_name` when editing — leave it out so
+      // the controller preserves the existing value. For new creates send '-'.
+      customer_name: window.editMode ? undefined : '-',
+      // include user-provided position number if present (allow editing position_no)
+      position_no: positionNoInput ? positionNoInput : undefined,
+      naming: naming,
+      ihr_poz: ihrPoz || null,
+      truck_plate: truck || null,
+      trailer_plate: trailer || null,
+      driver_name: driver || null,
+      loading_date: loadingDate || null,
+      // If exit_date is not explicitly provided, default it to loading_date so
+      // the main list's "Çıkış Tarihi" column shows the loading date immediately.
+      exit_date: loadingDate || null
+    };
+
+    const url = window.editMode && window.editLoadId ? `/loads/${encodeURIComponent(window.editLoadId)}` : '/loads';
+    fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    })
+    .then(r => r.json())
+    .then(data => {
+      btn.disabled = false;
+      btn.textContent = originalText;
+      if (data && data.success && data.position_no) {
+        showNewLoadToast(window.editMode ? 'Pozisyon güncellendi' : 'Pozisyon oluşturuldu', true);
+        window.location.href = '/loads/position/' + encodeURIComponent(data.position_no);
+      } else if (data && data.success && window.editMode) {
+        // Some update endpoints may not return position_no; refresh list
+        showNewLoadToast('Pozisyon güncellendi', true);
+        window.location.reload();
+      } else {
+        showNewLoadToast('Oluşturulamadı: ' + (data && data.message ? data.message : 'Hata'), false);
+      }
+    })
+    .catch(err => {
+      btn.disabled = false;
+      btn.textContent = originalText;
+      showNewLoadToast('Sunucu hatası: ' + err.message, false);
+    });
+  }
+
+  // Open edit modal and populate fields from API
+  function openEditModal(loadId) {
+    if (!loadId) return;
+    fetch('/loads/api/' + encodeURIComponent(loadId))
+      .then(r => r.json())
+      .then(res => {
+        if (!res || !res.success || !res.load) {
+          showNewLoadToast('Yük verisi alınamadı', false);
+          return;
+        }
+        const load = res.load;
+        // set fields only if API returned non-empty values — avoid overwriting user's current inputs with empty strings
+        const truckSel = document.getElementById('new_truck_select');
+        if (truckSel && load.truck_plate) {
+          for (let i=0;i<truckSel.options.length;i++){
+            if (truckSel.options[i].value === load.truck_plate) { truckSel.selectedIndex = i; break; }
+          }
+          // trigger change to autofill driver
+          const evt = new Event('change'); truckSel.dispatchEvent(evt);
+        }
+        const trailerSel = document.getElementById('new_trailer_select');
+        if (trailerSel && load.trailer_plate) {
+          for (let i=0;i<trailerSel.options.length;i++){
+            if (trailerSel.options[i].value === load.trailer_plate) { trailerSel.selectedIndex = i; break; }
+          }
+        }
+        const driverInput = document.getElementById('new_driver_name'); if (driverInput && (load.driver_name !== undefined && load.driver_name !== null && String(load.driver_name).trim() !== '')) driverInput.value = load.driver_name;
+        const namingInput = document.getElementById('new_naming'); if (namingInput && (load.naming !== undefined && load.naming !== null && String(load.naming).trim() !== '')) namingInput.value = load.naming !== undefined ? load.naming : (load.name || '');
+        const posInput = document.getElementById('new_position_no'); if (posInput && (load.position_no !== undefined && load.position_no !== null && String(load.position_no).trim() !== '')) posInput.value = load.position_no;
+        const ihrInput = document.getElementById('new_ihr_poz'); if (ihrInput && (load.ihr_poz !== undefined && load.ihr_poz !== null && String(load.ihr_poz).trim() !== '')) ihrInput.value = load.ihr_poz;
+        const ldInput = document.getElementById('new_loading_date'); if (ldInput && (load.loading_date !== undefined && load.loading_date !== null && String(load.loading_date).trim() !== '')) ldInput.value = load.loading_date;
+
+        // set edit mode
+        window.editMode = true;
+        window.editLoadId = loadId;
+        const createBtn = document.getElementById('createNewLoadBtn');
+        if (createBtn) createBtn.textContent = 'Güncelle';
+
+        document.getElementById('newLoadModal').style.display = 'flex';
+      })
+      .catch(err => showNewLoadToast('Sunucu hatası: ' + err.message, false));
+  }
+
+  // Auto-fill driver when a truck is selected
+  const newTruckSel = document.getElementById('new_truck_select');
+  if (newTruckSel) {
+    newTruckSel.addEventListener('change', function() {
+      const selected = this.options[this.selectedIndex];
+      const driver = selected ? (selected.getAttribute('data-driver') || '') : '';
+      const driverInput = document.getElementById('new_driver_name');
+      if (driverInput) driverInput.value = driver;
+    });
+  }
+</script>
+
+<!-- Mail Modal -->
+<div id="mailModal" class="modal-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.8); z-index: 9999; justify-content: center; align-items: center; overflow-y: auto; padding: 20px;">
+  <div class="modal-content" style="background: white; border-radius: 12px; padding: 0; max-width: 900px; width: 100%; box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3); max-height: 90vh; overflow-y: auto;">
+    <!-- Modal Header -->
+    <div style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); padding: 24px 32px; border-radius: 12px 12px 0 0; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+      <div style="font-size: 24px; font-weight: 700; color: white; letter-spacing: 0.5px;">Yükleme Bilgisi</div>
+      <button onclick="hideMailModal()" style="background: rgba(255, 255, 255, 0.2); border: none; color: white; font-size: 24px; cursor: pointer; line-height: 1; width: 36px; height: 36px; border-radius: 50%; transition: all 0.2s;" onmouseover="this.style.background='rgba(255, 255, 255, 0.3)'" onmouseout="this.style.background='rgba(255, 255, 255, 0.2)'">&times;</button>
+    </div>
+    
+    <!-- Modal Body -->
+    <div style="padding: 32px;">
+      <!-- Üst Bilgi Tablosu -->
+      <div style="margin-bottom: 24px; border: 2px solid #e5e7eb; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);">
+        <table style="width: 100%; border-collapse: collapse;">
+          <tr>
+            <td style="padding: 14px 20px; background: #dbeafe; border-right: 1px solid #bfdbfe; border-bottom: 1px solid #bfdbfe; font-weight: 600; color: #1e40af; width: 20%;">Kime</td>
+            <td style="padding: 14px 20px; background: white; border-right: 1px solid #e5e7eb; border-bottom: 1px solid #e5e7eb; color: #1f2937; font-weight: 500;" id="mail_customer_name"></td>
+            <td style="padding: 14px 20px; background: #dbeafe; border-right: 1px solid #bfdbfe; border-bottom: 1px solid #bfdbfe; font-weight: 600; color: #1e40af; width: 20%;">Tarih</td>
+            <td style="padding: 14px 20px; background: white; border-bottom: 1px solid #e5e7eb; color: #1f2937; font-weight: 500;" id="mail_date"></td>
+          </tr>
+          <tr>
+            <td style="padding: 14px 20px; background: #dbeafe; border-right: 1px solid #bfdbfe; font-weight: 600; color: #1e40af;">Konu</td>
+            <td style="padding: 14px 20px; background: white; border-right: 1px solid #e5e7eb; color: #1f2937; font-weight: 500;" id="mail_subject"></td>
+            <td style="padding: 14px 20px; background: #dbeafe; border-right: 1px solid #bfdbfe; font-weight: 600; color: #1e40af;">Pozisyon No</td>
+            <td style="padding: 14px 20px; background: white; color: #1f2937; font-weight: 500;" id="mail_position_no"></td>
+          </tr>
+        </table>
+      </div>
+
+      <!-- Açıklama Metni -->
+      <div style="background: #f9fafb; padding: 16px 20px; color: #374151; margin-bottom: 24px; font-style: italic; font-size: 14px; border-left: 4px solid #3b82f6; border-radius: 4px;">
+        İngiltere'den adınıza alınan sevkiyata ait yükleme bilgileri aşağıda bilginize sunulmuştur.
+      </div>
+
+      <!-- Yükleme Bilgileri Tablosu -->
+      <div style="border: 2px solid #e5e7eb; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);">
+        <table style="width: 100%; border-collapse: collapse;">
+          <tr>
+            <td style="padding: 14px 20px; background: #dbeafe; border-right: 1px solid #bfdbfe; border-bottom: 1px solid #bfdbfe; font-weight: 600; color: #1e40af; width: 30%;">Gönderen</td>
+            <td style="padding: 14px 20px; background: white; border-bottom: 1px solid #e5e7eb; color: #1f2937; font-weight: 500;" id="mail_sender"></td>
+          </tr>
+          <tr>
+            <td style="padding: 14px 20px; background: #dbeafe; border-right: 1px solid #bfdbfe; border-bottom: 1px solid #bfdbfe; font-weight: 600; color: #1e40af;">Alıcı</td>
+            <td style="padding: 14px 20px; background: white; border-bottom: 1px solid #e5e7eb; color: #1f2937; font-weight: 500;" id="mail_consignee"></td>
+          </tr>
+          <tr>
+            <td style="padding: 14px 20px; background: #dbeafe; border-right: 1px solid #bfdbfe; border-bottom: 1px solid #bfdbfe; font-weight: 600; color: #1e40af;">Kap Adedi</td>
+            <td style="padding: 14px 20px; background: white; border-bottom: 1px solid #e5e7eb; color: #1f2937; font-weight: 500;" id="mail_packages"></td>
+          </tr>
+          <tr>
+            <td style="padding: 14px 20px; background: #dbeafe; border-right: 1px solid #bfdbfe; border-bottom: 1px solid #bfdbfe; font-weight: 600; color: #1e40af;">Malzeme Cinsi</td>
+            <td style="padding: 14px 20px; background: white; border-bottom: 1px solid #e5e7eb; color: #1f2937; font-weight: 500;" id="mail_goods"></td>
+          </tr>
+          <tr>
+            <td style="padding: 14px 20px; background: #dbeafe; border-right: 1px solid #bfdbfe; border-bottom: 1px solid #bfdbfe; font-weight: 600; color: #1e40af;">Brüt Ağırlık</td>
+            <td style="padding: 14px 20px; background: white; border-bottom: 1px solid #e5e7eb; color: #1f2937; font-weight: 500;" id="mail_weight"></td>
+          </tr>
+          <tr>
+            <td style="padding: 14px 20px; background: #dbeafe; border-right: 1px solid #bfdbfe; border-bottom: 1px solid #bfdbfe; font-weight: 600; color: #1e40af;">Araç Plakası</td>
+            <td style="padding: 14px 20px; background: white; border-bottom: 1px solid #e5e7eb; color: #1f2937; font-weight: 500;" id="mail_truck"></td>
+          </tr>
+          <tr>
+            <td style="padding: 14px 20px; background: #dbeafe; border-right: 1px solid #bfdbfe; border-bottom: 1px solid #bfdbfe; font-weight: 600; color: #1e40af;">Varış Gümrüğü</td>
+            <td style="padding: 14px 20px; background: white; border-bottom: 1px solid #e5e7eb; color: #1f2937; font-weight: 500;" id="mail_customs"></td>
+          </tr>
+          <tr>
+            <td style="padding: 14px 20px; background: #dbeafe; border-right: 1px solid #bfdbfe; border-bottom: 1px solid #bfdbfe; font-weight: 600; color: #1e40af;">Çıkış Tarihi</td>
+            <td style="padding: 14px 20px; background: white; border-bottom: 1px solid #e5e7eb; color: #1f2937; font-weight: 500;" id="mail_exit_date"></td>
+          </tr>
+          <tr>
+            <td style="padding: 14px 20px; background: #dbeafe; border-right: 1px solid #bfdbfe; border-bottom: 1px solid #bfdbfe; font-weight: 600; color: #1e40af;">Varış Tarihi</td>
+            <td style="padding: 14px 20px; background: white; border-bottom: 1px solid #e5e7eb; color: #1f2937; font-weight: 500;" id="mail_arrival_date"></td>
+          </tr>
+          <tr>
+            <td style="padding: 14px 20px; background: #dbeafe; border-right: 1px solid #bfdbfe; font-weight: 600; color: #1e40af;">Malla Gelen Evraklar</td>
+            <td style="padding: 14px 20px; background: white; color: #1f2937; font-weight: 500;">Fatura</td>
+          </tr>
+        </table>
+      </div>
+    </div>
+    
+    <!-- Modal Footer -->
+    <div style="padding: 24px 32px; border-top: 2px solid #e5e7eb; display: flex; gap: 12px; justify-content: flex-end; background: #f9fafb; border-radius: 0 0 12px 12px;">
+      <button onclick="hideMailModal()" style="padding: 12px 24px; border-radius: 8px; font-size: 15px; font-weight: 600; cursor: pointer; background: #e5e7eb; color: #374151; border: none; transition: all 0.2s;" onmouseover="this.style.background='#d1d5db'" onmouseout="this.style.background='#e5e7eb'">Kapat</button>
+      <button onclick="copyMailContent()" style="padding: 12px 24px; border-radius: 8px; font-size: 15px; font-weight: 600; cursor: pointer; background: #22c55e; color: white; border: none; transition: all 0.2s; box-shadow: 0 2px 4px rgba(34, 197, 94, 0.3);" onmouseover="this.style.background='#16a34a'; this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 8px rgba(34, 197, 94, 0.4)'" onmouseout="this.style.background='#22c55e'; this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 4px rgba(34, 197, 94, 0.3)'">📋 Kopyala</button>
+      <button onclick="sendMail()" style="padding: 12px 24px; border-radius: 8px; font-size: 15px; font-weight: 600; cursor: pointer; background: #3b82f6; color: white; border: none; transition: all 0.2s; box-shadow: 0 2px 4px rgba(59, 130, 246, 0.3);" onmouseover="this.style.background='#2563eb'; this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 8px rgba(59, 130, 246, 0.4)'" onmouseout="this.style.background='#3b82f6'; this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 4px rgba(59, 130, 246, 0.3)'">✉️ Mail Gönder</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal for Delete Position -->
+<div id="deletePositionModal" class="modal-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.75); backdrop-filter: blur(8px); z-index: 9999; justify-content: center; align-items: center;">
+  <div class="modal-content" style="background: linear-gradient(180deg, rgba(30, 41, 59, 0.95), rgba(15, 23, 42, 0.98)); border-radius: 20px; padding: 28px; max-width: 420px; width: 90%; box-shadow: 0 25px 60px rgba(0, 0, 0, 0.5), 0 0 40px rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.3); backdrop-filter: blur(20px);">
+    <div class="modal-header" style="font-size: 20px; font-weight: 700; color: #f9fafb; margin-bottom: 16px; display: flex; align-items: center; gap: 10px;">
+      <span style="font-size: 24px;">⚠️</span> Pozisyon Kaydını Sil
+    </div>
+    <div class="modal-body" style="font-size: 14px; color: #cbd5e1; margin-bottom: 24px; line-height: 1.6;">
+      <div id="deletePositionInfo" style="margin-bottom: 16px; padding: 14px; background: rgba(15, 23, 42, 0.6); border-radius: 12px; border: 1px solid rgba(59, 130, 246, 0.2);">
+        <div style="font-size: 12px; color: #94a3b8; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.05em;">Silinecek Pozisyon:</div>
+        <div style="font-size: 16px; font-weight: 600; color: #f9fafb;"></div>
+      </div>
+      <div style="color: #f87171; font-weight: 600; padding: 14px; background: rgba(239, 68, 68, 0.1); border-radius: 12px; border: 1px solid rgba(239, 68, 68, 0.3);">⚠️ Bu pozisyondaki tüm yükler silinecektir. Bu işlem geri alınamaz!</div>
+      <div style="margin-top:16px;">
+        <label for="deleteConfirmInput" style="display:block; font-size:12px; color:#94a3b8; margin-bottom:8px; text-transform: uppercase; letter-spacing: 0.05em;">Lütfen silme işlemini onaylamak için aşağıya <strong style="color:#f9fafb">Sil</strong> yazınız:</label>
+        <input id="deleteConfirmInput" type="text" placeholder="Sil yazarak onayla" style="width:100%; padding:14px 16px; border-radius:12px; border:1px solid rgba(239, 68, 68, 0.3); background:rgba(15, 23, 42, 0.6); color:#e5e7eb; transition: all 0.3s; outline: none;" onfocus="this.style.borderColor='rgba(239, 68, 68, 0.6)'; this.style.boxShadow='0 0 20px rgba(239, 68, 68, 0.2)';" onblur="this.style.borderColor='rgba(239, 68, 68, 0.3)'; this.style.boxShadow='none';" />
+      </div>
+    </div>
+    <div class="modal-actions" style="display: flex; gap: 12px; justify-content: flex-end;">
+      <button class="modal-btn modal-btn-cancel" style="padding: 12px 24px; border-radius: 12px; font-size: 14px; font-weight: 600; cursor: pointer; background: rgba(55, 65, 81, 0.5); color: white; border: 1px solid rgba(75, 85, 99, 0.5); transition: all 0.3s;" onclick="hideDeletePositionModal()" onmouseover="this.style.background='rgba(75, 85, 99, 0.6)'" onmouseout="this.style.background='rgba(55, 65, 81, 0.5)'">İptal</button>
+      <form id="deletePositionForm" method="POST" action="" style="display: inline;" onsubmit="return confirmTypedDelete(event)">
+        <button type="submit" id="deletePositionSubmit" class="modal-btn" disabled style="padding: 12px 24px; border-radius: 12px; font-size: 14px; font-weight: 600; cursor: pointer; background: linear-gradient(135deg, #ef4444, #dc2626); color: white; border: none; opacity:0.6; transition: all 0.3s; box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);">🗑️ Sil</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+let currentMailData = null;
+
+function openMailModal(positionNo, loadData) {
+  currentMailData = loadData;
+  
+  // Tarih formatı
+  const today = new Date();
+  const dateStr = today.toLocaleDateString('tr-TR');
+  
+  // Format exit ve arrival dates
+  const formatDate = (dateStr) => {
+    if (!dateStr) return '-';
+    const parts = dateStr.split('-');
+    if (parts.length === 3) {
+      return `${parts[2]}.${parts[1]}.${parts[0]}`;
+    }
+    return dateStr;
+  };
+  
+  // Verileri doldur
+  document.getElementById('mail_customer_name').textContent = loadData.consignee_name || '-';
+  document.getElementById('mail_date').textContent = dateStr;
+  document.getElementById('mail_subject').textContent = 'İngiltere-İstanbul Nakliyesi';
+  document.getElementById('mail_position_no').textContent = positionNo;
+  document.getElementById('mail_sender').textContent = loadData.customer_name || '-';
+  document.getElementById('mail_consignee').textContent = loadData.consignee_name || '-';
+  document.getElementById('mail_packages').textContent = (loadData.packages || '-') + ' PK';
+  document.getElementById('mail_goods').textContent = loadData.goods_description || '-';
+  document.getElementById('mail_weight').textContent = (loadData.gross_weight || '-') + ' KG';
+  
+  const truckInfo = loadData.trailer_plate || '-';
+  document.getElementById('mail_truck').textContent = truckInfo;
+  
+  const customsInfo = (loadData.unloading_country || 'Çerkezköy') + ' / ' + (loadData.unloading_city || 'Aksa') + ' Antrepo';
+  document.getElementById('mail_customs').textContent = customsInfo;
+  document.getElementById('mail_exit_date').textContent = formatDate(loadData.loading_date);
+  document.getElementById('mail_arrival_date').textContent = formatDate(loadData.arrival_date || loadData.unloading_date);
+  
+  // Modal'ı göster
+  document.getElementById('mailModal').style.display = 'flex';
+}
+
+function hideMailModal() {
+  document.getElementById('mailModal').style.display = 'none';
+  currentMailData = null;
+}
+
+function copyMailContent() {
+  const subject = document.getElementById('mail_subject').textContent;
+  const customer = document.getElementById('mail_customer_name').textContent;
+  const date = document.getElementById('mail_date').textContent;
+  const positionNo = document.getElementById('mail_position_no').textContent;
+  const sender = document.getElementById('mail_sender').textContent;
+  const consignee = document.getElementById('mail_consignee').textContent;
+  const packages = document.getElementById('mail_packages').textContent;
+  const goods = document.getElementById('mail_goods').textContent;
+  const weight = document.getElementById('mail_weight').textContent;
+  const truck = document.getElementById('mail_truck').textContent;
+  const customs = document.getElementById('mail_customs').textContent;
+  const exitDate = document.getElementById('mail_exit_date').textContent;
+  const arrivalDate = document.getElementById('mail_arrival_date').textContent;
+  
+  // HTML formatında içerik oluştur
+  const htmlContent = `<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style>
+  body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; color: #000000; line-height: 1.4; margin: 0; padding: 20px; background: #ffffff; }
+  .header-title { font-size: 14pt; font-weight: bold; margin-bottom: 15px; color: #1f2937; }
+  table { border-collapse: collapse; width: 100%; max-width: 700px; }
+  .header-table { margin-bottom: 10px; }
+  .header-table td { padding: 6px 10px; border: 1px solid #000000; font-size: 10pt; }
+  .header-label { background-color: #DBEAFE; font-weight: bold; width: 25%; color: #1e40af; }
+  .header-value { background-color: #FFFFFF; color: #1f2937; }
+  .intro-text { margin: 15px 0; font-size: 10pt; font-style: italic; color: #1e3a8a; background: #f0f9ff; padding: 12px 15px; border-left: 4px solid #3b82f6; }
+  .info-table { margin-top: 10px; }
+  .info-table td { padding: 8px 12px; border: 1px solid #000000; font-size: 10pt; }
+  .info-label { background-color: #DBEAFE; font-weight: bold; width: 30%; color: #1e40af; }
+  .info-value { background-color: #FFFFFF; color: #1f2937; }
+  .signature { margin-top: 20px; font-size: 10pt; font-weight: 600; color: #1f2937; }
+</style>
+</head>
+<body>
+  <p class="header-title">📦 YÜKLEME BİLGİSİ</p>
+  
+  <table class="header-table">
+    <tr>
+      <td class="header-label">Kime</td>
+      <td class="header-value">${customer}</td>
+      <td class="header-label">Tarih</td>
+      <td class="header-value">${date}</td>
+    </tr>
+    <tr>
+      <td class="header-label">Konu</td>
+      <td class="header-value">${subject}</td>
+      <td class="header-label">Pozisyon No</td>
+      <td class="header-value">${positionNo}</td>
+    </tr>
+  </table>
+
+  <div class="intro-text">
+    İngiltere'den adınıza alınan sevkiyata ait yükleme bilgileri aşağıda bilginize sunulmuştur.
+  </div>
+
+  <table class="info-table">
+    <tr>
+      <td class="info-label">📤 Gönderen</td>
+      <td class="info-value">${sender}</td>
+    </tr>
+    <tr>
+      <td class="info-label">📥 Alıcı</td>
+      <td class="info-value">${consignee}</td>
+    </tr>
+    <tr>
+      <td class="info-label">📦 Kap Adedi</td>
+      <td class="info-value">${packages}</td>
+    </tr>
+    <tr>
+      <td class="info-label">🏭 Malzeme Cinsi</td>
+      <td class="info-value">${goods}</td>
+    </tr>
+    <tr>
+      <td class="info-label">⚖️ Brüt Ağırlık</td>
+      <td class="info-value">${weight}</td>
+    </tr>
+    <tr>
+      <td class="info-label">🚚 Araç Plakası</td>
+      <td class="info-value">${truck}</td>
+    </tr>
+    <tr>
+      <td class="info-label">🏛️ Varış Gümrüğü</td>
+      <td class="info-value">${customs}</td>
+    </tr>
+    <tr>
+      <td class="info-label">🛫 Çıkış Tarihi</td>
+      <td class="info-value">${exitDate}</td>
+    </tr>
+    <tr>
+      <td class="info-label">🛬 Varış Tarihi</td>
+      <td class="info-value">${arrivalDate}</td>
+    </tr>
+    <tr>
+      <td class="info-label">📄 Malla Gelen Evraklar</td>
+      <td class="info-value">Fatura</td>
+    </tr>
+  </table>
+
+  <p class="signature">İyi çalışmalar dileriz.</p>
+</body>
+</html>`;
+
+  // HTML'i clipboard'a kopyala
+  const tempDiv = document.createElement('div');
+  tempDiv.innerHTML = htmlContent;
+  tempDiv.style.position = 'absolute';
+  tempDiv.style.left = '-9999px';
+  document.body.appendChild(tempDiv);
+  
+  const range = document.createRange();
+  range.selectNode(tempDiv);
+  window.getSelection().removeAllRanges();
+  window.getSelection().addRange(range);
+  
+  // HTML formatında clipboard'a kopyala
+  const copyHtml = () => {
+    const listener = (e) => {
+      e.clipboardData.setData('text/html', htmlContent);
+      e.clipboardData.setData('text/plain', 'YÜKLEME BİLGİSİ - ' + positionNo);
+      e.preventDefault();
+    };
+    document.addEventListener('copy', listener);
+    document.execCommand('copy');
+    document.removeEventListener('copy', listener);
+  };
+  
+  try {
+    copyHtml();
+    window.getSelection().removeAllRanges();
+    document.body.removeChild(tempDiv);
+    
+    const btn = event.target;
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '✅ Kopyalandı!';
+    btn.style.background = '#22c55e';
+    setTimeout(() => {
+      btn.innerHTML = originalText;
+      btn.style.background = '#22c55e';
+    }, 2000);
+  } catch (err) {
+    document.body.removeChild(tempDiv);
+    alert('Kopyalama başarısız oldu!');
+  }
+}
+
+async function sendMail() {
+  const subject = document.getElementById('mail_subject').textContent;
+  const customer = document.getElementById('mail_customer_name').textContent;
+  const date = document.getElementById('mail_date').textContent;
+  const positionNo = document.getElementById('mail_position_no').textContent;
+  const sender = document.getElementById('mail_sender').textContent;
+  const consignee = document.getElementById('mail_consignee').textContent;
+  const packages = document.getElementById('mail_packages').textContent;
+  const goods = document.getElementById('mail_goods').textContent;
+  const weight = document.getElementById('mail_weight').textContent;
+  const truck = document.getElementById('mail_truck').textContent;
+  const customs = document.getElementById('mail_customs').textContent;
+  const exitDate = document.getElementById('mail_exit_date').textContent;
+  const arrivalDate = document.getElementById('mail_arrival_date').textContent;
+
+  // Alıcı email adresini sor
+  const recipientEmail = prompt('Alıcı Email Adresi:', '');
+  if (!recipientEmail || !recipientEmail.includes('@')) {
+    alert('Geçerli bir email adresi giriniz!');
+    return;
+  }
+
+  try {
+    // Nodemailer ile backend'den mail gönder
+    const response = await fetch('/loads/send-mail-outlook', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        customer, date, subject, positionNo, sender, consignee,
+        packages, goods, weight, truck, customs, exitDate, arrivalDate,
+        recipientEmail
+      })
+    });
+
+    const result = await response.json();
+    
+    if (result.success) {
+      alert('✅ Mail başarıyla gönderildi!\n\nAlıcı: ' + recipientEmail);
+      hideMailModal();
+    } else {
+      alert('❌ Mail gönderilemedi!\n\nHata: ' + result.error);
+    }
+  } catch (error) {
+    console.error('Mail gönderme hatası:', error);
+    alert('❌ Mail gönderilemedi! Lütfen Outlook ayarlarınızı kontrol edin.');
+  }
+}
+
+// Modal dışına tıklayınca kapat
+document.getElementById('mailModal')?.addEventListener('click', function(e) {
+  if (e.target === this) {
+    hideMailModal();
+  }
+});
+
+let currentFilter = 'all';
+
+function filterByType(type) {
+  currentFilter = type;
+  
+  // Buton aktif durumunu güncelle
+  document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+  
+  // Buton ID'lerini doğru eşleştir
+  const buttonIds = {
+    'all': 'filterAll',
+    'no-expense': 'filterNoExpense',
+    'completed': 'filterCompleted',
+    'open': 'filterOpen'
+  };
+  
+  const buttonId = buttonIds[type];
+  if (buttonId) {
+    document.getElementById(buttonId).classList.add('active');
+  }
+  
+  const rows = document.querySelectorAll('.loads-table tbody tr');
+  let visibleCount = 0;
+
+  rows.forEach(row => {
+    const isNoExpense = row.getAttribute('data-no-expense') === '1';
+    const isCompleted = row.getAttribute('data-completed') === '1';
+    
+    let shouldShow = false;
+    
+    if (type === 'all') {
+      shouldShow = true;
+    } else if (type === 'no-expense') {
+      shouldShow = isNoExpense;
+    } else if (type === 'completed') {
+      shouldShow = isCompleted;
+    } else if (type === 'open') {
+      shouldShow = !isNoExpense && !isCompleted;
+    }
+    
+    if (shouldShow) {
+      row.style.display = '';
+      visibleCount++;
+    } else {
+      row.style.display = 'none';
+    }
+  });
+
+  // Sonuç yoksa mesaj göster
+  const table = document.querySelector('.loads-table');
+  let noResultsDiv = document.getElementById('noFilterResultsMessage');
+  
+  if (visibleCount === 0) {
+    if (!noResultsDiv) {
+      noResultsDiv = document.createElement('div');
+      noResultsDiv.id = 'noFilterResultsMessage';
+      noResultsDiv.className = 'no-results';
+      noResultsDiv.innerHTML = '🔍 Bu kategoride kayıt bulunamadı';
+      table.parentNode.appendChild(noResultsDiv);
+    }
+    table.style.display = 'none';
+  } else {
+    if (noResultsDiv) {
+      noResultsDiv.remove();
+    }
+    table.style.display = 'table';
+  }
+  
+  // Arama filtresini de uygula
+  filterPositions();
+}
+
+function filterPositions() {
+  const searchTerm = document.getElementById('searchInput').value.toLowerCase().trim();
+  const rows = document.querySelectorAll('.loads-table tbody tr');
+  let visibleCount = 0;
+
+  rows.forEach(row => {
+    // Önce tip filtresini kontrol et
+    const isNoExpense = row.getAttribute('data-no-expense') === '1';
+    const isCompleted = row.getAttribute('data-completed') === '1';
+    
+    let typeMatch = false;
+    if (currentFilter === 'all') {
+      typeMatch = true;
+    } else if (currentFilter === 'no-expense') {
+      typeMatch = isNoExpense;
+    } else if (currentFilter === 'completed') {
+      typeMatch = isCompleted;
+    } else if (currentFilter === 'open') {
+      typeMatch = !isNoExpense && !isCompleted;
+    }
+    
+    // Tip filtresi geçmezse direkt gizle
+    if (!typeMatch) {
+      row.classList.add('filter-hidden');
+      row.style.display = 'none';
+      return;
+    }
+    
+    // Arama terimi yoksa göster
+    if (searchTerm === '') {
+      row.classList.remove('filter-hidden');
+      visibleCount++;
+      return;
+    }
+    
+    // Tüm td içeriklerini al
+    const cells = row.querySelectorAll('td');
+    let rowText = '';
+    
+    cells.forEach(cell => {
+      rowText += cell.textContent.toLowerCase() + ' ';
+    });
+
+    // Also include important data-attributes that are not visible in cells
+    const ds = row.dataset;
+    if (ds) {
+      if (ds.mrn) rowText += ds.mrn.toLowerCase() + ' ';
+      if (ds.seal) rowText += ds.seal.toLowerCase() + ' ';
+      if (ds.ihr) rowText += ds.ihr.toLowerCase() + ' ';
+      if (ds.uid) rowText += String(ds.uid).toLowerCase() + ' ';
+    }
+
+    // Arama terimini kontrol et
+    if (rowText.includes(searchTerm)) {
+      row.classList.remove('filter-hidden');
+      visibleCount++;
+    } else {
+      row.classList.add('filter-hidden');
+      row.style.display = 'none';
+    }
+  });
+
+  // Filtreleme sonrası pagination'ı güncelle
+  updatePaginationAfterFilter();
+
+  // Sonuç yoksa mesaj göster
+  const table = document.querySelector('.loads-table');
+  let noResultsDiv = document.getElementById('noResultsMessage');
+  
+  if (visibleCount === 0 && searchTerm !== '') {
+    if (!noResultsDiv) {
+      noResultsDiv = document.createElement('div');
+      noResultsDiv.id = 'noResultsMessage';
+      noResultsDiv.className = 'no-results';
+      noResultsDiv.innerHTML = '🔍 Arama sonucu bulunamadı: "' + searchTerm + '"';
+      table.parentNode.appendChild(noResultsDiv);
+    }
+    table.style.display = 'none';
+    document.getElementById('paginationContainer').style.display = 'none';
+  } else {
+    if (noResultsDiv) {
+      noResultsDiv.remove();
+    }
+    table.style.display = 'table';
+    document.getElementById('paginationContainer').style.display = 'flex';
+  }
+}
+
+function updatePaginationAfterFilter() {
+  const tbody = document.querySelector('.loads-table tbody');
+  if (!tbody) return;
+  
+  // filter-hidden class'ı olmayan satırları al
+  filteredRows = Array.from(tbody.querySelectorAll('tr:not(.filter-hidden)'));
+  totalRows = filteredRows.length;
+  totalPages = Math.ceil(totalRows / ROWS_PER_PAGE) || 1;
+  currentPage = 1;
+  
+  showPage(currentPage);
+}
+
+function handleSearchKey(e) {
+  if (!e) return;
+  // On Enter, perform a server-side search so UID matches across all records
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    const v = document.getElementById('searchInput').value.trim();
+    const url = '/loads' + (v ? ('?q=' + encodeURIComponent(v)) : '');
+    window.location.href = url;
+  }
+}
+
+function openDeletePositionModal(positionNo, loadCount) {
+  const modal = document.getElementById('deletePositionModal');
+  const info = document.getElementById('deletePositionInfo').querySelector('div:last-child');
+  const form = document.getElementById('deletePositionForm');
+  
+  info.textContent = positionNo + ' (' + loadCount + ' yük)';
+  form.action = '/loads/position/' + encodeURIComponent(positionNo) + '/delete';
+  
+  // reset and show
+  const input = document.getElementById('deleteConfirmInput');
+  const submitBtn = document.getElementById('deletePositionSubmit');
+  if (input) { input.value = ''; }
+  if (submitBtn) { submitBtn.disabled = true; submitBtn.style.opacity = '0.6'; }
+
+  modal.style.display = 'flex';
+  
+  // ESC tuşu ile kapat
+  document.addEventListener('keydown', function escHandler(e) {
+    if (e.key === 'Escape') {
+      hideDeletePositionModal();
+      document.removeEventListener('keydown', escHandler);
+    }
+  });
+  
+  // Dışarı tıklamada kapat
+  modal.addEventListener('click', function clickHandler(e) {
+    if (e.target === modal) {
+      hideDeletePositionModal();
+      modal.removeEventListener('click', clickHandler);
+    }
+  });
+
+  // enable submit only when exact text matches "Sil"
+  const checkInput = () => {
+    const v = (input.value || '').trim();
+    if (submitBtn) {
+      if (v === 'Sil') { submitBtn.disabled = false; submitBtn.style.opacity = '1'; }
+      else { submitBtn.disabled = true; submitBtn.style.opacity = '0.6'; }
+    }
+  };
+
+  if (input) {
+    input.removeEventListener('input', checkInput);
+    input.addEventListener('input', checkInput);
+    // focus input for faster confirmation
+    setTimeout(() => input.focus(), 120);
+  }
+}
+
+function hideDeletePositionModal() {
+  document.getElementById('deletePositionModal').style.display = 'none';
+}
+
+function confirmTypedDelete(e) {
+  const input = document.getElementById('deleteConfirmInput');
+  if (!input) return true;
+  if ((input.value || '').trim() !== 'Sil') {
+    alert('Lütfen silme işlemini onaylamak için kutuya \"Sil\" yazınız.');
+    return false;
+  }
+  // allow submit
+  return true;
+}
+</script>
+
+<script>
+// Position sorting state
+window._posSortAsc = null; // null=unsorted, true=asc, false=desc
+
+function parsePositionNo(pos) {
+  // Expected formats like "25/200-549". We'll extract year and seq.
+  if (!pos) return { year: 0, seq: 0, raw: '' };
+  const raw = String(pos).trim();
+  try {
+    // split by '-' then by '/'
+    const dashParts = raw.split('-');
+    const seqPart = dashParts.length > 1 ? parseInt(dashParts[dashParts.length-1], 10) : NaN;
+    const prefix = dashParts[0] || '';
+    const slashParts = prefix.split('/');
+    const yearPart = slashParts.length > 0 ? parseInt(slashParts[0], 10) : NaN;
+    return {
+      year: isNaN(yearPart) ? 0 : yearPart,
+      seq: isNaN(seqPart) ? 0 : seqPart,
+      raw
+    };
+  } catch (e) {
+    return { year: 0, seq: 0, raw };
+  }
+}
+
+function comparePositionString(aPos, bPos) {
+  const a = parsePositionNo(aPos);
+  const b = parsePositionNo(bPos);
+  if (a.year !== b.year) return a.year - b.year;
+  if (a.seq !== b.seq) return a.seq - b.seq;
+  return a.raw.localeCompare(b.raw);
+}
+
+// Generic sort state
+window._sortState = { index: null, asc: true };
+
+function parseDateEuropean(text) {
+  if (!text) return 0;
+  text = String(text).trim();
+  // dd.mm.yyyy or yyyy-mm-dd
+  if (/^\d{2}\.\d{2}\.\d{4}$/.test(text)) {
+    const parts = text.split('.');
+    return new Date(parseInt(parts[2],10), parseInt(parts[1],10)-1, parseInt(parts[0],10)).getTime();
+  }
+  const d = new Date(text);
+  return isNaN(d.getTime()) ? 0 : d.getTime();
+}
+
+function getCellValueForRow(row, colIndex, type) {
+  const cells = row.querySelectorAll('td');
+  if (!cells || cells.length <= colIndex) return '';
+  const cell = cells[colIndex];
+  if (!cell) return '';
+  // If column 0 (Pozisyon) contains <strong>, prefer that
+  if (type === 'position') {
+    const strong = cell.querySelector('strong');
+    return strong ? strong.textContent.trim() : cell.textContent.trim();
+  }
+  return cell.textContent.trim();
+}
+
+function sortByColumn(colIndex, type) {
+  const tbody = document.querySelector('.loads-table tbody');
+  if (!tbody) return;
+  const rows = Array.from(tbody.querySelectorAll('tr'));
+
+  // toggle direction if same column, else set asc = true
+  if (window._sortState.index === colIndex) {
+    window._sortState.asc = !window._sortState.asc;
+  } else {
+    window._sortState.index = colIndex;
+    window._sortState.asc = true;
+  }
+
+  const asc = window._sortState.asc;
+
+  const rowPairs = rows.map(r => {
+    return { row: r, val: getCellValueForRow(r, colIndex, type) };
+  });
+
+  rowPairs.sort((a, b) => {
+    const va = a.val;
+    const vb = b.val;
+    if (type === 'number') {
+      const na = parseFloat(va.replace(/[^0-9.,-]/g, '').replace(',', '.')) || 0;
+      const nb = parseFloat(vb.replace(/[^0-9.,-]/g, '').replace(',', '.')) || 0;
+      return asc ? na - nb : nb - na;
+    } else if (type === 'date') {
+      const da = parseDateEuropean(va);
+      const db = parseDateEuropean(vb);
+      return asc ? da - db : db - da;
+    } else if (type === 'position') {
+      const cmp = comparePositionString(va, vb);
+      return asc ? cmp : -cmp;
+    } else {
+      // string compare
+      const cmp = va.localeCompare(vb, 'tr', { numeric: true });
+      return asc ? cmp : -cmp;
+    }
+  });
+
+  rowPairs.forEach(p => tbody.appendChild(p.row));
+
+  // update indicators
+  document.querySelectorAll('.sort-ind').forEach(el => {
+    const c = parseInt(el.getAttribute('data-col'), 10);
+    if (isNaN(c)) { el.textContent = '⇅'; return; }
+    if (c === colIndex) el.textContent = asc ? '↑' : '↓';
+    else el.textContent = '⇅';
+  });
+}
+
+function togglePositionSort() { sortByColumn(0, 'position'); }
+
+// Tır hızlandırma fonksiyonu
+function speedUpTruck(truckEl) {
+  if (truckEl.classList.contains('speeding')) return;
+  truckEl.classList.add('speeding');
+  const originalDuration = getComputedStyle(truckEl).animationDuration;
+  truckEl.style.animationDuration = '3s';
+  // Tekerlekleri de hızlandır
+  truckEl.querySelectorAll('.wheel').forEach(w => {
+    w.style.animationDuration = '0.1s';
+  });
+  setTimeout(() => {
+    truckEl.classList.remove('speeding');
+    truckEl.style.animationDuration = '';
+    truckEl.querySelectorAll('.wheel').forEach(w => {
+      w.style.animationDuration = '';
+    });
+  }, 2500);
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  document.querySelectorAll('.truck').forEach(function(truck) {
+    truck.style.cursor = 'pointer';
+    truck.addEventListener('click', function(e) {
+      speedUpTruck(truck);
+    });
+  });
+});
+
+// Şoför isimlerini veritabanından al
+const driverNames = [
+  <% if (typeof trucks !== 'undefined' && trucks && trucks.length) { %>
+    <% trucks.forEach(function(truck, index) { %>
+      <% if (truck.driver_name) { %>"<%= truck.driver_name %>"<% if (index < trucks.length - 1) { %>,<% } %><% } %>
+    <% }); %>
+  <% } %>
+].filter(name => name && name.trim() !== '');
+
+// Rastgele şoför ismi seç
+function getRandomDriver() {
+  if (driverNames.length === 0) return '';
+  return driverNames[Math.floor(Math.random() * driverNames.length)];
+}
+
+// Sayfa yüklendiğinde tırlara şoför ismi ata
+document.addEventListener('DOMContentLoaded', function() {
+  document.querySelectorAll('.truck').forEach(function(truck) {
+    const driverLabel = truck.querySelector('.driver-label');
+    if (driverLabel && driverNames.length > 0) {
+      driverLabel.textContent = getRandomDriver();
+    }
+  });
+  
+  // Her 20 saniyede bir şoför isimlerini değiştir
+  setInterval(function() {
+    document.querySelectorAll('.truck .driver-label').forEach(function(label) {
+      if (driverNames.length > 0) {
+        label.textContent = getRandomDriver();
+      }
+    });
+  }, 20000);
+});
+</script>
+
+<!-- Modern Animasyonlu Tırlar -->
+<div class="truck-animation-container">
+  <!-- Şehir Silüeti -->
+  <div class="city-silhouette"></div>
+  
+  <!-- Yol Zemini -->
+  <div class="road-surface">
+    <div class="road-lines"></div>
+  </div>
+  
+  <!-- Yol Parçacıkları -->
+  <div class="road-particles">
+    <div class="particle" style="top: 10px; animation-delay: 0s;"></div>
+    <div class="particle" style="top: 25px; animation-delay: 0.5s;"></div>
+    <div class="particle" style="top: 5px; animation-delay: 1s;"></div>
+    <div class="particle" style="top: 35px; animation-delay: 1.5s;"></div>
+    <div class="particle" style="top: 15px; animation-delay: 2s;"></div>
+    <div class="particle" style="top: 40px; animation-delay: 2.5s;"></div>
+  </div>
+  
+  <!-- Tır 1 (En Önde) -->
+  <div class="truck truck-1">
+    <!-- Şoför İsmi -->
+    <div class="driver-label"></div>
+    
+    <!-- Işık İzi -->
+    <div class="light-trail" style="left: -150px; top: 25px;"></div>
+    
+    <!-- Egzoz Dumanı -->
+    <div class="exhaust-smoke" style="left: 3px; top: 20px;"></div>
+    <div class="exhaust-smoke" style="left: 5px; top: 22px;"></div>
+    <div class="exhaust-smoke" style="left: 4px; top: 18px;"></div>
+    
+    <!-- Far Işığı -->
+    <div class="headlight-beam" style="left: 105px; top: 12px;"></div>
+    
+    <svg width="140" height="55" viewBox="0 0 140 55">
+      <!-- Dorse -->
+      <defs>
+        <linearGradient id="dorseGrad1" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" style="stop-color:#f8f8f8"/>
+          <stop offset="100%" style="stop-color:#d0d0d0"/>
+        </linearGradient>
+        <linearGradient id="cabinGrad1" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" style="stop-color:#2563eb"/>
+          <stop offset="100%" style="stop-color:#1e40af"/>
+        </linearGradient>
+        <filter id="glow">
+          <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+          <feMerge>
+            <feMergeNode in="coloredBlur"/>
+            <feMergeNode in="SourceGraphic"/>
+          </feMerge>
+        </filter>
+      </defs>
+      
+      <rect x="5" y="15" width="58" height="22" fill="url(#dorseGrad1)" stroke="#555" stroke-width="1.5" rx="2"/>
+      
+      <!-- Logo Alanı -->
+      <rect x="8" y="17" width="52" height="18" fill="#fff" rx="1" opacity="0.9"/>
+      <text x="34" y="25" font-family="Arial Black, Arial" font-size="7" font-weight="900" fill="#1e40af" text-anchor="middle">BEST FREIGHT</text>
+      <text x="34" y="32" font-family="Arial" font-size="3.5" fill="#666" text-anchor="middle">www.bestnakliyat.com.tr</text>
+      
+      <!-- Türk Bayrağı -->
+      <rect x="9" y="18" width="6" height="4" fill="#e30a17" rx="0.5"/>
+      <circle cx="11.5" cy="20" r="1.2" fill="#fff"/>
+      <polygon points="13,20 12.3,19.5 12.6,20 12.3,20.5" fill="#fff"/>
+      
+      <!-- İngiliz Bayrağı -->
+      <rect x="52" y="18" width="6" height="4" fill="#012169" rx="0.5"/>
+      <path d="M52,18 L58,22 M58,18 L52,22" stroke="#fff" stroke-width="0.6"/>
+      <path d="M55,18 L55,22 M52,20 L58,20" stroke="#c8102e" stroke-width="0.4"/>
+      
+      <!-- Çekici Kabini -->
+      <rect x="65" y="10" width="34" height="27" fill="url(#cabinGrad1)" stroke="#1e3a8a" stroke-width="1.5" rx="3"/>
+      
+      <!-- Cam (Yansımalı) -->
+      <rect x="86" y="14" width="11" height="12" fill="#87ceeb" stroke="#1e3a8a" stroke-width="0.8" rx="1"/>
+      <rect x="87" y="15" width="4" height="5" fill="rgba(255,255,255,0.3)" rx="0.5"/>
+      
+      <!-- Far -->
+      <circle cx="103" cy="28" r="2.5" fill="#ffd700" filter="url(#glow)"/>
+      <circle cx="103" cy="28" r="1.5" fill="#fff"/>
+      
+      <!-- Motor Kaputu -->
+      <polygon points="99,13 108,17 108,32 99,30" fill="#3b82f6" stroke="#1e3a8a" stroke-width="1.2"/>
+      
+      <!-- Bağlantı -->
+      <rect x="60" y="26" width="6" height="5" fill="#333" stroke="#000" stroke-width="0.8" rx="1"/>
+      
+      <!-- Tekerlekler (Dönen) -->
+      <g class="wheel">
+        <circle cx="18" cy="40" r="5" fill="#222"/>
+        <circle cx="18" cy="40" r="3" fill="#444"/>
+        <circle cx="18" cy="40" r="1.5" fill="#666"/>
+        <line x1="18" y1="35" x2="18" y2="45" stroke="#555" stroke-width="0.5"/>
+        <line x1="13" y1="40" x2="23" y2="40" stroke="#555" stroke-width="0.5"/>
+      </g>
+      <g class="wheel">
+        <circle cx="30" cy="40" r="5" fill="#222"/>
+        <circle cx="30" cy="40" r="3" fill="#444"/>
+        <circle cx="30" cy="40" r="1.5" fill="#666"/>
+        <line x1="30" y1="35" x2="30" y2="45" stroke="#555" stroke-width="0.5"/>
+        <line x1="25" y1="40" x2="35" y2="40" stroke="#555" stroke-width="0.5"/>
+      </g>
+      <g class="wheel">
+        <circle cx="52" cy="40" r="5" fill="#222"/>
+        <circle cx="52" cy="40" r="3" fill="#444"/>
+        <circle cx="52" cy="40" r="1.5" fill="#666"/>
+        <line x1="52" y1="35" x2="52" y2="45" stroke="#555" stroke-width="0.5"/>
+        <line x1="47" y1="40" x2="57" y2="40" stroke="#555" stroke-width="0.5"/>
+      </g>
+      <g class="wheel">
+        <circle cx="82" cy="40" r="5" fill="#222"/>
+        <circle cx="82" cy="40" r="3" fill="#444"/>
+        <circle cx="82" cy="40" r="1.5" fill="#666"/>
+        <line x1="82" y1="35" x2="82" y2="45" stroke="#555" stroke-width="0.5"/>
+        <line x1="77" y1="40" x2="87" y2="40" stroke="#555" stroke-width="0.5"/>
+      </g>
+      <g class="wheel">
+        <circle cx="94" cy="40" r="5" fill="#222"/>
+        <circle cx="94" cy="40" r="3" fill="#444"/>
+        <circle cx="94" cy="40" r="1.5" fill="#666"/>
+        <line x1="94" y1="35" x2="94" y2="45" stroke="#555" stroke-width="0.5"/>
+        <line x1="89" y1="40" x2="99" y2="40" stroke="#555" stroke-width="0.5"/>
+      </g>
+      
+      <!-- Gölge -->
+      <ellipse cx="55" cy="47" rx="55" ry="4" fill="rgba(0,0,0,0.3)"/>
+    </svg>
+  </div>
+  
+  <!-- Tır 2 (Orta) -->
+  <div class="truck truck-2">
+    <!-- Şoför İsmi -->
+    <div class="driver-label"></div>
+    
+    <div class="light-trail" style="left: -140px; top: 22px;"></div>
+    <div class="exhaust-smoke" style="left: 3px; top: 18px;"></div>
+    <div class="headlight-beam" style="left: 100px; top: 10px; opacity: 0.5;"></div>
+    
+    <svg width="140" height="55" viewBox="0 0 140 55">
+      <rect x="5" y="15" width="58" height="22" fill="#e8e8e8" stroke="#555" stroke-width="1.5" rx="2"/>
+      <rect x="8" y="17" width="52" height="18" fill="#fff" rx="1" opacity="0.9"/>
+      <text x="34" y="25" font-family="Arial Black, Arial" font-size="7" font-weight="900" fill="#1e40af" text-anchor="middle">BEST FREIGHT</text>
+      <text x="34" y="32" font-family="Arial" font-size="3.5" fill="#666" text-anchor="middle">www.bestnakliyat.com.tr</text>
+      
+      <rect x="65" y="10" width="34" height="27" fill="#1e40af" stroke="#1e3a8a" stroke-width="1.5" rx="3"/>
+      <rect x="86" y="14" width="11" height="12" fill="#87ceeb" stroke="#1e3a8a" stroke-width="0.8" rx="1"/>
+      <circle cx="103" cy="28" r="2" fill="#ffd700"/>
+      <polygon points="99,13 108,17 108,32 99,30" fill="#3b82f6" stroke="#1e3a8a" stroke-width="1.2"/>
+      <rect x="60" y="26" width="6" height="5" fill="#333" rx="1"/>
+      
+      <g class="wheel"><circle cx="18" cy="40" r="5" fill="#222"/><circle cx="18" cy="40" r="3" fill="#444"/></g>
+      <g class="wheel"><circle cx="30" cy="40" r="5" fill="#222"/><circle cx="30" cy="40" r="3" fill="#444"/></g>
+      <g class="wheel"><circle cx="52" cy="40" r="5" fill="#222"/><circle cx="52" cy="40" r="3" fill="#444"/></g>
+      <g class="wheel"><circle cx="82" cy="40" r="5" fill="#222"/><circle cx="82" cy="40" r="3" fill="#444"/></g>
+      <g class="wheel"><circle cx="94" cy="40" r="5" fill="#222"/><circle cx="94" cy="40" r="3" fill="#444"/></g>
+      
+      <ellipse cx="55" cy="47" rx="55" ry="4" fill="rgba(0,0,0,0.2)"/>
+    </svg>
+  </div>
+  
+  <!-- Tır 3 (En Arkada) -->
+  <div class="truck truck-3">
+    <!-- Şoför İsmi -->
+    <div class="driver-label"></div>
+    
+    <div class="light-trail" style="left: -120px; top: 18px; opacity: 0.4;"></div>
+    <div class="headlight-beam" style="left: 90px; top: 8px; opacity: 0.3;"></div>
+    
+    <svg width="140" height="55" viewBox="0 0 140 55">
+      <rect x="5" y="15" width="58" height="22" fill="#d8d8d8" stroke="#555" stroke-width="1.5" rx="2"/>
+      <rect x="8" y="17" width="52" height="18" fill="#fff" rx="1" opacity="0.9"/>
+      <text x="34" y="25" font-family="Arial Black, Arial" font-size="7" font-weight="900" fill="#1e40af" text-anchor="middle">BEST FREIGHT</text>
+      <text x="34" y="32" font-family="Arial" font-size="3.5" fill="#666" text-anchor="middle">www.bestnakliyat.com.tr</text>
+      
+      <rect x="65" y="10" width="34" height="27" fill="#1e40af" stroke="#1e3a8a" stroke-width="1.5" rx="3"/>
+      <rect x="86" y="14" width="11" height="12" fill="#87ceeb" rx="1"/>
+      <circle cx="103" cy="28" r="1.5" fill="#ffd700"/>
+      <polygon points="99,13 108,17 108,32 99,30" fill="#3b82f6"/>
+      <rect x="60" y="26" width="6" height="5" fill="#333" rx="1"/>
+      
+      <g class="wheel"><circle cx="18" cy="40" r="5" fill="#222"/><circle cx="18" cy="40" r="2.5" fill="#444"/></g>
+      <g class="wheel"><circle cx="30" cy="40" r="5" fill="#222"/><circle cx="30" cy="40" r="2.5" fill="#444"/></g>
+      <g class="wheel"><circle cx="52" cy="40" r="5" fill="#222"/><circle cx="52" cy="40" r="2.5" fill="#444"/></g>
+      <g class="wheel"><circle cx="82" cy="40" r="5" fill="#222"/><circle cx="82" cy="40" r="2.5" fill="#444"/></g>
+      <g class="wheel"><circle cx="94" cy="40" r="5" fill="#222"/><circle cx="94" cy="40" r="2.5" fill="#444"/></g>
+      
+      <ellipse cx="55" cy="47" rx="55" ry="3" fill="rgba(0,0,0,0.15)"/>
+    </svg>
+  </div>
+  
+  <!-- Tır 4 (Karşı Yönden) -->
+  <div class="truck truck-reverse truck-4">
+    <!-- Şoför İsmi -->
+    <div class="driver-label"></div>
+    
+    <!-- Far Işığı -->
+    <div class="headlight-beam" style="left: 105px; top: 12px;"></div>
+    
+    <!-- Egzoz Dumanı -->
+    <div class="exhaust-smoke" style="left: 3px; top: 20px;"></div>
+    <div class="exhaust-smoke" style="left: 5px; top: 22px;"></div>
+    <div class="exhaust-smoke" style="left: 4px; top: 18px;"></div>
+    
+    <svg width="140" height="55" viewBox="0 0 140 55">
+      <rect x="5" y="15" width="58" height="22" fill="#e8e8e8" stroke="#555" stroke-width="1.5" rx="2"/>
+      <rect x="8" y="17" width="52" height="18" fill="#fff" rx="1" opacity="0.9"/>
+      <text x="34" y="25" font-family="Arial Black, Arial" font-size="7" font-weight="900" fill="#1e40af" text-anchor="middle">BEST FREIGHT</text>
+      <text x="34" y="32" font-family="Arial" font-size="3.5" fill="#666" text-anchor="middle">www.bestnakliyat.com.tr</text>
+      
+      <rect x="65" y="10" width="34" height="27" fill="#1e40af" stroke="#1e3a8a" stroke-width="1.5" rx="3"/>
+      <rect x="86" y="14" width="11" height="12" fill="#87ceeb" stroke="#1e3a8a" stroke-width="0.8" rx="1"/>
+      <circle cx="103" cy="28" r="2.5" fill="#ffd700"/>
+      <polygon points="99,13 108,17 108,32 99,30" fill="#3b82f6" stroke="#1e3a8a" stroke-width="1.2"/>
+      <rect x="60" y="26" width="6" height="5" fill="#333" rx="1"/>
+      
+      <g class="wheel"><circle cx="18" cy="40" r="5" fill="#222"/><circle cx="18" cy="40" r="3" fill="#444"/></g>
+      <g class="wheel"><circle cx="30" cy="40" r="5" fill="#222"/><circle cx="30" cy="40" r="3" fill="#444"/></g>
+      <g class="wheel"><circle cx="52" cy="40" r="5" fill="#222"/><circle cx="52" cy="40" r="3" fill="#444"/></g>
+      <g class="wheel"><circle cx="82" cy="40" r="5" fill="#222"/><circle cx="82" cy="40" r="3" fill="#444"/></g>
+      <g class="wheel"><circle cx="94" cy="40" r="5" fill="#222"/><circle cx="94" cy="40" r="3" fill="#444"/></g>
+      
+      <ellipse cx="55" cy="47" rx="55" ry="4" fill="rgba(0,0,0,0.2)"/>
+    </svg>
+  </div>
+  
+  <!-- Tır 5 (Karşı Yönden) -->
+  <div class="truck truck-reverse truck-5">
+    <!-- Şoför İsmi -->
+    <div class="driver-label"></div>
+    
+    <!-- Far Işığı -->
+    <div class="headlight-beam" style="left: 105px; top: 12px;"></div>
+    
+    <!-- Egzoz Dumanı -->
+    <div class="exhaust-smoke" style="left: 3px; top: 20px;"></div>
+    <div class="exhaust-smoke" style="left: 5px; top: 22px;"></div>
+    
+    <svg width="140" height="55" viewBox="0 0 140 55">
+      <rect x="5" y="15" width="58" height="22" fill="#d8d8d8" stroke="#555" stroke-width="1.5" rx="2"/>
+      <rect x="8" y="17" width="52" height="18" fill="#fff" rx="1" opacity="0.9"/>
+      <text x="34" y="25" font-family="Arial Black, Arial" font-size="7" font-weight="900" fill="#1e40af" text-anchor="middle">BEST FREIGHT</text>
+      <text x="34" y="32" font-family="Arial" font-size="3.5" fill="#666" text-anchor="middle">www.bestnakliyat.com.tr</text>
+      
+      <rect x="65" y="10" width="34" height="27" fill="#1e40af" stroke="#1e3a8a" stroke-width="1.5" rx="3"/>
+      <rect x="86" y="14" width="11" height="12" fill="#87ceeb" rx="1"/>
+      <circle cx="103" cy="28" r="2" fill="#ffd700"/>
+      <polygon points="99,13 108,17 108,32 99,30" fill="#3b82f6"/>
+      <rect x="60" y="26" width="6" height="5" fill="#333" rx="1"/>
+      
+      <g class="wheel"><circle cx="18" cy="40" r="5" fill="#222"/><circle cx="18" cy="40" r="2.5" fill="#444"/></g>
+      <g class="wheel"><circle cx="30" cy="40" r="5" fill="#222"/><circle cx="30" cy="40" r="2.5" fill="#444"/></g>
+      <g class="wheel"><circle cx="52" cy="40" r="5" fill="#222"/><circle cx="52" cy="40" r="2.5" fill="#444"/></g>
+      <g class="wheel"><circle cx="82" cy="40" r="5" fill="#222"/><circle cx="82" cy="40" r="2.5" fill="#444"/></g>
+      <g class="wheel"><circle cx="94" cy="40" r="5" fill="#222"/><circle cx="94" cy="40" r="2.5" fill="#444"/></g>
+      
+      <ellipse cx="55" cy="47" rx="55" ry="3" fill="rgba(0,0,0,0.15)"/>
+    </svg>
+  </div>
+</div>
+
+<!-- Connection Status Script -->
+<script>
+(function() {
+  // Connection Status
+  function updateConnectionStatus() {
+    const statusEl = document.getElementById('connectionStatus');
+    const textEl = document.getElementById('connectionText');
+    if (!statusEl || !textEl) return;
+    
+    if (navigator.onLine) {
+      statusEl.classList.remove('offline');
+      statusEl.classList.add('online');
+      textEl.textContent = 'Çevrimiçi';
+    } else {
+      statusEl.classList.remove('online');
+      statusEl.classList.add('offline');
+      textEl.textContent = 'Çevrimdışı';
+    }
+  }
+  
+  window.addEventListener('online', updateConnectionStatus);
+  window.addEventListener('offline', updateConnectionStatus);
+  updateConnectionStatus();
+})();
+</script>
+
+<!-- Driver Location Script -->
+<script>
+(function() {
+  // Collect all truck plates from the table
+  const locationCells = document.querySelectorAll('.driver-location-cell');
+  const truckPlates = [];
+  const cellsByPlate = {};
+  const latestCellByPlate = {}; // Track the latest (first non-completed) cell for each plate
+  
+  locationCells.forEach(cell => {
+    const plate = cell.dataset.truckPlate;
+    const row = cell.closest('tr');
+    const isCompleted = row && (row.dataset.completed === '1' || row.classList.contains('completed-row'));
+    
+    if (plate && plate.trim()) {
+      if (!cellsByPlate[plate]) {
+        cellsByPlate[plate] = [];
+        truckPlates.push(plate);
+      }
+      cellsByPlate[plate].push({ cell, isCompleted });
+      
+      // Track the first non-completed cell (latest position) for each plate
+      if (!isCompleted && !latestCellByPlate[plate]) {
+        latestCellByPlate[plate] = cell;
+      }
+    } else {
+      // No truck plate - show dash
+      cell.innerHTML = '<span style="color:#6b7280;">-</span>';
+    }
+  });
+  
+  if (truckPlates.length === 0) return;
+  
+  // Set all cells to dash initially (will update only latest non-completed ones)
+  locationCells.forEach(cell => {
+    if (cell.dataset.truckPlate) {
+      cell.innerHTML = '<span style="color:#6b7280;">-</span>';
+    }
+  });
+  
+  // Fetch locations from API
+  fetch('/loads/api/truck-locations?plates=' + encodeURIComponent(truckPlates.join(',')))
+    .then(res => res.json())
+    .then(data => {
+      if (!data.success) {
+        console.error('[Locations] API error:', data.error);
+        return;
+      }
+      
+      const locations = data.locations || {};
+      
+      // Kapıkule coordinates (Turkey-Bulgaria border)
+      const KAPIKULE_LAT = 41.9981;
+      const KAPIKULE_LNG = 26.3694;
+      
+      // Check if vehicle is offline (no data for 5+ minutes)
+      function isOffline(timeIndicator) {
+        if (!timeIndicator) return true;
+        const lastTime = new Date(timeIndicator).getTime();
+        const now = Date.now();
+        return (now - lastTime) > 5 * 60 * 1000; // 5 minutes
+      }
+      
+      // Get status class based on velocity and time
+      function getStatusClass(loc) {
+        if (isOffline(loc.time_indicator)) return 'location-offline';
+        if (loc.velocity && loc.velocity > 0) return 'location-moving';
+        return 'location-stopped';
+      }
+      
+      // Fast Haversine distance calculation (no API calls)
+      function getDistanceKm(lat1, lng1, lat2, lng2) {
+        const R = 6371; // Earth's radius in km
+        const dLat = (lat2 - lat1) * Math.PI / 180;
+        const dLng = (lng2 - lng1) * Math.PI / 180;
+        const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                  Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                  Math.sin(dLng/2) * Math.sin(dLng/2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+        return Math.round(R * c * 1.3); // *1.3 for approximate road distance
+      }
+      
+      // Update only the latest non-completed cell for each plate
+      Object.keys(latestCellByPlate).forEach(plate => {
+        const cell = latestCellByPlate[plate];
+        if (!cell) return;
+        
+        const loc = locations[plate];
+        
+        if (loc && loc.country) {
+          // GPS API returns country code directly (e.g., "DE", "TR", "BG")
+          const countryCode = loc.country;
+          const fullText = loc.address || countryCode;
+          const isTurkey = countryCode === 'TR';
+          const statusClass = getStatusClass(loc);
+          
+          // Display country code with instant distance (no API call)
+          if (isTurkey) {
+            cell.innerHTML = '<span class="location-text ' + statusClass + '" title="' + fullText.replace(/"/g, '&quot;') + '">' + countryCode + '</span>';
+          } else if (loc.latitude && loc.longitude) {
+            const distanceKm = getDistanceKm(loc.latitude, loc.longitude, KAPIKULE_LAT, KAPIKULE_LNG);
+            cell.innerHTML = '<span class="location-text ' + statusClass + '" title="' + fullText.replace(/"/g, '&quot;') + '">' + countryCode + '</span> <span class="distance-text">' + distanceKm + ' km</span>';
+          } else {
+            cell.innerHTML = '<span class="location-text ' + statusClass + '" title="' + fullText.replace(/"/g, '&quot;') + '">' + countryCode + '</span>';
+          }
+        } else if (loc && loc.address) {
+          // Have address but no country code - try to extract from address
+          const match = loc.address.match(/\(([A-Z]{2})\)\s*$/);
+          const countryCode = match ? match[1] : '?';
+          const isTurkey = countryCode === 'TR';
+          const statusClass = getStatusClass(loc);
+          
+          if (isTurkey) {
+            cell.innerHTML = '<span class="location-text ' + statusClass + '" title="' + loc.address.replace(/"/g, '&quot;') + '">' + countryCode + '</span>';
+          } else if (loc.latitude && loc.longitude) {
+            const distanceKm = getDistanceKm(loc.latitude, loc.longitude, KAPIKULE_LAT, KAPIKULE_LNG);
+            cell.innerHTML = '<span class="location-text ' + statusClass + '" title="' + loc.address.replace(/"/g, '&quot;') + '">' + countryCode + '</span> <span class="distance-text">' + distanceKm + ' km</span>';
+          } else {
+            cell.innerHTML = '<span class="location-text ' + statusClass + '" title="' + loc.address.replace(/"/g, '&quot;') + '">' + countryCode + '</span>';
+          }
+        } else if (loc && loc.latitude && loc.longitude) {
+          // Have coordinates but no address
+          const coordsText = loc.latitude.toFixed(2) + ', ' + loc.longitude.toFixed(2);
+          cell.innerHTML = '<span class="location-text location-coords" title="Koordinat: ' + coordsText + '">' + coordsText + '</span>';
+        }
+        // If no location data, cell already shows "-" from initial setup
+      });
+    })
+    .catch(err => {
+      console.error('[Locations] Fetch error:', err);
+      // Show error state
+      locationCells.forEach(cell => {
+        if (cell.dataset.truckPlate) {
+          cell.innerHTML = '<span style="color:#ef4444;">!</span>';
+        }
+      });
+    });
+})();
+</script>

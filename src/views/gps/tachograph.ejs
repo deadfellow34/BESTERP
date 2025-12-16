@@ -1,0 +1,180 @@
+<style>
+  .gps-page { padding: 12px 20px 28px; }
+  .gps-header {
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin: 10px 0 14px;
+  }
+  .gps-title { margin:0; font-size: 18px; font-weight: 900; color: var(--text-primary); }
+  .gps-sub { margin: 6px 0 0; color: var(--text-muted); font-size: 12px; font-weight: 600; }
+
+  .gps-card { border-radius: 14px; border: 1px solid var(--border-subtle); background: var(--bg-card); box-shadow: var(--shadow-md); overflow:hidden; }
+  .gps-card-header { padding: 12px; border-bottom: 1px solid var(--border-subtle); display:flex; align-items:center; justify-content:space-between; gap: 10px; flex-wrap: wrap; background: var(--bg-surface); }
+  .gps-card-title { margin:0; font-size: 13px; font-weight: 800; color: var(--text-secondary); letter-spacing: 0.2px; }
+  .gps-body { padding: 12px; }
+
+  .gps-controls {
+    display:flex;
+    gap: 10px;
+    align-items:center;
+    flex-wrap: wrap;
+  }
+  .gps-input {
+    padding: 10px 12px;
+    border-radius: 10px;
+    background: var(--bg-input);
+    border: 1px solid var(--border-default);
+    color: var(--text-primary);
+    outline: none;
+    font-weight: 700;
+    font-size: 13px;
+    min-width: 220px;
+    appearance: auto;
+  }
+  .gps-input:focus { border-color: var(--border-accent-hover); box-shadow: var(--shadow-glow); }
+
+  .gps-badge {
+    display:inline-flex;
+    align-items:center;
+    gap: 8px;
+    padding: 6px 10px;
+    border-radius: 999px;
+    border: 1px solid var(--border-default);
+    background: var(--bg-surface);
+    color: var(--text-secondary);
+    font-weight: 800;
+    font-size: 12px;
+  }
+  .gps-badge.warn { border-color: var(--warning-light); background: var(--warning-light); color: var(--warning-text); }
+
+  .gps-kv { display:grid; grid-template-columns: 160px 1fr; gap: 10px; margin: 8px 0; }
+  .gps-k { color: var(--text-muted); font-weight: 900; font-size: 12px; }
+  .gps-v { color: var(--text-primary); font-weight: 700; font-size: 12px; }
+
+  .gps-table-wrap { overflow-x: auto; border-top: 1px solid var(--border-subtle); }
+  table { width:100%; border-collapse: separate; border-spacing:0; min-width: 860px; }
+  thead th {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    background: var(--table-header-bg);
+    color: var(--table-header-text);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    padding: 10px 10px;
+    border-bottom: 1px solid var(--table-border);
+  }
+  tbody td {
+    padding: 10px 10px;
+    border-bottom: 1px solid var(--border-subtle);
+    color: var(--table-cell-text);
+    font-size: 12px;
+    vertical-align: top;
+  }
+  tbody tr:nth-child(odd) { background: var(--table-row-odd); }
+  tbody tr:nth-child(even) { background: var(--table-row-even); }
+  tbody tr:hover { background: var(--table-row-hover); }
+
+  .row-warn { background: var(--warning-light) !important; }
+</style>
+
+<%- include('../partials/navbar') %>
+
+<div class="gps-page">
+  <div class="gps-header">
+    <div>
+      <h1 class="gps-title">GPS · Takograf / Hız</h1>
+      <div class="gps-sub">Uyarılar yaklaşık hesaplanır (mevcut field'lara göre).</div>
+    </div>
+
+    <div style="display:flex; gap: 8px; flex-wrap:wrap; align-items:center;">
+      <a class="btn btn-outline" href="/gps/live">Canlı Takip</a>
+      <button class="btn" id="gpsRefreshBtn" type="button">Yenile</button>
+    </div>
+  </div>
+
+  <div class="gps-card">
+    <div class="gps-card-header">
+      <h2 class="gps-card-title">Seçim</h2>
+      <form class="gps-controls" method="GET" action="/gps/tachograph">
+        <select class="gps-input" name="vehicleId">
+          <% (vehicles || []).forEach(function(v){ %>
+            <option value="<%= v.vehicleid %>" <%= (vehicle && String(vehicle.vehicleid) === String(v.vehicleid)) ? 'selected' : '' %>><%= v.plate || v.vehiclename || v.vehicleid %></option>
+          <% }) %>
+        </select>
+
+        <select class="gps-input" name="range" style="min-width:140px;">
+          <option value="24h" <%= range === '24h' ? 'selected' : '' %>>24 saat</option>
+          <option value="7d" <%= range === '7d' ? 'selected' : '' %>>7 gün</option>
+        </select>
+
+        <button class="btn" type="submit">Göster</button>
+
+        <% if (warnings && warnings.length) { %>
+          <span class="gps-badge warn"><%= warnings.join(' · ') %></span>
+        <% } %>
+      </form>
+    </div>
+
+    <div class="gps-body">
+      <div class="gps-kv"><div class="gps-k">Araç</div><div class="gps-v"><%= vehicle ? (vehicle.plate || vehicle.vehiclename || vehicle.vehicleid) : '—' %></div></div>
+      <div class="gps-kv"><div class="gps-k">Son Görülme</div><div class="gps-v"><%= vehicle ? (vehicle.time_indicator || '—') : '—' %></div></div>
+      <div class="gps-kv"><div class="gps-k">Sürüş Süresi</div><div class="gps-v"><%= vehicle && vehicle.drivetime != null ? fmt.secondsToHHMM(vehicle.drivetime) : '—' %></div></div>
+      <div class="gps-kv"><div class="gps-k">Çalışma Süresi</div><div class="gps-v"><%= vehicle && vehicle.worktime != null ? fmt.secondsToHHMM(vehicle.worktime) : '—' %></div></div>
+      <div class="gps-kv"><div class="gps-k">Idle Süresi</div><div class="gps-v"><%= vehicle && vehicle.idletime != null ? fmt.secondsToHHMM(vehicle.idletime) : '—' %></div></div>
+      <div class="gps-kv"><div class="gps-k">Mevcut Hız</div><div class="gps-v"><%= vehicle && vehicle.velocity != null ? (vehicle.velocity + ' km/h') : '—' %></div></div>
+    </div>
+
+    <div class="gps-table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Zaman</th>
+            <th>Hız</th>
+            <th>Konum</th>
+            <th>Koordinat</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% (history || []).forEach(function(h){ %>
+            <tr class="<%= (h.velocity != null && Number(h.velocity) > 90) ? 'row-warn' : '' %>">
+              <td><%= h.time_indicator || '—' %></td>
+              <td><%= h.velocity != null ? (h.velocity + ' km/h') : '—' %></td>
+              <td><%= h.location || h.address || '—' %></td>
+              <td><%= h.latitude != null && h.longitude != null ? (h.latitude + ', ' + h.longitude) : '—' %></td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script>
+  (function(){
+    async function manualRefresh(){
+      const btn = document.getElementById('gpsRefreshBtn');
+      btn.disabled = true;
+      try {
+        await fetch('/api/gps/refresh', {
+          method: 'POST',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({})
+        });
+        // reload to recalc server-side warnings/history
+        window.location.reload();
+      } catch (_) {
+        window.location.reload();
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
+    document.getElementById('gpsRefreshBtn').addEventListener('click', manualRefresh);
+  })();
+</script>

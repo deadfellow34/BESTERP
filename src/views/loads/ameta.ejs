@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AMETA - Pozisyon <%= positionNo %></title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: Arial, sans-serif;
+      background: #f5f5f5;
+      padding: 20px;
+      color: #000;
+    }
+
+    .ameta-container {
+      max-width: 1400px;
+      margin: 0 auto;
+      background: white;
+      padding: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 20px;
+      padding-bottom: 10px;
+      border-bottom: 3px solid #000;
+    }
+
+    .company-info {
+      flex: 1;
+    }
+
+    .company-name {
+      font-size: 18px;
+      font-weight: bold;
+      margin-bottom: 5px;
+      color: #000;
+    }
+
+    .rates-box {
+      border: 2px solid #000;
+      padding: 10px;
+      min-width: 300px;
+      background: #f8f9fa;
+    }
+
+    .rates-box table {
+      width: 100%;
+      font-size: 12px;
+      color: #000;
+    }
+
+    .rates-box td {
+      padding: 3px 5px;
+    }
+
+    .info-section {
+      border: 2px solid #000;
+      margin-bottom: 15px;
+      background: white;
+    }
+
+    .info-row {
+      display: flex;
+      border-bottom: 2px solid #000;
+    }
+
+    .info-row:last-child {
+      border-bottom: none;
+    }
+
+    .info-cell {
+      flex: 1;
+      padding: 10px;
+      border-right: 2px solid #000;
+      font-size: 13px;
+      background: white;
+      color: #000;
+    }
+
+    /* when a field has no data, keep table/grid borders but clear content/background */
+    .empty-cell {
+      /* keep borders so the table grid stays intact */
+      background: transparent !important;
+      color: #000 !important;
+      padding: 10px !important;
+    }
+
+    .info-cell:last-child {
+      border-right: none;
+    }
+
+    .info-label {
+      font-weight: bold;
+      display: block;
+      font-size: 10px;
+      margin-bottom: 5px;
+      color: #333;
+      text-transform: uppercase;
+    }
+
+    .loads-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 20px;
+      font-size: 11px;
+      border: 2px solid #000;
+    }
+
+    .loads-table th,
+    .loads-table td {
+      border: 1px solid #000;
+      padding: 8px 6px;
+      text-align: left;
+      color: #000;
+    }
+
+    .loads-table th {
+      background: #e9ecef;
+      font-weight: bold;
+      text-align: center;
+      font-size: 10px;
+      color: #000;
+      text-transform: uppercase;
+    }
+
+    .loads-table tr:nth-child(even) {
+      background: #f8f9fa;
+    }
+
+    .totals-section {
+      display: flex;
+      gap: 20px;
+      margin-top: 20px;
+    }
+
+    .totals-box {
+      border: 2px solid #000;
+      flex: 1;
+      background: white;
+    }
+
+    .totals-table {
+      width: 100%;
+      font-size: 12px;
+      color: #000;
+    }
+
+    .totals-table td {
+      padding: 10px;
+      border-bottom: 1px solid #000;
+    }
+
+    .totals-table tr:last-child td {
+      border-bottom: none;
+      font-weight: bold;
+      background: #f8f9fa;
+    }
+
+    /* For the general totals row: remove vertical borders for all cells
+       except the specific summary columns (keep visual separators there). */
+    .loads-table tr.totals-row td {
+      border-left: none !important;
+      border-right: none !important;
+    }
+
+    .loads-table tr.totals-row td.border-keep {
+      border-left: 1px solid #000 !important;
+      border-right: 1px solid #000 !important;
+    }
+
+    .footer-section {
+      margin-top: 20px;
+      border: 2px solid #000;
+      padding: 10px 15px;
+      background: #f8f9fa;
+      color: #000;
+      font-size: 11px;
+    }
+
+    .footer-row {
+      display: flex;
+      justify-content: flex-start;
+      align-items: center;
+      color: #000;
+      gap: 40px;
+    }
+
+    .footer-row > div {
+      line-height: 1.4;
+      white-space: nowrap;
+    }
+
+    .print-btn {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      padding: 10px 20px;
+      background: #2563eb;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: bold;
+    }
+
+    .print-btn:hover {
+      background: #1e40af;
+    }
+
+    @media print {
+      @page {
+        size: A4 landscape;
+        margin: 5mm;
+      }
+      
+      .print-btn {
+        display: none;
+      }
+      body {
+        padding: 0;
+        background: #f5f5f5 !important;
+        color: #000 !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+        transform: scale(0.8);
+        transform-origin: top left;
+        width: 125%; /* 100% / 0.8 = 125% to compensate for scale */
+      }
+      
+      .ameta-container {
+        max-width: none;
+        width: 100%;
+      }
+      
+      /* Force all colors to stay consistent in print */
+      .ameta-container {
+        background: white !important;
+      }
+      
+      .info-cell, .info-label, .loads-table th, .loads-table td,
+      .totals-table td, .footer-section, .footer-row, .footer-row > div,
+      .rates-box, .rates-box table, .company-name {
+        color: #000 !important;
+        background-color: inherit !important;
+      }
+      
+      .loads-table th {
+        background: #e9ecef !important;
+        color: #000 !important;
+      }
+      
+      .loads-table tr:nth-child(even) {
+        background: #f8f9fa !important;
+      }
+      
+      .info-label {
+        color: #333 !important;
+      }
+      
+      .totals-table tr:last-child td {
+        background: #f8f9fa !important;
+      }
+      
+      .footer-section {
+        background: #f8f9fa !important;
+      }
+      
+      .rates-box {
+        background: #f8f9fa !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <button class="print-btn" onclick="window.print()">🖨️ Yazdır</button>
+
+  <div class="ameta-container">
+    <!-- Header -->
+    <div class="header">
+      <div class="company-info">
+        <div class="company-name">BEST ULUSLARARASI NAKLİYAT VE TİC LTD ŞTİ</div>
+      </div>
+    </div>
+
+    <!-- Pozisyon Bilgileri -->
+    <div class="info-section">
+      <% 
+        // Precompute formatted dates to avoid referencing undefined vars in class attributes
+        const ldAM = firstLoad.loading_date || '';
+        const ldAMParts = (ldAM && ldAM.split) ? ldAM.split('-') : [];
+        const ldAMFormatted = (ldAMParts.length === 3) ? `${ldAMParts[2]}.${ldAMParts[1]}.${ldAMParts[0]}` : ldAM;
+        const udAM = firstLoad.unloading_date || '';
+        const udAMParts = (udAM && udAM.split) ? udAM.split('-') : [];
+        const udAMFormatted = (udAMParts.length === 3) ? `${udAMParts[2]}.${udAMParts[1]}.${udAMParts[0]}` : udAM;
+        // Precompute unique unloading countries to avoid undefined usage in class attributes
+        const customsEntries = (loads || []).map(l => (l.unloading_country || '').toString().trim()).filter(Boolean);
+        const uniqueCustoms = Array.from(new Set(customsEntries));
+      %>
+      <div class="info-row">
+        <div class="info-cell">
+          <span class="info-label">POZ / DOSYA NO</span>
+          <%= positionNo %>
+        </div>
+        <div class="info-cell <%= firstLoad.truck_plate ? '' : 'empty-cell' %>">
+          <span class="info-label">ÇEKİCİ PLAKASI</span>
+          <%= firstLoad.truck_plate || '' %>
+        </div>
+        <div class="info-cell <%= firstLoad.trailer_plate ? '' : 'empty-cell' %>">
+          <span class="info-label">DORSE PLAKASI</span>
+          <%= firstLoad.trailer_plate || '' %>
+        </div>
+      </div>
+      <div class="info-row">
+        <div class="info-cell <%= ldAMFormatted ? '' : 'empty-cell' %>">
+          <span class="info-label">ÇIKIŞ TARİHİ</span>
+          <%= ldAMFormatted %>
+        </div>
+        <div class="info-cell <%= udAMFormatted ? '' : 'empty-cell' %>">
+          <span class="info-label">BOŞALTMA TARİHİ</span>
+          <%= udAMFormatted %>
+        </div>
+        <div class="info-cell <%= firstLoad.driver_name ? '' : 'empty-cell' %>">
+          <span class="info-label">ŞOFÖR ADI</span>
+          <%= firstLoad.driver_name || '' %>
+        </div>
+      </div>
+      <div class="info-row">
+        <div class="info-cell <%= (uniqueCustoms && uniqueCustoms.length) || firstLoad.unloading_country ? '' : 'empty-cell' %>" style="flex: 2;">
+          <span class="info-label">BOŞALTMA GÜMRÜKLERİ</span>
+          <%- uniqueCustoms.length ? uniqueCustoms.join(' - ') : (firstLoad.unloading_country || '') %>
+        </div>
+        <div class="info-cell <%= firstLoad.mrn_no ? '' : 'empty-cell' %>">
+          <span class="info-label">MRN NUMARASI</span>
+          <%= firstLoad.mrn_no || '' %>
+        </div>
+        <div class="info-cell <%= firstLoad.seal_code ? '' : 'empty-cell' %>">
+          <span class="info-label">MÜHÜR NUMARASI</span>
+          <%= firstLoad.seal_code || '' %>
+        </div>
+      </div>
+    </div>
+
+    <!-- Yükler Tablosu -->
+    <table class="loads-table">
+      <thead>
+        <tr>
+          <th>NO</th>
+          <th>UID</th>
+          <th>GÖNDERİCİ</th>
+          <th>ALICI FİRMA</th>
+          <th>YÜKLEME YERİ</th>
+          <th>LDM</th>
+          <th>REF</th>
+          <th>VARIŞ GÜMRÜĞÜ</th>
+          <th>ANTREPO</th>
+          <th>MAL CİNSİ</th>
+          <th>KAP AD.</th>
+          <th>KAP NEVİ</th>
+          <th>BRÜT KİLO</th>
+          <th>FATURA KİME</th>
+          <th>DÖVİZ</th>
+          <th>NAVLUN</th>
+          <th>YDG</th>
+          <th>TOPLM</th>
+          <th>KUR</th>
+          <th>TL</th>
+          <th>ORDİNO</th>
+          <th>FATURA NO</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% 
+          let totalPackages = 0;
+          let totalGrossWeight = 0;
+          // totalNavlunTL will accumulate the TL column values (navlun TL + YDG TL), excluding Ordino
+          let totalNavlunTL = 0;
+          let totalOrdino = 0;
+        %>
+        <% loads.forEach((load, index) => { 
+          const navlun = parseFloat(load.navlun_amount) || 0;
+          const currency = (load.navlun_currency || 'EUR').toUpperCase();
+          let rate = 1;
+          if (currency === 'USD') rate = rates.USD;
+          else if (currency === 'EUR') rate = rates.EUR;
+          else if (currency === 'GBP') rate = rates.GBP;
+          const tlValue = navlun * rate;
+          const ordinoCost = parseFloat(load.ordino_cost) || 0;
+          // reflect Ordino as KDV %20 included for AMETA
+          const ordinoWithVat = +(ordinoCost * 1.2);
+          const ydgAmount = parseFloat(load.ydg_amount) || 0;
+          const eurRate = rates.EUR;
+          const ydgTL = ydgAmount * eurRate;
+          
+          // Toplamı hesapla
+          // totalNavlunTL: sum of TL column (navlun TL + YDG TL)
+          totalPackages += parseInt(load.packages) || 0;
+          totalGrossWeight += parseFloat(load.gross_weight) || 0;
+          totalNavlunTL += tlValue + ydgTL;
+          // totalOrdino: sum of Ordino column (with VAT)
+          totalOrdino += ordinoWithVat;
+        %>
+        <tr>
+          <td><%= index + 1 %></td>
+          <td class="<%= load.uid ? '' : 'empty-cell' %>"><%= load.uid || '' %></td>
+          <td class="<%= load.customer_name ? '' : 'empty-cell' %>"><%= load.customer_name || '' %></td>
+          <td class="<%= load.consignee_name ? '' : 'empty-cell' %>"><%= load.consignee_name || '' %></td>
+          <td class="<%= ([load.loading_city, load.loading_country].filter(Boolean).length) ? '' : 'empty-cell' %>"><%= [load.loading_city, load.loading_country].filter(Boolean).join(', ') %></td>
+          <td class="<%= load.ldm ? '' : 'empty-cell' %>"><%= load.ldm || '' %></td>
+          <td class="<%= load.ref ? '' : 'empty-cell' %>"><%= load.ref || '' %></td>
+          <td class="<%= load.unloading_country ? '' : 'empty-cell' %>"><%= load.unloading_country || '' %></td>
+          <td class="<%= load.unloading_city ? '' : 'empty-cell' %>"><%= load.unloading_city || '' %></td>
+          <td class="<%= load.goods_description ? '' : 'empty-cell' %>"><%= load.goods_description || '' %></td>
+          <td class="<%= load.packages ? '' : 'empty-cell' %>"><%= load.packages || '' %></td>
+          <td>KAP</td>
+          <td class="<%= load.gross_weight ? '' : 'empty-cell' %>"><%= load.gross_weight || '' %></td>
+          <td class="<%= load.fatura_kime ? '' : 'empty-cell' %>"><%= load.fatura_kime || '' %></td>
+          <td class="<%= load.navlun_currency ? '' : 'empty-cell' %>"><%= load.navlun_currency || '' %></td>
+          <td class="<%= load.navlun_amount ? '' : 'empty-cell' %>"><%= load.navlun_amount || '' %></td>
+          <td class="<%= ydgAmount > 0 ? '' : 'empty-cell' %>"><%= ydgAmount > 0 ? ydgAmount.toFixed(2) : '' %></td>
+          <td class="<%= (navlun + ydgAmount) > 0 ? '' : 'empty-cell' %>"><%= (navlun + ydgAmount) > 0 ? (navlun + ydgAmount).toFixed(2) : '' %></td>
+          <td class="<%= (navlun > 0 || ydgAmount > 0) ? '' : 'empty-cell' %>"><%= (navlun > 0 || ydgAmount > 0) ? rate.toFixed(3) : '' %></td>
+          <td class="<%= (tlValue + ydgTL) > 0 ? '' : 'empty-cell' %>"><%= (tlValue + ydgTL) > 0 ? (tlValue + ydgTL).toFixed(2) : '' %></td>
+          <td class="<%= ordinoWithVat > 0 ? '' : 'empty-cell' %>"><%= ordinoWithVat > 0 ? ordinoWithVat.toFixed(2) : '' %></td>
+          <td class="<%= load.fatura_no ? '' : 'empty-cell' %>"><%= (load.fatura_no ? (String(load.fatura_no).startsWith('E-') ? load.fatura_no : ('E-' + load.fatura_no)) : '') %></td>
+        </tr>
+        <% }); %>
+        <tr class="totals-row" style="font-weight: bold; background: #e0e0e0;">
+          <td colspan="6">GENEL TOPLAM</td>
+          <td class="empty-cell"></td>
+          <td class="empty-cell"></td>
+          <td class="empty-cell"></td>
+          <td class="empty-cell"></td>
+          <td class="border-keep"><%= totalPackages %> KAP</td>
+          <td class="empty-cell"></td>
+          <td class="border-keep"><%= totalGrossWeight.toFixed(2) %> KG</td>
+          <td class="empty-cell"></td>
+          <td class="empty-cell"></td>
+          <td class="empty-cell"></td>
+          <td class="empty-cell"></td>
+          <td class="empty-cell"></td>
+          <td class="empty-cell"></td>
+          <td class="border-keep"><%= totalNavlunTL.toLocaleString('tr-TR', {minimumFractionDigits: 2, maximumFractionDigits: 2}) %></td>
+          <td class="<%= totalOrdino > 0 ? '' : 'empty-cell' %>"><%= totalOrdino > 0 ? totalOrdino.toLocaleString('tr-TR', {minimumFractionDigits: 2, maximumFractionDigits: 2}) : '' %></td>
+          <td class="empty-cell"></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- Totals Section -->
+    <div class="totals-section">
+      <div class="totals-box">
+        <table class="totals-table">
+          <% 
+            const sgsTL = (parseFloat(acentaSgsExpense) || 0) * (parseFloat(rates.EUR) || 1);
+            const ttTL = (parseFloat(turkTransportExpense) || 0) * (parseFloat(rates.GBP) || 1);
+            const digerTL = parseFloat(digerMasraflarTL) || 0;
+            const computedGiderToplamTL = sgsTL + ttTL + digerTL;
+            const computedGiderToplamEUR = (parseFloat(rates.EUR) && parseFloat(rates.EUR) !== 0) ? (computedGiderToplamTL / parseFloat(rates.EUR)) : 0;
+            // Compute Genel Toplam as TL column total (totalNavlunTL) + Ordino total
+            const computedGenelToplamTL = (typeof totalNavlunTL !== 'undefined' ? totalNavlunTL : 0) + (typeof totalOrdino !== 'undefined' ? totalOrdino : 0);
+            const computedGenelToplamEUR = (parseFloat(rates.EUR) && parseFloat(rates.EUR) !== 0) ? (computedGenelToplamTL / parseFloat(rates.EUR)) : 0;
+            // Compute Kalan = Genel Toplam - Gider Toplam (TL), and its EUR equivalent
+            const kalanTL = computedGenelToplamTL - computedGiderToplamTL;
+            const kalanEUR = (parseFloat(rates.EUR) && parseFloat(rates.EUR) !== 0) ? (kalanTL / parseFloat(rates.EUR)) : 0;
+          %>
+          <tr>
+            <td><strong>SGS T1/T2 Masrafı</strong></td>
+            <td><strong>EURO</strong><br><%= acentaSgsExpense %></td>
+            <td><strong>KUR</strong><br><%= rates.EUR.toFixed(3) %></td>
+            <td><strong>TL</strong><br><%= sgsTL.toFixed(2) %></td>
+          </tr>
+          <tr>
+            <td><strong>TT Masraf</strong></td>
+            <td><strong>GBP</strong><br><%= turkTransportExpense %></td>
+            <td><strong>KUR</strong><br><%= rates.GBP.toFixed(3) %></td>
+            <td><strong>TL</strong><br><%= ttTL.toFixed(2) %></td>
+          </tr>
+          <tr>
+            <td><strong>DİĞER MASRAFLAR</strong></td>
+            <td><strong>TL</strong><br><%= digerMasraflarTL %> TL</td>
+            <td><strong>KUR</strong><br>1.000</td>
+            <td><strong>TL</strong><br><%= digerTL.toFixed(2) %></td>
+          </tr>
+          <tr>
+            <td colspan="3"><strong>TOPLAM - YTL</strong></td>
+            <td><strong><%= computedGiderToplamTL.toFixed(2) %></strong></td>
+          </tr>
+        </table>
+      </div>
+      <div class="totals-box">
+        <table class="totals-table">
+          <tr>
+            <td><strong>GENEL TOPLAM</strong></td>
+            <td><strong><%= computedGenelToplamTL.toLocaleString('tr-TR', {minimumFractionDigits: 2, maximumFractionDigits: 2}) %> TL (<%= computedGenelToplamEUR.toFixed(2) %> EUR)</strong></td>
+          </tr>
+          <tr>
+            <td><strong>GİDER TOPLAM</strong></td>
+            <td style="color: #ef4444;"><strong>-<%= computedGiderToplamTL.toFixed(2) %> TL (<%= computedGiderToplamEUR.toFixed(2) %> EUR)</strong></td>
+          </tr>
+          <tr>
+            <td><strong>KALAN</strong></td>
+            <% const kalanColorValue = (parseFloat(kalanTL) >= 0) ? '#22c55e' : '#ef4444'; %>
+            <td style="color: <%= kalanColorValue %>;"><strong><%= kalanTL.toLocaleString('tr-TR', {minimumFractionDigits: 2, maximumFractionDigits: 2}) %> TL (<%= kalanEUR.toFixed(2) %> EUR)</strong></td>
+          </tr>
+          <tr>
+            <td><strong>KUR</strong></td>
+            <td><strong><%= kur %></strong></td>
+          </tr>
+          <tr>
+            <td><strong>PROFİT EURO</strong></td>
+            <% const kalanEURColorValue = (parseFloat(kalanEUR) >= 0) ? '#22c55e' : '#ef4444'; %>
+            <td style="color: <%= kalanEURColorValue %>;"><strong><%= kalanEUR.toFixed(2) %></strong></td>
+          </tr>
+        </table>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer-section">
+      <div class="footer-row">
+        <div><strong>DÖVİZ KURU</strong></div>
+        <div><strong><%= new Date().toLocaleDateString('tr-TR') %></strong></div>
+        <div><strong>EURO:</strong> <%= rates.EUR.toFixed(4) %></div>
+        <div><strong>GBP:</strong> <%= rates.GBP.toFixed(4) %></div>
+        <div><strong>PARİTE:</strong> <%= rates.PARITE.toFixed(7) %></div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

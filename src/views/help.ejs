@@ -1,0 +1,152 @@
+<%- include('./partials/navbar') %>
+
+<style>
+  :root{ --bg:#071428; --card:#0b1220; --muted:#9fb0c9; --accent:#0ea5e9; --glass: rgba(255,255,255,0.02)}
+  .help-container{max-width:1200px;margin:18px auto;display:grid;grid-template-columns:260px 1fr;gap:18px;padding:18px}
+  .help-toc{position:sticky;top:76px;height:calc(100vh - 96px);overflow:auto;padding:12px;border-radius:10px;background:linear-gradient(180deg,var(--bg),#061322);box-shadow:0 8px 24px rgba(2,6,23,0.6);border:1px solid rgba(255,255,255,0.03)}
+  .help-toc h4{color:#cfeffd;margin:6px 0 12px 0}
+  .toc-list{list-style:none;padding:0;margin:0}
+  .toc-list a{display:block;padding:8px 10px;border-radius:8px;color:var(--muted);text-decoration:none;margin-bottom:6px}
+  .toc-list a.active, .toc-list a:hover{background:var(--glass);color:#e6f6ff}
+
+  .help-main{background:linear-gradient(180deg,var(--bg),#071022);padding:18px;border-radius:10px;color:#e6eef8}
+  .help-hero{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+  .help-hero h1{margin:0;font-size:20px}
+  .help-search{width:320px}
+
+  .help-card{background:linear-gradient(180deg,var(--card),#061126);padding:14px;border-radius:10px;margin-bottom:12px;border:1px solid rgba(255,255,255,0.03)}
+  .help-card h3{margin:0 0 8px 0}
+  .help-note{background:#071428;border-left:4px solid var(--accent);padding:10px;border-radius:6px;color:var(--muted);margin-top:8px}
+
+  details{background:transparent;border-radius:6px;padding:6px}
+  summary{cursor:pointer;font-weight:700;padding:8px;border-radius:6px}
+  .section-body{padding:8px 12px;color:var(--muted)}
+
+  @media (max-width:980px){.help-container{grid-template-columns:1fr;padding:12px}.help-toc{display:none}}
+</style>
+
+<div class="help-container">
+  <aside class="help-toc" aria-label="Kılavuz içindekiler">
+    <h4>Hızlı Rehber</h4>
+    <ul class="toc-list">
+      <li><a href="#genel">Genel Gezinti</a></li>
+      <li><a href="#loads">Yüklemeler (Ana Sayfa)</a></li>
+      <li><a href="#position">Pozisyon Detayları</a></li>
+      <li><a href="#accounting">Muhasebe</a></li>
+      <li><a href="#database">Veritabanı</a></li>
+      <li><a href="#maildata">Mail Data</a></li>
+      <li><a href="#logs">Kayıtlar (Logs)</a></li>
+      <li><a href="#uploads">Uploads</a></li>
+      <li><a href="#backups">Periyodik Yedekleme</a></li>
+      <li><a href="#security">Güvenlik & İşlemler</a></li>
+    </ul>
+  </aside>
+
+  <main class="help-main">
+    <div class="help-hero">
+      <h1>Başlangıç Kılavuzu — BEST Freight ERP</h1>
+      <div class="help-search muted">Arama henüz aktif değil</div>
+    </div>
+
+    <section id="genel" class="help-card">
+      <h3>Genel Gezinti</h3>
+      <p class="section-body">Üst menü ile uygulamanın ana bölümlerine hızlıca ulaşabilirsiniz. Sol üst <strong>BEST Freight ERP</strong> markasına tıklayarak ana sayfaya dönersiniz. Sağ üstte oturum bilgileri ve çıkış bağlantısı bulunur, diğer menülere hızlı geçiş butonları da mevcut.</p>
+      <div class="help-note">İpucu: Menü öğeleri üzerine gelince kısa açıklama görünür.</div>
+    </section>
+
+    <section id="loads" class="help-card">
+      <h3>Yüklemeler (Ana Sayfa)</h3>
+      <details>
+        <summary>+ Yeni Yükleme</summary>
+        <div class="section-body">Yeni bir pozisyon oluşturur ve sizi otomatik olarak pozisyon detay sayfasına yönlendirir. Buradan ayrıntıları doldurabilirsiniz.</div>
+      </details>
+      <details>
+        <summary>Pozisyon Satırı & İşlemler</summary>
+        <div class="section-body">Pozisyon numarasına tıklayarak pozisyon detayına gidin. İşlem sütunundaki butonlarla pozisyonu silebilir, detayını görebilir veya ilgili raporları(YL, AMETA) açabilirsiniz.</div>
+      </details>
+      <details>
+        <summary>Filtreleme ve Arama</summary>
+        <div class="section-body">Sayfa üstündeki filtreler ile pozisyonları tarih, müşteri, mühür numarası, UID, tür vb. kriterlere göre daraltın.</div>
+      </details>
+    </section>
+
+    <section id="position" class="help-card">
+      <h3>Pozisyon Detay Sayfası</h3>
+      <details>
+        <summary>AMETA / YL (PDF)</summary>
+        <div class="section-body">AMETA butonu pozisyon verilerini kullanarak AMETA PDF'si üretir. "Dosya tamamlandı" işareti olan pozisyonlarda kurlar güncellenmez. YL butonu yükleme listesi PDF'si açar.</div>
+      </details>
+      <details>
+        <summary>Araç Bilgileri / Mühür</summary>
+        <div class="section-body">Çekici ve dorse bilgilerini güncelleyebilir, pozisyona mühür atayabilirsiniz. Mühürü seçtikten sonra kaydet butonuna basılırsa mühür kullanılmış olarak işaretlenir ve listeden silinir.</div>
+      </details>
+      <details>
+        <summary>Masraflar, Evraklar ve KM</summary>
+        <div class="section-body">Masraf ekleme, evrak yükleme (uploads/accounting) ve toplam KM hesaplama buradan yapılır. KM Sayfasında İngiltere'den yüklenen araçlar için Mazot hesap butonu kullanılabilir, Dover-Dover KM'sinin üstüne 1750 KM + 125 KM ekstra ekleyerek 0,3 ile çarpar sonucu.KM kaydetme sunucuya yazılır ve Muhasebe sayfasında yükleme&boşaltma sayısı ve KM tutarı görünür.</div>
+      </details>
+    </section>
+
+    <section id="accounting" class="help-card">
+      <h3>Muhasebe</h3>
+      <div class="section-body">Muhasebe sayfası pozisyonları, araç plakasını, yükleme/boşaltma sayısını, Toplam KM hesabını gösterir. (Yükleme+Boşaltma) × 25 € hesaplanır otomatik olarak.</div>
+    </section>
+
+    <section id="database" class="help-card">
+      <h3>Veritabanı</h3>
+      <details>
+        <summary>Firma Yönetimi Veritabanı</summary>
+        <div class="section-body">Gönderici, alıcı veya fatura firmalarını buradan ekleyin/düzenleyin. Silinenler özel bir etiketle işaretlenir ama gerekirse geri görünür.</div>
+      </details>
+    </section>
+
+    <section id="maildata" class="help-card">
+      <h3>Mail Data</h3>
+      <div class="section-body">Alıcı bir firmayı seçip mail adreslerini ekleyin, daha sonrasında pozisyon sayfasından bir yüke ait mail gönderirken buraya kaydedilen verileri otomatik olarak çeker.</div>
+    </section>
+
+    <section id="logs" class="help-card">
+      <h3>Kayıtlar (Logs)</h3>
+      <div class="section-body">Değişiklik geçmişini görüntüler. Üstteki <strong>Tüm Logları Temizle</strong> butonu tüm logları siler. (Artık otomatik yedek oluşturmaz — periyodik backup mekanizması devam eder.)</div>
+    </section>
+
+    <section id="uploads" class="help-card">
+      <h3>Uploads (Dosyalar)</h3>
+      <div class="section-body">Evraklar `uploads/accounting/{kategori}/` altında saklanır. Pozisyon silindiğinde documents kayıtları ve ilgili dosyalar silinebilir.</div>
+    </section>
+
+    <section id="backups" class="help-card">
+      <h3>Periyodik Yedekleme</h3>
+      <div class="section-body">Sunucu açıldığında ve her 3 saatte bir `backend/backups/` klasörüne yedek alınır. Format: <code>bestfreight.db.backup_DD-MM-YYYY_hh-mm-ss-ms</code></div>
+    </section>
+
+    <section id="security" class="help-card">
+      <h3>Güvenlik & Operasyon</h3>
+      <div class="section-body">Kullanıcı rolleri, test ortamı ve DB yedekleme/geri yükleme hakkında bilgi içerir. Üretim DB üzerinde büyük işlemler yapmadan önce test ortamında deneyin.</div>
+    </section>
+
+    <div class="help-note">Aytuğ Yayman</div>
+  </main>
+</div>
+
+<script>
+  // Smooth scrolling and active TOC link
+  (function(){
+    const tocLinks = document.querySelectorAll('.toc-list a');
+    function onScroll(){
+      let fromTop = window.scrollY + 120;
+      tocLinks.forEach(link => {
+        const id = link.getAttribute('href');
+        const section = document.querySelector(id);
+        if (!section) return;
+        if (section.offsetTop <= fromTop && section.offsetTop + section.offsetHeight > fromTop) {
+          link.classList.add('active');
+        } else {
+          link.classList.remove('active');
+        }
+      });
+    }
+    document.addEventListener('scroll', onScroll, { passive:true });
+    tocLinks.forEach(a=>a.addEventListener('click', e=>{ e.preventDefault(); document.querySelector(a.getAttribute('href')).scrollIntoView({behavior:'smooth',block:'start'}); }));
+    onScroll();
+  })();
+</script>

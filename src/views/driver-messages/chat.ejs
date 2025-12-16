@@ -1,0 +1,777 @@
+<%- include('../partials/navbar') %>
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= driver.name %> - Mesajlar</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="/css/theme.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      min-height: calc(100vh - 60px);
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .chat-container {
+      display: flex;
+      flex-direction: column;
+      height: calc(100vh - 60px);
+      max-width: 900px;
+      margin: 0 auto;
+      width: 100%;
+      background: var(--bg-card);
+    }
+    
+    /* Header */
+    .chat-header {
+      display: flex;
+      align-items: center;
+      padding: 15px 20px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      flex-shrink: 0;
+    }
+    
+    .back-btn {
+      background: rgba(255,255,255,0.2);
+      color: white;
+      border: none;
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-right: 15px;
+      transition: background 0.2s;
+      text-decoration: none;
+    }
+    
+    .back-btn:hover {
+      background: rgba(255,255,255,0.3);
+    }
+    
+    .driver-info {
+      flex: 1;
+    }
+    
+    .driver-info h2 {
+      margin: 0;
+      font-size: 18px;
+      font-weight: 600;
+    }
+    
+    .driver-info .status {
+      font-size: 13px;
+      opacity: 0.9;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 3px;
+    }
+    
+    .driver-info .status .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+    }
+    
+    .driver-info .status .dot.online {
+      background: #4caf50;
+      box-shadow: 0 0 6px #4caf50;
+    }
+    
+    .driver-info .status .dot.offline {
+      background: #888;
+    }
+    
+    .header-actions {
+      display: flex;
+      gap: 10px;
+    }
+    
+    .header-btn {
+      background: rgba(255,255,255,0.2);
+      color: white;
+      border: none;
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      cursor: pointer;
+      transition: background 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-decoration: none;
+    }
+    
+    .header-btn:hover {
+      background: rgba(255,255,255,0.3);
+    }
+    
+    /* Messages Area */
+    .messages-area {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px;
+      background: var(--bg-primary);
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .message {
+      display: flex;
+      margin-bottom: 12px;
+      max-width: 75%;
+    }
+    
+    .message.sent {
+      align-self: flex-end;
+    }
+    
+    .message.received {
+      align-self: flex-start;
+    }
+    
+    .message-content {
+      padding: 12px 16px;
+      border-radius: 18px;
+      position: relative;
+      max-width: 100%;
+    }
+    
+    .message.sent .message-content {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border-bottom-right-radius: 4px;
+    }
+    
+    .message.received .message-content {
+      background: var(--bg-secondary);
+      color: var(--text-primary);
+      border-bottom-left-radius: 4px;
+    }
+    
+    .message-text {
+      word-wrap: break-word;
+      font-size: 15px;
+      line-height: 1.4;
+    }
+    
+    .message-image {
+      max-width: 280px;
+      max-height: 200px;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: transform 0.2s;
+      display: block;
+      margin-bottom: 6px;
+    }
+    
+    .message-image:hover {
+      transform: scale(1.02);
+    }
+    
+    .message-meta {
+      font-size: 11px;
+      margin-top: 6px;
+      opacity: 0.7;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    
+    .message.sent .message-meta {
+      justify-content: flex-end;
+    }
+    
+    .date-separator {
+      text-align: center;
+      margin: 25px 0;
+      position: relative;
+    }
+    
+    .date-separator span {
+      background: var(--bg-primary);
+      padding: 0 15px;
+      color: var(--text-muted);
+      font-size: 12px;
+      position: relative;
+      z-index: 1;
+    }
+    
+    .date-separator::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 50%;
+      height: 1px;
+      background: var(--border-color);
+    }
+    
+    /* Input Area */
+    .input-area {
+      padding: 15px 20px;
+      background: var(--bg-card);
+      border-top: 1px solid var(--border-color);
+      display: flex;
+      align-items: flex-end;
+      gap: 12px;
+      flex-shrink: 0;
+    }
+    
+    .input-wrapper {
+      flex: 1;
+      background: var(--bg-primary);
+      border: 1px solid var(--border-color);
+      border-radius: 24px;
+      padding: 5px 15px;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .image-preview {
+      display: none;
+      margin: 10px 0;
+      position: relative;
+      max-width: 150px;
+    }
+    
+    .image-preview.active {
+      display: block;
+    }
+    
+    .image-preview img {
+      max-width: 150px;
+      max-height: 100px;
+      border-radius: 8px;
+    }
+    
+    .image-preview .remove-btn {
+      position: absolute;
+      top: -8px;
+      right: -8px;
+      background: #e53935;
+      color: white;
+      border: none;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .message-input {
+      border: none;
+      background: transparent;
+      padding: 10px 0;
+      font-size: 15px;
+      resize: none;
+      min-height: 24px;
+      max-height: 100px;
+      line-height: 1.4;
+      color: var(--text-primary);
+      width: 100%;
+    }
+    
+    .message-input::placeholder {
+      color: var(--text-muted);
+    }
+    
+    .message-input:focus {
+      outline: none;
+    }
+    
+    .input-actions {
+      display: flex;
+      gap: 5px;
+    }
+    
+    .attach-btn {
+      background: none;
+      border: none;
+      color: #667eea;
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s;
+      font-size: 18px;
+    }
+    
+    .attach-btn:hover {
+      background: rgba(102, 126, 234, 0.15);
+    }
+    
+    .send-btn {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.2s, opacity 0.2s;
+      font-size: 18px;
+    }
+    
+    .send-btn:hover {
+      transform: scale(1.05);
+    }
+    
+    .send-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+    
+    /* Image modal */
+    .image-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.95);
+      z-index: 9999;
+      justify-content: center;
+      align-items: center;
+    }
+    
+    .image-modal.active {
+      display: flex;
+    }
+    
+    .image-modal img {
+      max-width: 90%;
+      max-height: 90%;
+      object-fit: contain;
+    }
+    
+    .image-modal .close-btn {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: rgba(255,255,255,0.2);
+      color: white;
+      border: none;
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 22px;
+    }
+    
+    /* Empty state */
+    .empty-chat {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-muted);
+      text-align: center;
+      padding: 40px;
+    }
+    
+    .empty-chat i {
+      font-size: 70px;
+      margin-bottom: 20px;
+      opacity: 0.3;
+      color: #667eea;
+    }
+    
+    .empty-chat h3 {
+      color: var(--text-secondary);
+      margin-bottom: 8px;
+    }
+
+    /* Light theme specific overrides */
+    [data-theme="light"] .message.received .message-content {
+      background: #e8e8e8 !important;
+      color: #1a1a2e !important;
+    }
+    
+    [data-theme="light"] .input-wrapper {
+      background: #f5f5f5 !important;
+      border-color: #ddd !important;
+    }
+    
+    [data-theme="light"] .message-input {
+      color: #333 !important;
+    }
+    
+    [data-theme="light"] .message-input::placeholder {
+      color: #888 !important;
+    }
+    
+    [data-theme="light"] .date-separator span {
+      background: var(--bg-primary) !important;
+    }
+  </style>
+  <script src="/js/theme.js"></script>
+</head>
+<body>
+  <div class="chat-container">
+    <!-- Header -->
+    <div class="chat-header">
+      <a href="/driver-messages" class="back-btn">
+        <i class="fas fa-arrow-left"></i>
+      </a>
+      <div class="driver-info">
+        <h2><%= driver.name %></h2>
+        <div class="status">
+          <span class="dot <%= driver.is_tracking ? 'online' : 'offline' %>"></span>
+          <span><%= driver.is_tracking ? 'Aktif - Takipte' : 'Çevrimdışı' %></span>
+        </div>
+      </div>
+      <div class="header-actions">
+        <% if (driver.phone) { %>
+          <a href="tel:<%= driver.phone %>" class="header-btn" title="Ara">
+            <i class="fas fa-phone"></i>
+          </a>
+        <% } %>
+        <a href="/driver-locations/<%= driver.id %>/history" class="header-btn" title="Konum Geçmişi">
+          <i class="fas fa-map-marker-alt"></i>
+        </a>
+      </div>
+    </div>
+
+    <!-- Messages -->
+    <div class="messages-area" id="messagesArea">
+      <% if (messages && messages.length > 0) { %>
+        <% 
+          let lastDate = null;
+          messages.forEach(msg => {
+            const msgDate = new Date(msg.created_at).toDateString();
+            if (msgDate !== lastDate) {
+              lastDate = msgDate;
+        %>
+          <div class="date-separator">
+            <span><%= formatDate(msg.created_at) %></span>
+          </div>
+        <%
+            }
+        %>
+          <div class="message <%= msg.sender_type === 'operator' ? 'sent' : 'received' %>">
+            <div class="message-content">
+              <% if (msg.image_path) { %>
+                <img src="<%= msg.image_path %>" class="message-image" onclick="showImage('<%= msg.image_path %>')">
+              <% } %>
+              <% if (msg.message) { %>
+                <div class="message-text"><%= msg.message %></div>
+              <% } %>
+              <div class="message-meta">
+                <span><%= formatTime(msg.created_at) %></span>
+                <% if (msg.sender_type === 'operator' && msg.is_read) { %>
+                  <i class="fas fa-check-double" style="color: #4caf50;" title="Okundu"></i>
+                <% } else if (msg.sender_type === 'operator') { %>
+                  <i class="fas fa-check" title="Gönderildi"></i>
+                <% } %>
+              </div>
+            </div>
+          </div>
+        <% }); %>
+      <% } else { %>
+        <div class="empty-chat">
+          <i class="fas fa-comments"></i>
+          <h3>Henüz mesaj yok</h3>
+          <p>Bir mesaj göndererek sohbeti başlatın.</p>
+        </div>
+      <% } %>
+    </div>
+
+    <!-- Input Area -->
+    <div class="input-area">
+      <div class="input-wrapper">
+        <div class="image-preview" id="imagePreview">
+          <img id="previewImg" src="">
+          <button class="remove-btn" onclick="removeImage()">×</button>
+        </div>
+        <textarea 
+          class="message-input" 
+          id="messageInput" 
+          placeholder="Mesaj yazın..."
+          rows="1"
+          onkeydown="handleKeyDown(event)"
+          oninput="autoResize(this)"
+        ></textarea>
+      </div>
+      <div class="input-actions">
+        <input type="file" id="imageInput" accept="image/*" style="display: none" onchange="handleImageSelect(event)">
+        <button class="attach-btn" onclick="document.getElementById('imageInput').click()" title="Resim Ekle">
+          <i class="fas fa-image"></i>
+        </button>
+      </div>
+      <button class="send-btn" id="sendBtn" onclick="sendMessage()" title="Gönder">
+        <i class="fas fa-paper-plane"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- Image Modal -->
+  <div class="image-modal" id="imageModal" onclick="closeImageModal()">
+    <button class="close-btn">×</button>
+    <img id="modalImage" src="">
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const driverId = <%= driver.id %>;
+    const currentUser = '<%= currentUser?.username || "operator" %>';
+    let selectedImage = null;
+    
+    // Socket.IO connection
+    const socket = io();
+    
+    // Join driver chat room
+    socket.emit('joinDriverChat', { driverId: driverId, username: currentUser });
+    
+    // Listen for new messages from driver
+    socket.on('driver_chat_message', (message) => {
+      console.log('[Socket] New message from driver:', message);
+      if (message.sender_type === 'driver') {
+        addMessageToUI(message);
+        scrollToBottom();
+        playNotificationSound();
+      }
+    });
+    
+    // Listen for messages from other operators
+    socket.on('operator_chat_message', (message) => {
+      // Only add if from another operator (not ourselves)
+      if (message.sender_type === 'operator' && message.sender_name !== currentUser) {
+        addMessageToUI(message);
+        scrollToBottom();
+      }
+    });
+    
+    // Play notification sound using Web Audio API
+    function playNotificationSound() {
+      try {
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        const oscillator = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
+        
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+        
+        oscillator.frequency.value = 800;
+        oscillator.type = 'sine';
+        gainNode.gain.value = 0.3;
+        
+        oscillator.start();
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+        oscillator.stop(audioContext.currentTime + 0.3);
+      } catch (e) {}
+    }
+    
+    // Scroll to bottom on load
+    document.addEventListener('DOMContentLoaded', () => {
+      scrollToBottom();
+    });
+    
+    // Cleanup on page leave
+    window.addEventListener('beforeunload', () => {
+      socket.emit('leaveDriverChat', { driverId: driverId });
+    });
+    
+    function scrollToBottom() {
+      const area = document.getElementById('messagesArea');
+      area.scrollTop = area.scrollHeight;
+    }
+    
+    function autoResize(textarea) {
+      textarea.style.height = 'auto';
+      textarea.style.height = Math.min(textarea.scrollHeight, 100) + 'px';
+    }
+    
+    function handleKeyDown(event) {
+      if (event.key === 'Enter' && !event.shiftKey) {
+        event.preventDefault();
+        sendMessage();
+      }
+    }
+    
+    function handleImageSelect(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      
+      if (file.size > 10 * 1024 * 1024) {
+        alert('Dosya boyutu 10MB\'dan küçük olmalıdır.');
+        return;
+      }
+      
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        selectedImage = file;
+        document.getElementById('previewImg').src = e.target.result;
+        document.getElementById('imagePreview').classList.add('active');
+      };
+      reader.readAsDataURL(file);
+    }
+    
+    function removeImage() {
+      selectedImage = null;
+      document.getElementById('imagePreview').classList.remove('active');
+      document.getElementById('imageInput').value = '';
+    }
+    
+    async function sendMessage() {
+      const input = document.getElementById('messageInput');
+      const message = input.value.trim();
+      const sendBtn = document.getElementById('sendBtn');
+      
+      if (!message && !selectedImage) return;
+      
+      sendBtn.disabled = true;
+      
+      try {
+        const formData = new FormData();
+        formData.append('message', message);
+        if (selectedImage) {
+          formData.append('image', selectedImage);
+        }
+        
+        const response = await fetch(`/driver-messages/${driverId}/send`, {
+          method: 'POST',
+          body: formData
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          // Add message to UI
+          addMessageToUI({
+            sender_type: 'operator',
+            message: message,
+            image_path: data.data?.image_path,
+            created_at: new Date().toISOString()
+          });
+          
+          // Clear input
+          input.value = '';
+          autoResize(input);
+          removeImage();
+          
+          scrollToBottom();
+        } else {
+          alert('Mesaj gönderilemedi: ' + (data.message || 'Bilinmeyen hata'));
+        }
+      } catch (error) {
+        console.error('Send error:', error);
+        alert('Mesaj gönderilemedi. Lütfen tekrar deneyin.');
+      } finally {
+        sendBtn.disabled = false;
+      }
+    }
+    
+    function addMessageToUI(msg) {
+      const area = document.getElementById('messagesArea');
+      const emptyChat = area.querySelector('.empty-chat');
+      if (emptyChat) {
+        emptyChat.remove();
+      }
+      
+      const div = document.createElement('div');
+      div.className = 'message ' + (msg.sender_type === 'operator' ? 'sent' : 'received');
+      
+      let content = '<div class="message-content">';
+      if (msg.image_path) {
+        content += `<img src="${msg.image_path}" class="message-image" onclick="showImage('${msg.image_path}')">`;
+      }
+      if (msg.message) {
+        content += `<div class="message-text">${escapeHtml(msg.message)}</div>`;
+      }
+      content += `<div class="message-meta">
+        <span>${formatTime(new Date().toISOString())}</span>
+        ${msg.sender_type === 'operator' ? '<i class="fas fa-check" title="Gönderildi"></i>' : ''}
+      </div>`;
+      content += '</div>';
+      
+      div.innerHTML = content;
+      area.appendChild(div);
+    }
+    
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+    
+    function formatTime(dateStr) {
+      const date = new Date(dateStr);
+      return date.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
+    }
+    
+    function showImage(src) {
+      document.getElementById('modalImage').src = src;
+      document.getElementById('imageModal').classList.add('active');
+    }
+    
+    function closeImageModal() {
+      document.getElementById('imageModal').classList.remove('active');
+    }
+    
+    // Keyboard shortcuts
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        closeImageModal();
+      }
+    });
+  </script>
+
+  <%
+    function formatDate(dateStr) {
+      if (!dateStr) return '';
+      const date = new Date(dateStr);
+      const now = new Date();
+      
+      if (date.toDateString() === now.toDateString()) {
+        return 'Bugün';
+      }
+      
+      const yesterday = new Date(now);
+      yesterday.setDate(yesterday.getDate() - 1);
+      if (date.toDateString() === yesterday.toDateString()) {
+        return 'Dün';
+      }
+      
+      return date.toLocaleDateString('tr-TR', { 
+        day: 'numeric', 
+        month: 'long', 
+        year: 'numeric' 
+      });
+    }
+    
+    function formatTime(dateStr) {
+      if (!dateStr) return '';
+      const date = new Date(dateStr);
+      return date.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
+    }
+  %>
+</body>
+</html>

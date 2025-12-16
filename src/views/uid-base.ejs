@@ -1,0 +1,1020 @@
+<%- include('./partials/navbar') %>
+
+<style>
+  /* UID Base Page Styles - Light/Dark Theme Compatible */
+  .uid-base-container {
+    max-width: 1600px;
+    margin: 0 auto;
+    padding: 24px;
+  }
+
+  .uid-base-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+
+  .uid-base-title {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .uid-base-title h1 {
+    margin: 0;
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--text-primary, #f1f5f9);
+  }
+
+  .uid-base-title .icon {
+    font-size: 32px;
+  }
+
+  .uid-base-stats {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .stat-card {
+    background: var(--bg-card, #1e293b);
+    border: 1px solid var(--border-color, #334155);
+    border-radius: 12px;
+    padding: 16px 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    min-width: 120px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+
+  .stat-card .stat-value {
+    font-size: 28px;
+    font-weight: 800;
+    color: #3b82f6;
+  }
+
+  .stat-card .stat-label {
+    font-size: 12px;
+    color: var(--text-secondary, #94a3b8);
+    text-transform: uppercase;
+    font-weight: 600;
+  }
+
+  /* Search & Filter Section */
+  .uid-base-controls {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .search-box {
+    flex: 1;
+    min-width: 300px;
+    position: relative;
+  }
+
+  .search-box input {
+    width: 100%;
+    padding: 12px 16px 12px 44px;
+    border: 2px solid var(--border-color, #334155);
+    border-radius: 10px;
+    background: var(--bg-input, #0f172a);
+    color: var(--text-primary, #e2e8f0);
+    font-size: 14px;
+    transition: all 0.2s;
+  }
+
+  .search-box input:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+  }
+
+  .search-box input::placeholder {
+    color: var(--text-secondary, #64748b);
+  }
+
+  .search-box .search-icon {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 18px;
+    color: var(--text-secondary, #64748b);
+  }
+
+  .export-btn {
+    padding: 12px 20px;
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+  }
+
+  .export-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(16, 185, 129, 0.4);
+  }
+
+  /* Table Container */
+  .uid-table-container {
+    background: var(--bg-card, #1e293b);
+    border: 1px solid var(--border-color, #334155);
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+  }
+
+  .uid-table-wrapper {
+    overflow-x: auto;
+    max-height: calc(100vh - 320px);
+    overflow-y: auto;
+  }
+
+  .uid-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+
+  .uid-table thead {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+
+  .uid-table th {
+    background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+    color: var(--text-primary, #e2e8f0);
+    padding: 14px 12px;
+    text-align: left;
+    font-weight: 700;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 2px solid var(--border-color, #334155);
+    white-space: nowrap;
+    cursor: pointer;
+    user-select: none;
+    transition: all 0.2s;
+  }
+
+  .uid-table th:hover {
+    background: linear-gradient(135deg, #334155 0%, #1e293b 100%);
+  }
+
+  .uid-table th .sort-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  .uid-table th .sort-icon {
+    font-size: 10px;
+    opacity: 0.5;
+    transition: all 0.2s;
+  }
+
+  .uid-table th.sort-asc .sort-icon,
+  .uid-table th.sort-desc .sort-icon {
+    opacity: 1;
+    color: #3b82f6;
+  }
+
+  .uid-table th.sort-asc .sort-icon::after { content: '▲'; }
+  .uid-table th.sort-desc .sort-icon::after { content: '▼'; }
+
+  .uid-table th:first-child {
+    padding-left: 20px;
+  }
+
+  .uid-table td {
+    padding: 12px;
+    border-bottom: 1px solid var(--border-color, #334155);
+    color: var(--text-primary, #e2e8f0);
+    vertical-align: middle;
+  }
+
+  .uid-table td:first-child {
+    padding-left: 20px;
+  }
+
+  .uid-table tbody tr {
+    transition: all 0.15s ease;
+  }
+
+  .uid-table tbody tr:hover {
+    background: rgba(59, 130, 246, 0.08);
+  }
+
+  .uid-table tbody tr:nth-child(even) {
+    background: rgba(255, 255, 255, 0.02);
+  }
+
+  .uid-table tbody tr:nth-child(even):hover {
+    background: rgba(59, 130, 246, 0.08);
+  }
+
+  /* UID Badge */
+  .uid-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+    color: white;
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 14px;
+    font-family: 'Consolas', 'Monaco', monospace;
+    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+  }
+
+  .uid-badge .copy-btn {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: white;
+    padding: 2px 6px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 11px;
+    transition: all 0.2s;
+  }
+
+  .uid-badge .copy-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+  }
+
+  /* Position Link */
+  .position-link {
+    color: #60a5fa;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.2s;
+  }
+
+  .position-link:hover {
+    color: #3b82f6;
+    text-decoration: underline;
+  }
+
+  /* Location Pills */
+  .location-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 500;
+  }
+
+  .location-pill.loading {
+    background: rgba(59, 130, 246, 0.15);
+    color: #60a5fa;
+  }
+
+  .location-pill.unloading {
+    background: rgba(16, 185, 129, 0.15);
+    color: #34d399;
+  }
+
+  /* Truck Badge */
+  .truck-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: rgba(251, 191, 36, 0.15);
+    color: #fbbf24;
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  /* Info Cell */
+  .info-cell {
+    max-width: 180px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* Empty State */
+  .empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--text-secondary, #64748b);
+  }
+
+  .empty-state .icon {
+    font-size: 64px;
+    margin-bottom: 16px;
+    opacity: 0.5;
+  }
+
+  .empty-state h3 {
+    font-size: 20px;
+    color: var(--text-primary, #e2e8f0);
+    margin-bottom: 8px;
+  }
+
+  .empty-state p {
+    font-size: 14px;
+  }
+
+  /* Pagination */
+  .pagination-info {
+    padding: 16px 20px;
+    background: rgba(0, 0, 0, 0.1);
+    border-top: 1px solid var(--border-color, #334155);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 13px;
+    color: var(--text-secondary, #94a3b8);
+  }
+
+  .results-count {
+    font-weight: 600;
+    color: var(--text-primary, #e2e8f0);
+  }
+
+  /* Light Theme Overrides */
+  [data-theme="light"] .uid-base-title h1 {
+    color: #1e293b;
+  }
+
+  [data-theme="light"] .stat-card {
+    background: #ffffff;
+    border-color: #e2e8f0;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  }
+
+  [data-theme="light"] .stat-card .stat-label {
+    color: #64748b;
+  }
+
+  [data-theme="light"] .search-box input {
+    background: #ffffff;
+    border-color: #e2e8f0;
+    color: #1e293b;
+  }
+
+  [data-theme="light"] .search-box input::placeholder {
+    color: #94a3b8;
+  }
+
+  [data-theme="light"] .uid-table-container {
+    background: #ffffff;
+    border-color: #e2e8f0;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+  }
+
+  [data-theme="light"] .uid-table th {
+    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+    color: #1e293b;
+    border-bottom-color: #e2e8f0;
+  }
+
+  [data-theme="light"] .uid-table td {
+    color: #1e293b;
+    border-bottom-color: #e2e8f0;
+  }
+
+  [data-theme="light"] .uid-table tbody tr:hover {
+    background: rgba(59, 130, 246, 0.05);
+  }
+
+  [data-theme="light"] .uid-table tbody tr:nth-child(even) {
+    background: rgba(0, 0, 0, 0.02);
+  }
+
+  [data-theme="light"] .uid-table tbody tr:nth-child(even):hover {
+    background: rgba(59, 130, 246, 0.05);
+  }
+
+  [data-theme="light"] .position-link {
+    color: #2563eb;
+  }
+
+  [data-theme="light"] .position-link:hover {
+    color: #1d4ed8;
+  }
+
+  [data-theme="light"] .location-pill.loading {
+    background: rgba(59, 130, 246, 0.1);
+    color: #2563eb;
+  }
+
+  [data-theme="light"] .location-pill.unloading {
+    background: rgba(16, 185, 129, 0.1);
+    color: #059669;
+  }
+
+  [data-theme="light"] .truck-badge {
+    background: rgba(245, 158, 11, 0.1);
+    color: #d97706;
+  }
+
+  [data-theme="light"] .empty-state {
+    color: #64748b;
+  }
+
+  [data-theme="light"] .empty-state h3 {
+    color: #1e293b;
+  }
+
+  [data-theme="light"] .pagination-info {
+    background: rgba(0, 0, 0, 0.03);
+    border-top-color: #e2e8f0;
+    color: #64748b;
+  }
+
+  [data-theme="light"] .results-count {
+    color: #1e293b;
+  }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .uid-base-container {
+      padding: 16px;
+    }
+
+    .uid-base-header {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .uid-base-stats {
+      width: 100%;
+      justify-content: flex-start;
+    }
+
+    .stat-card {
+      flex: 1;
+      min-width: 100px;
+    }
+
+    .search-box {
+      min-width: 100%;
+    }
+  }
+
+  /* Highlight animation for search */
+  @keyframes highlightRow {
+    0% { background: rgba(59, 130, 246, 0.3); }
+    100% { background: transparent; }
+  }
+
+  .uid-table tbody tr.highlight {
+    animation: highlightRow 1s ease-out;
+  }
+</style>
+
+<div class="uid-base-container">
+  <!-- Header -->
+  <div class="uid-base-header">
+    <div class="uid-base-title">
+      <span class="icon">🔢</span>
+      <div>
+        <h1>UID Base</h1>
+        <p style="margin: 4px 0 0; font-size: 14px; color: var(--text-secondary, #94a3b8);">
+          Tüm atanmış UID numaraları ve ilişkili yükler
+        </p>
+      </div>
+    </div>
+    
+    <div class="uid-base-stats">
+      <div class="stat-card">
+        <span class="stat-value"><%= totalCount %></span>
+        <span class="stat-label">Toplam UID</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-value" style="color: #10b981;">
+          <%= uniquePositionCount %>
+        </span>
+        <span class="stat-label">Unique Pozisyon</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Controls -->
+  <div class="uid-base-controls">
+    <div class="search-box">
+      <span class="search-icon">🔍</span>
+      <input 
+        type="text" 
+        id="uidSearchInput" 
+        placeholder="UID, Pozisyon No, Gönderici, Alıcı, Plaka veya Şoför ara..."
+        autocomplete="off"
+      />
+    </div>
+    <button class="export-btn" onclick="exportToExcel()">
+      📥 Excel İndir
+    </button>
+  </div>
+
+  <!-- Table -->
+  <div class="uid-table-container">
+    <div class="uid-table-wrapper">
+      <% if (loads && loads.length > 0) { %>
+        <table class="uid-table" id="uidTable">
+          <thead>
+            <tr>
+              <th style="width: 100px;" data-sort="uid" data-type="number">
+                <div class="sort-header">UID <span class="sort-icon"></span></div>
+              </th>
+              <th style="width: 120px;" data-sort="position" data-type="text">
+                <div class="sort-header">Pozisyon No <span class="sort-icon"></span></div>
+              </th>
+              <th data-sort="customer" data-type="text">
+                <div class="sort-header">Gönderici <span class="sort-icon"></span></div>
+              </th>
+              <th data-sort="consignee" data-type="text">
+                <div class="sort-header">Alıcı <span class="sort-icon"></span></div>
+              </th>
+              <th data-sort="loading" data-type="text">
+                <div class="sort-header">Yükleme <span class="sort-icon"></span></div>
+              </th>
+              <th data-sort="unloading" data-type="text">
+                <div class="sort-header">Boşaltma <span class="sort-icon"></span></div>
+              </th>
+              <th style="width: 80px;" data-sort="packages" data-type="number">
+                <div class="sort-header">Kap <span class="sort-icon"></span></div>
+              </th>
+              <th style="width: 90px;" data-sort="weight" data-type="number">
+                <div class="sort-header">Ağırlık <span class="sort-icon"></span></div>
+              </th>
+              <th data-sort="truck" data-type="text">
+                <div class="sort-header">Araç <span class="sort-icon"></span></div>
+              </th>
+              <th data-sort="driver" data-type="text">
+                <div class="sort-header">Şoför <span class="sort-icon"></span></div>
+              </th>
+              <th style="width: 100px;" data-sort="date" data-type="date">
+                <div class="sort-header">Tarih <span class="sort-icon"></span></div>
+              </th>
+            </tr>
+          </thead>
+          <tbody id="uidTableBody">
+            <% loads.forEach(load => { %>
+              <tr data-uid="<%= load.uid %>" data-search-text="<%= [load.uid, load.position_no, load.customer_name, load.consignee_name, load.truck_plate, load.trailer_plate, load.driver_name, load.loading_city, load.unloading_city].filter(Boolean).join(' ').toLowerCase() %>">
+                <td>
+                  <span class="uid-badge">
+                    <%= load.uid %>
+                    <button class="copy-btn" onclick="copyUID('<%= load.uid %>')" title="Kopyala">📋</button>
+                  </span>
+                </td>
+                <td>
+                  <a href="/loads/position/<%= encodeURIComponent(load.position_no) %>" class="position-link">
+                    <%= load.position_no %>
+                  </a>
+                </td>
+                <td class="info-cell" title="<%= load.customer_name || '' %>">
+                  <%= load.customer_name || '-' %>
+                </td>
+                <td class="info-cell" title="<%= load.consignee_name || '' %>">
+                  <%= load.consignee_name || '-' %>
+                </td>
+                <td>
+                  <% if (load.loading_city || load.loading_country) { %>
+                    <span class="location-pill loading">
+                      <%= [load.loading_country, load.loading_city].filter(Boolean).join(', ') %>
+                    </span>
+                  <% } else { %>
+                    <span style="color: var(--text-secondary, #64748b);">-</span>
+                  <% } %>
+                </td>
+                <td>
+                  <% if (load.unloading_city || load.unloading_country) { %>
+                    <span class="location-pill unloading">
+                      <%= [load.unloading_country, load.unloading_city].filter(Boolean).join(', ') %>
+                    </span>
+                  <% } else { %>
+                    <span style="color: var(--text-secondary, #64748b);">-</span>
+                  <% } %>
+                </td>
+                <td style="text-align: center; font-weight: 600;">
+                  <%= load.packages || '-' %>
+                </td>
+                <td style="text-align: right; font-weight: 600;">
+                  <%= load.gross_weight ? load.gross_weight.toLocaleString('tr-TR') + ' kg' : '-' %>
+                </td>
+                <td>
+                  <% if (load.truck_plate || load.trailer_plate) { %>
+                    <div style="display: flex; flex-direction: column; gap: 4px;">
+                      <% if (load.truck_plate) { %>
+                        <span class="truck-badge">
+                          🚛 <%= load.truck_plate %>
+                        </span>
+                      <% } %>
+                      <% if (load.trailer_plate) { %>
+                        <span class="truck-badge" style="background: rgba(16, 185, 129, 0.15); color: #34d399;">
+                          🚐 <%= load.trailer_plate %>
+                        </span>
+                      <% } %>
+                    </div>
+                  <% } else { %>
+                    <span style="color: var(--text-secondary, #64748b);">-</span>
+                  <% } %>
+                </td>
+                <td class="info-cell" title="<%= load.driver_name || '' %>">
+                  <%= load.driver_name || '-' %>
+                </td>
+                <td style="font-size: 12px; color: var(--text-secondary, #94a3b8);">
+                  <%= load.created_at_formatted || '-' %>
+                </td>
+              </tr>
+            <% }); %>
+          </tbody>
+        </table>
+      <% } else { %>
+        <div class="empty-state">
+          <div class="icon">🔢</div>
+          <h3>Henüz UID Atanmamış</h3>
+          <p>Yük kayıtlarına UID atandığında burada listelenecektir.</p>
+        </div>
+      <% } %>
+    </div>
+    
+    <% if (loads && loads.length > 0) { %>
+      <div class="pagination-info">
+        <span>
+          Gösterilen: <span class="results-count" id="visibleCount"><%= totalCount %></span> / <%= totalCount %> kayıt
+        </span>
+        <span style="font-size: 12px;">
+          Son güncelleme: <%= new Date().toLocaleString('tr-TR') %>
+        </span>
+      </div>
+    <% } %>
+  </div>
+</div>
+
+<script>
+  // Search functionality
+  const searchInput = document.getElementById('uidSearchInput');
+  const tableBody = document.getElementById('uidTableBody');
+  const visibleCountEl = document.getElementById('visibleCount');
+  const table = document.getElementById('uidTable');
+  
+  // ============ SORTING ============
+  let currentSort = { column: null, direction: 'asc' };
+  
+  function initSorting() {
+    if (!table) return;
+    
+    const headers = table.querySelectorAll('th[data-sort]');
+    headers.forEach(header => {
+      header.addEventListener('click', () => {
+        const sortKey = header.dataset.sort;
+        const sortType = header.dataset.type || 'text';
+        
+        // Toggle direction or set new column
+        if (currentSort.column === sortKey) {
+          currentSort.direction = currentSort.direction === 'asc' ? 'desc' : 'asc';
+        } else {
+          currentSort.column = sortKey;
+          currentSort.direction = 'asc';
+        }
+        
+        // Update header classes
+        headers.forEach(h => h.classList.remove('sort-asc', 'sort-desc'));
+        header.classList.add(currentSort.direction === 'asc' ? 'sort-asc' : 'sort-desc');
+        
+        // Sort the table
+        sortTable(sortKey, sortType, currentSort.direction);
+      });
+    });
+  }
+  
+  function sortTable(sortKey, sortType, direction) {
+    const rows = Array.from(tableBody.querySelectorAll('tr'));
+    
+    const getCellValue = (row, key) => {
+      const cells = row.querySelectorAll('td');
+      switch(key) {
+        case 'uid':
+          const uidBadge = cells[0].querySelector('.uid-badge');
+          return uidBadge ? uidBadge.textContent.replace('📋', '').trim() : '';
+        case 'position':
+          const posLink = cells[1].querySelector('.position-link');
+          return posLink ? posLink.textContent.trim() : '';
+        case 'customer':
+          return cells[2].textContent.trim();
+        case 'consignee':
+          return cells[3].textContent.trim();
+        case 'loading':
+          const loadPill = cells[4].querySelector('.location-pill');
+          return loadPill ? loadPill.textContent.replace('📍', '').trim() : '';
+        case 'unloading':
+          const unloadPill = cells[5].querySelector('.location-pill');
+          return unloadPill ? unloadPill.textContent.replace('🎯', '').trim() : '';
+        case 'packages':
+          return cells[6].textContent.trim();
+        case 'weight':
+          return cells[7].textContent.trim();
+        case 'truck':
+          const truckBadge = cells[8].querySelector('.truck-badge');
+          return truckBadge ? truckBadge.textContent.replace('🚛', '').replace('🚐', '').trim() : '';
+        case 'driver':
+          return cells[9].textContent.trim();
+        case 'date':
+          return cells[10].textContent.trim();
+        default:
+          return '';
+      }
+    };
+    
+    const compare = (a, b) => {
+      let valA = getCellValue(a, sortKey);
+      let valB = getCellValue(b, sortKey);
+      
+      if (sortType === 'number') {
+        // Parse numbers (remove "kg", commas, dots for thousands)
+        valA = parseFloat(valA.replace(/[^\d.-]/g, '').replace(/\./g, '').replace(',', '.')) || 0;
+        valB = parseFloat(valB.replace(/[^\d.-]/g, '').replace(/\./g, '').replace(',', '.')) || 0;
+      } else if (sortType === 'date') {
+        // Parse Turkish date format DD.MM.YYYY
+        const parseDate = (str) => {
+          if (!str || str === '-') return new Date(0);
+          const parts = str.split('.');
+          if (parts.length === 3) {
+            return new Date(parts[2], parts[1] - 1, parts[0]);
+          }
+          return new Date(0);
+        };
+        valA = parseDate(valA);
+        valB = parseDate(valB);
+      } else {
+        // Text - case insensitive
+        valA = valA.toLowerCase();
+        valB = valB.toLowerCase();
+      }
+      
+      if (valA < valB) return direction === 'asc' ? -1 : 1;
+      if (valA > valB) return direction === 'asc' ? 1 : -1;
+      return 0;
+    };
+    
+    rows.sort(compare);
+    
+    // Re-append rows in sorted order
+    rows.forEach(row => tableBody.appendChild(row));
+  }
+  
+  // Initialize sorting
+  initSorting();
+  
+  if (searchInput && tableBody) {
+    searchInput.addEventListener('input', function() {
+      const query = this.value.toLowerCase().trim();
+      const rows = tableBody.querySelectorAll('tr');
+      let visibleCount = 0;
+      
+      rows.forEach(row => {
+        const searchText = row.getAttribute('data-search-text') || '';
+        if (!query || searchText.includes(query)) {
+          row.style.display = '';
+          visibleCount++;
+        } else {
+          row.style.display = 'none';
+        }
+      });
+      
+      if (visibleCountEl) {
+        visibleCountEl.textContent = visibleCount;
+      }
+    });
+    
+    // Clear search on ESC
+    searchInput.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        this.value = '';
+        this.dispatchEvent(new Event('input'));
+      }
+    });
+  }
+  
+  // Copy UID to clipboard
+  function copyUID(uid) {
+    navigator.clipboard.writeText(uid).then(() => {
+      // Show brief notification
+      const btn = event.target;
+      const originalText = btn.textContent;
+      btn.textContent = '✓';
+      btn.style.background = 'rgba(16, 185, 129, 0.3)';
+      setTimeout(() => {
+        btn.textContent = originalText;
+        btn.style.background = '';
+      }, 1000);
+    }).catch(err => {
+      console.error('Copy failed:', err);
+    });
+  }
+  
+  // Export to Excel (HTML table format with styling) - respects current sort order
+  function exportToExcel() {
+    // Get rows in current order (already sorted if user clicked a header)
+    const rows = Array.from(tableBody.querySelectorAll('tr')).filter(r => r.style.display !== 'none');
+    
+    // Build HTML table with styling
+    let html = `
+      <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
+      <head>
+        <meta charset="UTF-8">
+        <!--[if gte mso 9]>
+        <xml>
+          <x:ExcelWorkbook>
+            <x:ExcelWorksheets>
+              <x:ExcelWorksheet>
+                <x:Name>UID Base</x:Name>
+                <x:WorksheetOptions>
+                  <x:DisplayGridlines/>
+                </x:WorksheetOptions>
+              </x:ExcelWorksheet>
+            </x:ExcelWorksheets>
+          </x:ExcelWorkbook>
+        </xml>
+        <![endif]-->
+        <style>
+          table { border-collapse: collapse; width: 100%; }
+          th { 
+            background-color: #1e40af; 
+            color: white; 
+            font-weight: bold; 
+            padding: 12px 8px; 
+            border: 2px solid #1e3a8a;
+            text-align: center;
+            font-size: 12pt;
+          }
+          td { 
+            padding: 8px; 
+            border: 1px solid #cbd5e1;
+            font-size: 11pt;
+          }
+          tr:nth-child(even) { background-color: #f1f5f9; }
+          tr:nth-child(odd) { background-color: #ffffff; }
+          .uid { 
+            background-color: #22c55e !important; 
+            color: white; 
+            font-weight: bold; 
+            text-align: center;
+          }
+          .position { 
+            color: #2563eb; 
+            font-weight: 600; 
+          }
+          .loading { 
+            background-color: #dbeafe; 
+            color: #1d4ed8; 
+          }
+          .unloading { 
+            background-color: #d1fae5; 
+            color: #059669; 
+          }
+          .plate { 
+            background-color: #fef3c7; 
+            color: #b45309; 
+            font-weight: 600;
+          }
+          .number { 
+            text-align: right; 
+            font-weight: 600;
+          }
+          .driver {
+            background-color: #f3e8ff;
+            color: #7c3aed;
+          }
+          .date {
+            text-align: center;
+            color: #64748b;
+            font-size: 10pt;
+          }
+        </style>
+      </head>
+      <body>
+        <table>
+          <thead>
+            <tr>
+              <th>UID</th>
+              <th>Pozisyon No</th>
+              <th>Gönderici</th>
+              <th>Alıcı</th>
+              <th>Yükleme</th>
+              <th>Boşaltma</th>
+              <th>Kap</th>
+              <th>Ağırlık</th>
+              <th>Çekici Plaka</th>
+              <th>Dorse Plaka</th>
+              <th>Şoför</th>
+              <th>Tarih</th>
+            </tr>
+          </thead>
+          <tbody>
+    `;
+    
+    // Data rows (already filtered and sorted)
+    rows.forEach(row => {
+      const cells = row.querySelectorAll('td');
+      
+      // UID
+      const uidBadge = cells[0].querySelector('.uid-badge');
+      const uid = uidBadge ? uidBadge.textContent.trim().replace('📋', '').trim() : '';
+      
+      // Position No
+      const posLink = cells[1].querySelector('.position-link');
+      const positionNo = posLink ? posLink.textContent.trim() : '';
+      
+      // Customer & Consignee
+      const customer = cells[2].textContent.trim();
+      const consignee = cells[3].textContent.trim();
+      
+      // Loading & Unloading (icons already removed from DOM)
+      const loadingPill = cells[4].querySelector('.location-pill');
+      const loading = loadingPill ? loadingPill.textContent.trim() : '-';
+      
+      const unloadingPill = cells[5].querySelector('.location-pill');
+      const unloading = unloadingPill ? unloadingPill.textContent.trim() : '-';
+      
+      // Packages & Weight
+      const packages = cells[6].textContent.trim();
+      const weight = cells[7].textContent.trim();
+      
+      // Truck plates
+      const truckBadges = cells[8].querySelectorAll('.truck-badge');
+      let cekiciPlaka = '-';
+      let dorsePlaka = '-';
+      if (truckBadges.length >= 1) {
+        cekiciPlaka = truckBadges[0].textContent.replace('🚛', '').trim();
+      }
+      if (truckBadges.length >= 2) {
+        dorsePlaka = truckBadges[1].textContent.replace('🚐', '').trim();
+      }
+      
+      // Driver & Date
+      const driver = cells[9].textContent.trim();
+      const date = cells[10].textContent.trim();
+      
+      // Escape HTML
+      const esc = (str) => String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      
+      html += `
+            <tr>
+              <td class="uid">${esc(uid)}</td>
+              <td class="position">${esc(positionNo)}</td>
+              <td>${esc(customer)}</td>
+              <td>${esc(consignee)}</td>
+              <td class="loading">${esc(loading)}</td>
+              <td class="unloading">${esc(unloading)}</td>
+              <td class="number">${esc(packages)}</td>
+              <td class="number">${esc(weight)}</td>
+              <td class="plate">${esc(cekiciPlaka)}</td>
+              <td class="plate">${esc(dorsePlaka)}</td>
+              <td class="driver">${esc(driver)}</td>
+              <td class="date">${esc(date)}</td>
+            </tr>
+      `;
+    });
+    
+    html += `
+          </tbody>
+        </table>
+      </body>
+      </html>
+    `;
+    
+    // Create and download Excel file
+    const blob = new Blob([html], { type: 'application/vnd.ms-excel;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `uid_base_${new Date().toISOString().slice(0,10)}.xls`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
+  
+  // Focus search on page load
+  if (searchInput) {
+    searchInput.focus();
+  }
+</script>

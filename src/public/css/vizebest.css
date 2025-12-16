@@ -1,0 +1,476 @@
+/* VizeBest - Vize / Şoför Takip Sayfası CSS */
+
+:root{
+  --bg:#0a1628; --card:#0f1f35; --muted:#8b9cb8; --panel:#0d1a2d; --accent:#3b82f6; --accent-2:#22c55e; --glass: rgba(255,255,255,0.06);
+  --row-odd: #0d1a2d; --row-even: #111f36; --row-hover: #1a2d4a; --border-color: #1e3a5f;
+}
+
+body { background: linear-gradient(180deg,#050b14 0%, #0a1628 100%); }
+.vize-page { max-width:none; width:calc(100% - 48px); margin:28px auto; padding:20px; color:#e6eef6; }
+.vize-header{ background:linear-gradient(135deg,var(--accent) 0%,#1d4ed8 100%); padding:22px 28px; border-radius:14px; box-shadow: 0 8px 32px rgba(59,130,246,0.25); margin-bottom:20px; }
+.vize-header h2{ margin:0; font-size:22px; font-weight:700; color:white; }
+.vize-header div{ color: rgba(255,255,255,0.85); margin-top:8px; font-size:14px }
+
+.card{ background: var(--card); border-radius:14px; padding:18px; box-shadow: 0 8px 32px rgba(0,0,0,0.3); border: 1px solid var(--border-color); }
+
+.vize-controls{ display:flex; gap:12px; align-items:center; margin:16px 0; flex-wrap: wrap; }
+.muted { color:var(--muted); font-size:13px }
+
+.form-grid{ display:grid; grid-template-columns: repeat(4, 1fr); gap:12px; margin-bottom:14px; }
+@media (max-width:900px){ .form-grid{ grid-template-columns: repeat(2,1fr); } }
+@media (max-width:520px){ .form-grid{ grid-template-columns: 1fr; } }
+
+.form-input{ background:var(--panel); border:1px solid var(--border-color); color:#e6eef6; padding:10px 14px; border-radius:10px; }
+.form-input:focus{ outline: none; border-color: var(--accent); color:#fff; box-shadow: 0 0 0 3px rgba(59,130,246,0.2); }
+
+.btn{ background:var(--accent); color:white; border:0; padding:10px 16px; border-radius:10px; cursor:pointer; font-weight:600; box-shadow: 0 4px 12px rgba(59,130,246,0.25); transition: all 0.2s ease; }
+.btn:hover{ transform: translateY(-2px); box-shadow: 0 6px 20px rgba(59,130,246,0.35); }
+.btn.secondary{ background:transparent; border:1px solid var(--border-color); color:var(--muted); box-shadow:none }
+.btn.secondary:hover{ border-color: var(--accent); color: #fff; }
+.btn.small{ padding:8px 14px; border-radius:8px; font-size:13px; }
+
+/* TABLE STYLES - Improved readability */
+.vize-table{ width:100%; border-collapse:separate; border-spacing:0; margin-top:12px; border-radius:14px; overflow:hidden; table-layout:fixed; background: var(--card); border: 1px solid var(--border-color); }
+
+/* Header styling */
+.vize-table thead th{ 
+  background: linear-gradient(180deg, #1e3a5f 0%, #162d4a 100%); 
+  color:#e6eef6; 
+  font-size:12px; 
+  font-weight:600;
+  padding:14px 12px; 
+  text-align:left; 
+  border-bottom:2px solid var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.vize-table thead th:first-child { border-radius: 13px 0 0 0; }
+.vize-table thead th:last-child { border-radius: 0 13px 0 0; }
+
+/* Highlight the driver name column when detected */
+.vize-table th.vb-name-col, .vize-table td.vb-name-col { font-weight: 700; }
+.vize-table th.vb-name-col { min-width: 180px; width: 180px; }
+.vize-table td.vb-name-col { font-weight:700; color: #60a5fa; }
+
+/* Visa country styling */
+.vize-table th.vb-visa-country { color: #e6eef6; font-weight: 600; }
+.vize-table td.vb-visa-country { color: #f87171; font-weight: 700; }
+
+/* Body row styling - ALTERNATING COLORS for clear distinction */
+.vize-table tbody td{ 
+  padding:14px 12px; 
+  color:#d4e3f7; 
+  font-size:15px; 
+  border-bottom: 1px solid var(--border-color);
+  vertical-align: middle;
+}
+
+/* Alternating row colors for better readability */
+.vize-table tbody tr:nth-child(odd){ background: var(--row-odd); }
+.vize-table tbody tr:nth-child(even){ background: var(--row-even); }
+
+/* Row hover effect */
+.vize-table tbody tr{ 
+  transition: background 0.15s ease; 
+  position: relative;
+}
+.vize-table tbody tr:hover{ 
+  background: rgba(34, 197, 94, 0.25) !important; 
+}
+.vize-table tbody tr:hover td {
+  color: #ffffff;
+}
+/* Keep warning cell background AND colors on hover */
+.vize-table tbody tr:hover td.warn-ukvisa,
+.vize-table tbody tr:hover td.warn-soon {
+  background: #fde047 !important;
+  color: #1c1917 !important;
+}
+.vize-table tbody tr:hover td.warn-age {
+  background: #ef4444 !important;
+  color: #ffffff !important;
+}
+
+/* Row number column styling */
+.vize-table tbody td:first-child {
+  color: var(--muted);
+  font-weight: 600;
+  text-align: center;
+  background: rgba(0,0,0,0.15);
+}
+
+/* Editing state */
+.vize-table tbody tr.editing { 
+  background: linear-gradient(90deg, rgba(34,197,94,0.08), rgba(34,197,94,0.03)) !important;
+  box-shadow: inset 0 0 0 2px rgba(34,197,94,0.3);
+}
+
+.vize-table tbody tr:last-child td { border-bottom: none; }
+.vize-table tbody tr:last-child td:first-child { border-radius: 0 0 0 13px; }
+.vize-table tbody tr:last-child td:last-child { border-radius: 0 0 13px 0; }
+
+.editable{ background: transparent; color:#e6eef6; }
+
+.small-muted{ font-size:12px; color:var(--muted) }
+.actions{ display:flex; gap:8px; align-items:center; justify-content:flex-end }
+.vize-table thead th:last-child { width:200px; }
+td.actions{ white-space:nowrap; overflow:visible; display:flex; align-items:center; justify-content:flex-end; gap:8px }
+
+/* Make action buttons visually symmetric */
+.actions .btn{ display:inline-flex; align-items:center; justify-content:center; height:32px; padding:6px 14px; border-radius:8px; font-size:12px; line-height:1; box-sizing:border-box; }
+.actions .btn.small{ padding:6px 14px; min-width:70px }
+.actions .btn.secondary{ padding:6px 12px; min-width:60px }
+
+/* WARNING CELLS - Yellow highlight for expiring dates */
+.warn-ukvisa{
+  background: #fde047 !important;
+  color: #1c1917 !important;
+  font-weight:600 !important;
+}
+
+/* Generic soon-warning for other expiry columns (90 days) */
+.warn-soon{
+  background: #fde047 !important;
+  color: #1c1917 !important;
+  font-weight:600 !important;
+}
+
+/* Age warning for 65+ years old - RED background */
+.warn-age{
+  background: #ef4444 !important;
+  color: #ffffff !important;
+  font-weight:600 !important;
+}
+
+/* Delete confirmation modal */
+.vb-modal-backdrop{ position:fixed; inset:0; background:rgba(0,0,0,0.7); backdrop-filter: blur(4px); display:flex; align-items:center; justify-content:center; z-index:1200 }
+.vb-modal{ background: var(--card); color:#e6eef6; padding:24px; border-radius:16px; width:420px; max-width:92%; box-shadow: 0 20px 60px rgba(0,0,0,0.5); border:1px solid var(--border-color) }
+.vb-modal h3{ margin:0 0 8px 0; font-size:18px; font-weight: 600; }
+.vb-modal p{ margin:0 0 16px 0; color:var(--muted); font-size:14px; line-height: 1.5; }
+.vb-modal .vb-actions{ display:flex; gap:10px; justify-content:flex-end; margin-top:16px }
+.vb-modal .btn.danger{ background:#dc2626; box-shadow: 0 4px 12px rgba(220,38,38,0.3) }
+.vb-modal .btn.danger:hover{ background:#b91c1c; }
+.vb-modal.hidden{ display:none }
+
+/* PDF export specific styles - Full page width design */
+.pdf-export { 
+  background: #ffffff !important; 
+  color: #1f2937 !important; 
+  font-family: 'Segoe UI', Arial, Helvetica, sans-serif; 
+  padding: 5px;
+}
+.pdf-export * { 
+  box-shadow: none !important; 
+  text-shadow: none !important;
+}
+
+/* PDF Header */
+.pdf-export .pdf-header { 
+  display: flex; 
+  justify-content: space-between; 
+  align-items: center; 
+  margin-bottom: 8px; 
+  padding-bottom: 6px;
+  border-bottom: 2px solid #1e40af;
+}
+.pdf-export .pdf-header h3 { 
+  margin: 0; 
+  font-size: 18px; 
+  font-weight: 700; 
+  color: #1e3a8a;
+}
+.pdf-export .pdf-header .pdf-date {
+  font-size: 11px;
+  color: #6b7280;
+}
+
+/* PDF Table - Full width */
+.pdf-export table { 
+  border-collapse: collapse; 
+  font-size: 13px;
+  border: 1px solid #94a3b8;
+  width: 100% !important;
+  table-layout: fixed !important;
+}
+
+/* PDF Table Header */
+.pdf-export th { 
+  background: #1e40af !important; 
+  color: #ffffff !important; 
+  padding: 6px 4px !important; 
+  text-align: center; 
+  font-weight: 600;
+  font-size: 11px;
+  text-transform: uppercase;
+  border: 1px solid #1e3a8a;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* PDF Table Body */
+.pdf-export td { 
+  padding: 5px 4px !important; 
+  border: 1px solid #cbd5e1;
+  color: #1f2937 !important;
+  font-size: 13px;
+  vertical-align: middle;
+  white-space: nowrap;
+  text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Alternating row colors */
+.pdf-export tbody tr:nth-child(odd) td { background: #ffffff !important; }
+.pdf-export tbody tr:nth-child(even) td { background: #f1f5f9 !important; }
+
+/* Row number column - narrow */
+.pdf-export th:first-child,
+.pdf-export td:first-child {
+  width: 25px !important;
+  min-width: 25px !important;
+  max-width: 25px !important;
+}
+.pdf-export td:first-child {
+  background: #e0e7ff !important;
+  font-weight: 700;
+  color: #1e40af !important;
+  font-size: 11px;
+}
+
+/* Driver name column - wider */
+.pdf-export th.vb-name-col,
+.pdf-export td.vb-name-col { 
+  width: 200px !important;
+  min-width: 200px !important;
+  max-width: 200px !important;
+}
+.pdf-export th.vb-name-col { color: #ffffff !important; }
+.pdf-export td.vb-name-col { 
+  font-weight: 700 !important; 
+  color: #1e3a8a !important;
+  text-align: left !important;
+  padding-left: 5px !important;
+}
+
+/* Visa country column */
+.pdf-export th.vb-visa-country { color: #ffffff !important; }
+.pdf-export td.vb-visa-country { color: #dc2626 !important; font-weight: 600 !important; }
+
+/* Warning cells in PDF - bright yellow */
+.pdf-export .warn-ukvisa,
+.pdf-export .warn-soon {
+  background: #fde047 !important;
+  color: #1c1917 !important;
+  font-weight: 700 !important;
+}
+
+/* Age warning in PDF - red background for 65+ */
+.pdf-export .warn-age {
+  background: #ef4444 !important;
+  color: #ffffff !important;
+  font-weight: 700 !important;
+}
+
+/* Drag/drop and attachment preview styles */
+.drop-target { outline: 2px dashed var(--accent); background: rgba(59,130,246,0.1); }
+
+/* Modern popup */
+.vb-attachments-popup { 
+  position:absolute; 
+  background: var(--card); 
+  color:#e6eef6; 
+  border-radius:14px; 
+  padding:14px; 
+  box-shadow: 0 20px 60px rgba(0,0,0,0.5); 
+  z-index:1500; 
+  min-width:260px; 
+  max-width:380px; 
+  border: 1px solid var(--border-color); 
+  backdrop-filter: blur(8px);
+}
+.vb-attachments-popup .vb-popup-header{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:12px; padding-bottom: 10px; border-bottom: 1px solid var(--border-color); }
+.vb-attachments-popup .vb-popup-header h4{ margin:0; font-size:15px; font-weight:600; color:#fff }
+.vb-attachments-popup .vb-files-list{ max-height:320px; overflow:auto; display:flex; flex-direction:column; gap:10px }
+.vb-attachments-popup a{ color:#60a5fa; display:block; font-size:13px; text-decoration:none; margin:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; transition: color 0.2s; }
+.vb-attachments-popup a:hover { color: #93c5fd; }
+.vb-attachments-popup .file-row{ display:flex; align-items:center; gap:10px; justify-content:space-between; padding: 8px; background: rgba(0,0,0,0.2); border-radius: 8px; }
+.vb-attachments-popup .file-row a{ flex:1 }
+.vb-attachments-popup .file-row .file-actions{ margin-left:8px }
+.vb-attachments-badge{ position:absolute; top:6px; right:8px; display:inline-block; background:var(--accent); color:#fff; font-weight:600; padding:3px 8px; border-radius:10px; font-size:11px; box-shadow: 0 2px 8px rgba(59,130,246,0.3); }
+
+/* Popup open/close animation */
+.vb-attachments-popup { transition: transform 220ms cubic-bezier(.2,.9,.2,1), opacity 220ms ease, box-shadow 220ms ease; opacity: 0; transform-origin: center top; will-change: transform, opacity; transform: translateY(6px) scale(0.98); }
+.vb-attachments-popup.vb-popup-open { opacity: 1; transform: translateY(0) scale(1); }
+
+/* Toast notifications - Success toast */
+.vb-toast { 
+  position: fixed; 
+  right: 20px; 
+  top: 20px; 
+  background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%); 
+  color: #fff; 
+  padding: 14px 20px; 
+  border-radius: 12px; 
+  box-shadow: 0 8px 32px rgba(34,197,94,0.35); 
+  z-index:1600; 
+  opacity:0; 
+  transform: translateY(-12px) scale(0.95); 
+  transition: all 250ms cubic-bezier(.2,.9,.2,1);
+  font-weight: 500;
+}
+.vb-toast.show { opacity: 1; transform: translateY(0) scale(1); }
+
+/* Image preview overlay */
+.vb-img-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(4px); z-index: 1690; display:flex; align-items:center; justify-content:center; }
+.vb-img-preview { 
+  position: fixed; 
+  z-index: 1695; 
+  left: 50%; 
+  top: 50%; 
+  transform: translate(-50%, -50%); 
+  max-width: 85vw; 
+  max-height: 85vh; 
+  padding: 16px; 
+  border-radius: 16px; 
+  background: var(--card); 
+  box-shadow: 0 30px 80px rgba(0,0,0,0.6); 
+  border: 1px solid var(--border-color);
+}
+.vb-img-preview img { display:block; max-width:100%; max-height:100%; border-radius:10px; }
+
+/* Empty state styling */
+.vb-empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--muted);
+}
+.vb-empty-state td {
+  font-size: 15px;
+}
+
+/* LIGHT THEME STYLES */
+[data-theme="light"] .vize-page { color: #1f2937; }
+[data-theme="light"] .vize-header { background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); }
+[data-theme="light"] .card { background: #ffffff; border-color: #e5e7eb; box-shadow: 0 4px 16px rgba(0,0,0,0.08); }
+[data-theme="light"] .vize-table { background: #ffffff; border-color: #e5e7eb; }
+[data-theme="light"] .vize-table thead th { background: linear-gradient(180deg, #f1f5f9 0%, #e2e8f0 100%); color: #1e293b; border-bottom-color: #3b82f6; }
+[data-theme="light"] .vize-table tbody td { color: #374151; border-bottom-color: #e5e7eb; }
+[data-theme="light"] .vize-table tbody tr:nth-child(odd) { background: #ffffff; }
+[data-theme="light"] .vize-table tbody tr:nth-child(even) { background: #f8fafc; }
+[data-theme="light"] .vize-table tbody tr:hover { background: rgba(34, 197, 94, 0.15) !important; }
+[data-theme="light"] .vize-table tbody tr:hover td { color: #1f2937; }
+[data-theme="light"] .vize-table tbody td:first-child { background: rgba(0,0,0,0.03); color: #6b7280; }
+[data-theme="light"] .vize-table td.vb-name-col { color: #1d4ed8; }
+[data-theme="light"] .form-input { background: #f9fafb; border-color: #d1d5db; color: #1f2937; }
+[data-theme="light"] .form-input:focus { border-color: #3b82f6; color: #111827; }
+[data-theme="light"] .btn.secondary { background: transparent; border-color: #d1d5db; color: #4b5563; }
+[data-theme="light"] .btn.secondary:hover { border-color: #3b82f6; color: #1d4ed8; }
+[data-theme="light"] .muted { color: #6b7280; }
+
+/* Light theme for attachments popup */
+[data-theme="light"] .vb-attachments-popup {
+  background: #ffffff;
+  color: #1f2937;
+  border-color: #e5e7eb;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+}
+[data-theme="light"] .vb-attachments-popup .vb-popup-header {
+  border-bottom-color: #e5e7eb;
+}
+[data-theme="light"] .vb-attachments-popup .vb-popup-header h4 {
+  color: #1f2937;
+}
+[data-theme="light"] .vb-attachments-popup .file-row {
+  background: #f3f4f6;
+}
+[data-theme="light"] .vb-attachments-popup a {
+  color: #2563eb;
+}
+[data-theme="light"] .vb-attachments-popup a:hover {
+  color: #1d4ed8;
+}
+[data-theme="light"] .vb-attachments-popup .vb-files-list {
+  color: #6b7280;
+}
+
+/* Light theme for delete modal */
+[data-theme="light"] .vb-modal-backdrop {
+  background: rgba(0,0,0,0.4);
+}
+[data-theme="light"] .vb-modal {
+  background: #ffffff;
+  color: #1f2937;
+  border-color: #e5e7eb;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+}
+[data-theme="light"] .vb-modal h3 {
+  color: #111827;
+}
+[data-theme="light"] .vb-modal p {
+  color: #6b7280;
+}
+
+/* Light theme for image preview */
+[data-theme="light"] .vb-img-backdrop {
+  background: rgba(0,0,0,0.5);
+}
+[data-theme="light"] .vb-img-preview {
+  background: #ffffff;
+  border-color: #e5e7eb;
+}
+
+/* Light theme for toast */
+[data-theme="light"] .vb-toast {
+  box-shadow: 0 8px 32px rgba(34,197,94,0.25);
+}
+
+/* Silinen şoförler tab styles */
+.vize-tabs {
+  display: flex;
+  gap: 0;
+  margin-bottom: 20px;
+  border-bottom: 2px solid var(--border-color);
+}
+.vize-tab {
+  padding: 12px 24px;
+  background: transparent;
+  border: none;
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  border-bottom: 3px solid transparent;
+  margin-bottom: -2px;
+  transition: all 0.2s ease;
+}
+.vize-tab:hover {
+  color: #fff;
+  background: rgba(255,255,255,0.05);
+}
+.vize-tab.active {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+[data-theme="light"] .vize-tabs {
+  border-bottom-color: #e5e7eb;
+}
+[data-theme="light"] .vize-tab {
+  color: #6b7280;
+}
+[data-theme="light"] .vize-tab:hover {
+  color: #1f2937;
+  background: rgba(0,0,0,0.03);
+}
+[data-theme="light"] .vize-tab.active {
+  color: #2563eb;
+  border-bottom-color: #2563eb;
+}
+.deleted-date-col {
+  color: #ef4444 !important;
+  font-weight: 600;
+}
+[data-theme="light"] .deleted-date-col {
+  color: #dc2626 !important;
+}

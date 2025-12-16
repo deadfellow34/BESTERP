@@ -1,0 +1,101 @@
+<!-- Partial: Truck Driver modal & trigger -->
+<style>
+  .truck-driver-button { background: linear-gradient(90deg,#3b82f6,#2563eb); color: #fff; padding:8px 12px; border-radius:8px; font-weight:700; border:none; }
+  .td-modal { display:none; position:fixed; inset:0; z-index:1500; align-items:center; justify-content:center; }
+  .td-backdrop { position:absolute; inset:0; background:rgba(2,6,23,0.85); backdrop-filter: blur(4px); }
+  .td-dialog { position:relative; z-index:1501; width:520px; max-width:94%; background: #0f172a; border-radius:14px; padding:24px; box-shadow:0 20px 60px rgba(0,0,0,0.6), 0 0 40px rgba(59,130,246,0.1); color:#e6eef8; border: 1px solid rgba(59,130,246,0.2); }
+  .td-row { display:flex; gap:10px; margin-bottom:12px; }
+  .td-row input { flex:1; padding:12px 14px; border-radius:10px; border:1px solid rgba(59,130,246,0.3); background: #1e293b; color:#e6eef8; font-size: 14px; }
+  .td-row input:focus { outline: none; border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,0.2); }
+  .td-row input::placeholder { color: #64748b; }
+  .td-actions { display:flex; gap:10px; justify-content:flex-end; margin-top:16px; }
+  .td-success { background: linear-gradient(90deg,#10b981,#06b6a4); color:#fff; padding:10px 20px; border-radius:10px; border:none; font-weight:700; cursor: pointer; transition: all 0.2s ease; }
+  .td-success:hover { transform: translateY(-2px); box-shadow: 0 4px 15px rgba(16,185,129,0.4); }
+  .td-cancel { background: #1e293b; color:#e6eef8; border:1px solid rgba(255,255,255,0.1); padding:10px 20px; border-radius:10px; cursor: pointer; transition: all 0.2s ease; }
+  .td-cancel:hover { background: #334155; }
+</style>
+
+<!-- trigger button - hidden, button is now in database/index.ejs -->
+<div style="display:none;">
+  <button id="open-truck-driver-modal" class="truck-driver-button">+ Çekici / Şoför Ekle</button>
+</div>
+
+<div id="td-modal" class="td-modal" role="dialog" aria-hidden="true">
+  <div id="td-backdrop" class="td-backdrop"></div>
+  <div class="td-dialog" role="document">
+    <h3 style="margin:0 0 8px 0;">Çekici / Şoför Ekle</h3>
+    <p style="margin:0 0 12px 0; color:var(--muted);">Plaka girin ve isterseniz şoför ismini ekleyin. Eğer plaka veritabanında yoksa yeni kayıt oluşturulacak.</p>
+
+    <form id="td-form">
+      <div class="td-row">
+        <input id="td-plate" name="plate" placeholder="Plaka (ör. 34 ABC 123)" required />
+      </div>
+      <div class="td-row">
+        <input id="td-driver" name="driver_name" placeholder="Şoför adı (isteğe bağlı)" />
+      </div>
+      <div class="td-actions">
+        <button type="button" id="td-cancel" class="td-cancel">İptal</button>
+        <button type="submit" id="td-save" class="td-success">Kaydet</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  (function(){
+    const openBtn = document.getElementById('open-truck-driver-modal');
+    const modal = document.getElementById('td-modal');
+    const backdrop = document.getElementById('td-backdrop');
+    const cancel = document.getElementById('td-cancel');
+    const form = document.getElementById('td-form');
+
+    function show() { modal.style.display = 'flex'; modal.setAttribute('aria-hidden','false'); document.getElementById('td-plate').focus(); document.body.style.overflow='hidden'; }
+    function hide() { modal.style.display = 'none'; modal.setAttribute('aria-hidden','true'); document.body.style.overflow=''; form.reset(); }
+
+    openBtn && openBtn.addEventListener('click', function(e){ e.preventDefault(); show(); });
+    cancel && cancel.addEventListener('click', function(e){ e.preventDefault(); hide(); });
+    backdrop && backdrop.addEventListener('click', function(){ hide(); });
+
+    form && form.addEventListener('submit', async function(e){
+      e.preventDefault();
+      const plate = (document.getElementById('td-plate').value || '').toString().trim();
+      const driver = (document.getElementById('td-driver').value || '').toString().trim();
+      if (!plate) return alert('Plaka gerekli');
+
+      const payload = { plate: plate, driver_name: driver };
+
+      try {
+        const resp = await fetch('/database/add-truck-driver', {
+          method: 'POST',
+          credentials: 'same-origin',
+          headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+          body: JSON.stringify(payload)
+        });
+
+        if (resp.ok) {
+          try { const j = await resp.json(); } catch (e) {}
+          window.location.reload();
+        } else {
+          const t = await resp.text(); alert('Sunucu hatası: ' + t);
+        }
+      } catch (err) {
+        alert('Ağ hatası: ' + (err && err.message ? err.message : 'Hata'));
+      }
+    });
+    // expose helper to open modal programmatically and prefill values
+    window.openTruckDriverModal = function(plate, driver) {
+      try {
+        const modalEl = document.getElementById('td-modal');
+        const plateEl = document.getElementById('td-plate');
+        const driverEl = document.getElementById('td-driver');
+        if (!modalEl || !plateEl || !driverEl) return;
+        plateEl.value = plate || '';
+        driverEl.value = driver || '';
+        modalEl.style.display = 'flex';
+        modalEl.setAttribute('aria-hidden','false');
+        plateEl.focus();
+        document.body.style.overflow = 'hidden';
+      } catch (e) { console.error('openTruckDriverModal failed', e); }
+    };
+  })();
+</script>

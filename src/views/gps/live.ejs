@@ -1,0 +1,695 @@
+<style>
+  .gps-page { padding: 12px 20px 28px; }
+  .gps-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin: 10px 0 14px;
+  }
+  .gps-title {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 800;
+    color: var(--text-primary);
+  }
+  .gps-sub {
+    margin: 6px 0 0;
+    color: var(--text-muted);
+    font-size: 12px;
+    font-weight: 600;
+  }
+  .gps-actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .gps-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 10px;
+    border-radius: 999px;
+    border: 1px solid var(--border-default);
+    background: var(--bg-surface);
+    color: var(--text-secondary);
+    font-weight: 700;
+    font-size: 12px;
+  }
+  .gps-badge.warn {
+    border-color: var(--warning-light);
+    background: var(--warning-light);
+    color: var(--warning-text);
+  }
+
+  .gps-grid {
+    display: grid;
+    grid-template-columns: 1.1fr 0.9fr;
+    gap: 14px;
+    align-items: start;
+  }
+  @media (max-width: 980px) {
+    .gps-grid { grid-template-columns: 1fr; }
+  }
+
+  .gps-card {
+    border-radius: 14px;
+    border: 1px solid var(--border-subtle);
+    background: var(--bg-card);
+    box-shadow: var(--shadow-md);
+    overflow: hidden;
+  }
+  .gps-card-header {
+    padding: 12px 12px;
+    border-bottom: 1px solid var(--border-subtle);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    flex-wrap: wrap;
+    background: var(--bg-surface);
+  }
+  .gps-card-title {
+    margin: 0;
+    font-size: 13px;
+    font-weight: 800;
+    color: var(--text-secondary);
+    letter-spacing: 0.2px;
+  }
+  .gps-filters {
+    display: grid;
+    grid-template-columns: 1.3fr 0.8fr;
+    gap: 10px;
+    padding: 12px;
+  }
+  @media (max-width: 980px) {
+    .gps-filters { grid-template-columns: 1fr; }
+  }
+  .gps-input {
+    width: 100%;
+    padding: 10px 12px;
+    border-radius: 10px;
+    background: var(--bg-input);
+    border: 1px solid var(--border-default);
+    color: var(--text-primary);
+    outline: none;
+    font-weight: 600;
+    font-size: 13px;
+  }
+  .gps-input:focus {
+    border-color: var(--border-accent-hover);
+    box-shadow: var(--shadow-glow);
+  }
+  .gps-row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+  .gps-check {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 10px;
+    border-radius: 10px;
+    border: 1px solid var(--border-subtle);
+    background: var(--bg-surface);
+    color: var(--text-secondary);
+    font-weight: 700;
+    font-size: 12px;
+    cursor: pointer;
+    user-select: none;
+  }
+  .gps-check input { margin: 0; }
+
+  .gps-table-wrap { overflow-x: auto; border-top: 1px solid var(--border-subtle); }
+  .gps-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    min-width: 980px;
+  }
+  .gps-table thead th {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    background: var(--table-header-bg);
+    color: var(--table-header-text);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    padding: 10px 10px;
+    border-bottom: 1px solid var(--table-border);
+  }
+  .gps-table tbody td {
+    padding: 10px 10px;
+    border-bottom: 1px solid var(--border-subtle);
+    color: var(--table-cell-text);
+    font-size: 12px;
+    vertical-align: top;
+  }
+  .gps-table tbody tr:nth-child(odd) { background: var(--table-row-odd); }
+  .gps-table tbody tr:nth-child(even) { background: var(--table-row-even); }
+  .gps-table tbody tr:hover { background: var(--table-row-hover); }
+
+  .gps-plate { font-weight: 900; color: var(--text-primary); }
+  .gps-plate-clickable { 
+    cursor: pointer; 
+    transition: all 0.2s ease;
+  }
+  .gps-plate-clickable:hover { 
+    color: var(--primary); 
+    text-decoration: underline;
+    transform: scale(1.02);
+  }
+  .plate-marker {
+    background: transparent !important;
+    border: none !important;
+  }
+  .gps-muted { color: var(--text-muted); font-weight: 600; }
+
+  .gps-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 800;
+    border: 1px solid var(--border-default);
+    background: var(--bg-surface);
+    color: var(--text-secondary);
+  }
+  .gps-chip.offline {
+    border-color: var(--danger-light);
+    background: var(--danger-light);
+    color: var(--danger-text);
+  }
+  .gps-chip.online {
+    border-color: var(--success-light, #d4edda);
+    background: var(--success-light, #d4edda);
+    color: var(--success-text, #155724);
+  }
+  .gps-chip.fast {
+    border-color: var(--warning-light);
+    background: var(--warning-light);
+    color: var(--warning-text);
+  }
+
+  .gps-location {
+    max-width: 360px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .gps-map {
+    height: 560px;
+    width: 100%;
+  }
+  @media (max-width: 980px) {
+    .gps-map { height: 420px; }
+  }
+
+  /* Leaflet tweaks to match theme */
+  .leaflet-container { background: var(--bg-surface-solid); }
+  .leaflet-popup-content-wrapper, .leaflet-popup-tip {
+    background: var(--bg-card-solid);
+    color: var(--text-primary);
+    border: 1px solid var(--border-default);
+  }
+</style>
+
+<%- include('../partials/navbar') %>
+
+<div class="gps-page">
+  <div class="gps-header">
+    <div>
+      <h1 class="gps-title">GPS · Canlı Takip</h1>
+      <div class="gps-sub">
+        <span id="gpsLastUpdated">Son güncelleme: <%= lastUpdated ? lastUpdated : '—' %></span>
+        <span id="gpsApiStatus" class="gps-muted" style="margin-left:10px;"></span>
+      </div>
+    </div>
+
+    <div class="gps-actions">
+      <span class="gps-badge" id="gpsCountBadge">0 araç</span>
+      <button class="btn btn-outline" id="gpsRefreshBtn" type="button">Yenile</button>
+      <button class="btn btn-outline" id="gpsResetZoomBtn" type="button" title="Tüm araçları göster">🗺️ Tümü</button>
+      <a class="btn" href="/gps/tachograph">Takograf / Hız</a>
+    </div>
+  </div>
+
+  <div class="gps-grid">
+    <div class="gps-card">
+      <div class="gps-card-header">
+        <h2 class="gps-card-title">Araç Listesi</h2>
+        <div class="gps-muted" style="font-size:12px;">Önce cache, sonra API ile güncellenir</div>
+      </div>
+
+      <div class="gps-filters">
+        <input class="gps-input" id="gpsSearch" placeholder="Ara (plaka / şoför / konum)" />
+
+        <select class="gps-input" id="gpsCountry" style="appearance:auto;">
+          <option value="">Ülke (hepsi)</option>
+        </select>
+
+        <div class="gps-row" style="grid-column: 1 / -1;">
+          <label class="gps-check"><input type="checkbox" id="fMoving" checked /> Hareketli</label>
+          <label class="gps-check"><input type="checkbox" id="fStopped" checked /> Duran</label>
+          <label class="gps-check"><input type="checkbox" id="fOffline" checked /> Offline dahil</label>
+          <label class="gps-check"><input type="checkbox" id="fCommsOnly" /> Sadece iletişim var</label>
+        </div>
+      </div>
+
+      <div class="gps-table-wrap">
+        <table class="gps-table">
+          <thead>
+            <tr>
+              <th>Plaka</th>
+              <th>Şoför</th>
+              <th>Konum</th>
+              <th>Hız</th>
+              <th>Son Görülme</th>
+              <th>Sürüş / Çalışma / Idle</th>
+              <th>Start KM</th>
+              <th>Aksiyon</th>
+            </tr>
+          </thead>
+          <tbody id="gpsTbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="gps-card">
+      <div class="gps-card-header">
+        <h2 class="gps-card-title">Harita</h2>
+        <div class="gps-muted" style="font-size:12px;">OpenStreetMap</div>
+      </div>
+      <div id="gpsMap" class="gps-map"></div>
+    </div>
+  </div>
+</div>
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+<script>
+  window.__GPS_CACHE__ = <%- JSON.stringify(vehicles || []) %>;
+</script>
+
+<script>
+  (function(){
+    const SPEED_WARN = 90;
+
+    function secondsToHHMM(s){
+      const n = Number(s);
+      if (!Number.isFinite(n) || n < 0) return '—';
+      const h = Math.floor(n / 3600);
+      const m = Math.floor((n % 3600) / 60);
+      return String(h).padStart(2,'0') + ':' + String(m).padStart(2,'0');
+    }
+
+    function countryFromAddress(addr){
+      if (!addr) return '';
+      const m = String(addr).match(/\(([A-Z]{2})\)\s*$/);
+      return m ? m[1] : '';
+    }
+
+    function textOrDash(v){
+      if (v == null) return '—';
+      const s = String(v).trim();
+      return s ? s : '—';
+    }
+
+    function shortLocation(v){
+      const s = (v.location || v.address || '').toString().trim();
+      return s || '—';
+    }
+
+    // Format ISO date to local time string
+    function formatLocalTime(isoString) {
+      if (!isoString) return '—';
+      const d = new Date(isoString);
+      if (isNaN(d.getTime())) return isoString;
+      // Format as DD.MM.YYYY HH:MM:SS
+      const day = String(d.getDate()).padStart(2, '0');
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const year = d.getFullYear();
+      const hours = String(d.getHours()).padStart(2, '0');
+      const mins = String(d.getMinutes()).padStart(2, '0');
+      const secs = String(d.getSeconds()).padStart(2, '0');
+      return `${day}.${month}.${year} ${hours}:${mins}:${secs}`;
+    }
+
+    // Check if a vehicle is offline based on time_indicator
+    // If last update is older than 5 minutes, consider offline
+    function isVehicleOffline(v) {
+      // If time_indicator is missing, consider offline
+      if (!v.time_indicator) return true;
+      
+      // Parse the time - JavaScript Date handles UTC (Z suffix) correctly
+      const lastUpdate = new Date(v.time_indicator);
+      if (isNaN(lastUpdate.getTime())) return true;
+      
+      // Compare timestamps (both in UTC internally)
+      const now = Date.now();
+      const diffMs = now - lastUpdate.getTime();
+      const diffMinutes = diffMs / (1000 * 60);
+      
+      // Vehicle is offline if last update is older than 5 minutes
+      return diffMinutes > 5;
+    }
+
+    function applyFilters(vehicles){
+      const q = (document.getElementById('gpsSearch').value || '').toLowerCase().trim();
+      const fMoving = document.getElementById('fMoving').checked;
+      const fStopped = document.getElementById('fStopped').checked;
+      const fOffline = document.getElementById('fOffline').checked;
+      const fCommsOnly = document.getElementById('fCommsOnly').checked;
+      const country = document.getElementById('gpsCountry').value;
+
+      return (vehicles || []).filter(v => {
+        const vel = Number(v.velocity || 0);
+        const moving = vel > 0;
+        if (moving && !fMoving) return false;
+        if (!moving && !fStopped) return false;
+
+        const isOffline = isVehicleOffline(v);
+        if (!fOffline && isOffline) return false;
+        if (fCommsOnly && isOffline) return false;
+
+        if (country) {
+          const c = countryFromAddress(v.address);
+          if (c !== country) return false;
+        }
+
+        if (q) {
+          const hay = [v.plate, v.drivername, v.location, v.address].map(x => (x || '').toString().toLowerCase()).join(' | ');
+          if (!hay.includes(q)) return false;
+        }
+
+        return true;
+      });
+    }
+
+    function renderCountryOptions(vehicles){
+      const select = document.getElementById('gpsCountry');
+      const uniq = new Set();
+      (vehicles || []).forEach(v => {
+        const c = countryFromAddress(v.address);
+        if (c) uniq.add(c);
+      });
+      const arr = Array.from(uniq).sort();
+
+      // keep first option
+      const first = select.options[0];
+      select.innerHTML = '';
+      select.appendChild(first);
+
+      arr.forEach(c => {
+        const opt = document.createElement('option');
+        opt.value = c;
+        opt.textContent = c;
+        select.appendChild(opt);
+      });
+    }
+
+    // Store markers by plate for click-to-focus
+    let markersByPlate = {};
+
+    function renderTable(vehicles){
+      const tbody = document.getElementById('gpsTbody');
+      tbody.innerHTML = '';
+
+      (vehicles || []).forEach(v => {
+        const vel = Number(v.velocity || 0);
+        const isFast = vel > SPEED_WARN;
+        const isOffline = isVehicleOffline(v);
+        const plate = v.plate || v.vehiclename || v.vehicleid;
+        const lat = Number(v.latitude);
+        const lng = Number(v.longitude);
+        const hasCoords = Number.isFinite(lat) && Number.isFinite(lng);
+
+        const tr = document.createElement('tr');
+        const statusBadge = isOffline 
+          ? '<span class="gps-chip offline">OFFLINE</span>' 
+          : '<span class="gps-chip online">ONLINE</span>';
+        
+        // Make plate clickable if has coordinates
+        const plateHtml = hasCoords 
+          ? `<div class="gps-plate gps-plate-clickable" data-lat="${lat}" data-lng="${lng}" data-plate="${plate}" title="Haritada göster">${textOrDash(plate)}</div>`
+          : `<div class="gps-plate">${textOrDash(plate)}</div>`;
+        
+        tr.innerHTML = `
+          <td>${plateHtml}<div style="margin-top:6px;">${statusBadge}</div></td>
+          <td>${textOrDash(v.drivername)}</td>
+          <td title="${(v.location || v.address || '').toString().replace(/"/g,'&quot;')}"><div class="gps-location">${shortLocation(v)}</div><div class="gps-muted" style="margin-top:4px;">${textOrDash(v.address)}</div></td>
+          <td>${isFast ? '<span class="gps-chip fast">' + textOrDash(vel) + ' km/h</span>' : textOrDash(vel) + ' km/h'}</td>
+          <td>${formatLocalTime(v.time_indicator)}</td>
+          <td>${secondsToHHMM(v.drivetime)} / ${secondsToHHMM(v.worktime)} / ${secondsToHHMM(v.idletime)}</td>
+          <td>${v.start_km != null ? Number(v.start_km).toLocaleString('tr-TR') : '—'}</td>
+          <td><a class="btn btn-outline" style="padding:6px 10px; font-size:12px;" href="/gps/vehicle/${encodeURIComponent(v.vehicleid)}">Detay</a></td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      // Add click handlers for plates
+      document.querySelectorAll('.gps-plate-clickable').forEach(el => {
+        el.addEventListener('click', function() {
+          const lat = parseFloat(this.dataset.lat);
+          const lng = parseFloat(this.dataset.lng);
+          const plate = this.dataset.plate;
+          focusOnMap(lat, lng, plate);
+        });
+      });
+
+      document.getElementById('gpsCountBadge').textContent = (vehicles || []).length + ' araç';
+    }
+
+    // Track if user focused on a specific plate (don't auto-zoom on refresh)
+    let userFocusedPlate = null;
+
+    function focusOnMap(lat, lng, plate) {
+      ensureMap();
+      userFocusedPlate = plate; // Remember user focused on this plate
+      map.setView([lat, lng], 14);
+      // Open popup if marker exists
+      if (markersByPlate[plate]) {
+        markersByPlate[plate].openPopup();
+      }
+    }
+
+    function resetFocus() {
+      userInteractedWithMap = false;
+      userFocusedPlate = null;
+      rerender(); // Re-render to fit all bounds
+    }
+
+    let map;
+    let markersLayer;
+    let userInteractedWithMap = false; // Track if user zoomed/panned manually
+
+    function ensureMap(){
+      if (map) return;
+      map = L.map('gpsMap', { zoomControl: true });
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '&copy; OpenStreetMap'
+      }).addTo(map);
+      markersLayer = L.layerGroup().addTo(map);
+      map.setView([39.0, 35.0], 5);
+      
+      // Track user interactions with map
+      map.on('zoomend', function(e) {
+        if (!e.target._fitBoundsInProgress) {
+          userInteractedWithMap = true;
+        }
+      });
+      map.on('dragend', function() {
+        userInteractedWithMap = true;
+      });
+    }
+
+    function renderMap(vehicles){
+      ensureMap();
+      markersLayer.clearLayers();
+      markersByPlate = {};
+
+      const points = [];
+      (vehicles || []).forEach(v => {
+        const lat = Number(v.latitude);
+        const lng = Number(v.longitude);
+        if (!Number.isFinite(lat) || !Number.isFinite(lng)) return;
+
+        const plate = v.plate || v.vehicleid || '?';
+        const vel = v.velocity != null ? Number(v.velocity) : null;
+        const isOffline = isVehicleOffline(v);
+        
+        const popup = `<div style="font-weight:800; margin-bottom:4px;">${textOrDash(plate)}</div>` +
+          `<div style="font-size:12px; color: #666">${textOrDash(v.drivername)}</div>` +
+          `<div style="margin-top:6px; font-size:12px;">Hız: ${vel == null ? '—' : vel + ' km/h'}</div>` +
+          `<div style="margin-top:4px; font-size:12px;">${formatLocalTime(v.time_indicator)}</div>` +
+          `<div style="margin-top:4px; font-size:11px; color: #888">${textOrDash(v.address)}</div>`;
+
+        // Create custom divIcon with plate text
+        const bgColor = isOffline ? '#ef4444' : (vel > 0 ? '#22c55e' : '#3b82f6');
+        const plateIcon = L.divIcon({
+          className: 'plate-marker',
+          html: `<div style="
+            background: ${bgColor};
+            color: white;
+            padding: 3px 6px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 700;
+            white-space: nowrap;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+            border: 2px solid white;
+          ">${plate}</div>`,
+          iconSize: null,
+          iconAnchor: [40, 12]
+        });
+
+        const marker = L.marker([lat, lng], { icon: plateIcon }).bindPopup(popup);
+        marker.addTo(markersLayer);
+        markersByPlate[plate] = marker;
+        points.push([lat, lng]);
+      });
+
+      // Only auto-fit bounds on first load (user hasn't interacted with map yet)
+      if (points.length && !userInteractedWithMap && !userFocusedPlate) {
+        try {
+          map._fitBoundsInProgress = true;
+          const bounds = L.latLngBounds(points);
+          map.fitBounds(bounds.pad(0.15));
+          setTimeout(() => { map._fitBoundsInProgress = false; }, 100);
+        } catch (_) {
+          map._fitBoundsInProgress = false;
+        }
+      }
+      
+      // If user was focused on a plate, re-open its popup after refresh
+      if (userFocusedPlate && markersByPlate[userFocusedPlate]) {
+        markersByPlate[userFocusedPlate].openPopup();
+      }
+    }
+
+    function setStatus(ok, message){
+      const el = document.getElementById('gpsApiStatus');
+      if (!message) { el.textContent = ''; el.classList.remove('gps-badge','warn'); return; }
+      el.textContent = message;
+      el.style.marginLeft = '10px';
+      el.style.padding = '6px 10px';
+      el.style.borderRadius = '999px';
+      el.style.border = ok ? '1px solid var(--border-default)' : '1px solid var(--warning-light)';
+      el.style.background = ok ? 'var(--bg-surface)' : 'var(--warning-light)';
+      el.style.color = ok ? 'var(--text-secondary)' : 'var(--warning-text)';
+    }
+
+    function setLastUpdated(val){
+      document.getElementById('gpsLastUpdated').textContent = 'Son güncelleme: ' + (val || '—');
+    }
+
+    function rerender(){
+      const filtered = applyFilters(window.__GPS_CACHE__ || []);
+      renderTable(filtered);
+      renderMap(filtered);
+    }
+
+    async function readJsonIfPossible(res){
+      const ct = (res && res.headers && res.headers.get && res.headers.get('content-type')) ? res.headers.get('content-type') : '';
+      if (ct && ct.toLowerCase().includes('application/json')) {
+        return await res.json();
+      }
+      return null;
+    }
+
+    function pickApiErrorMessage(res, data, fallback){
+      if (data) {
+        if (typeof data.error === 'string' && data.error.trim()) return data.error.trim();
+        if (typeof data.message === 'string' && data.message.trim()) return data.message.trim();
+        if (data.success === false && typeof data.error === 'string' && data.error.trim()) return data.error.trim();
+      }
+      const status = res && typeof res.status === 'number' ? res.status : null;
+      if (status === 401 || status === 403) return 'Yetkiniz yok veya oturum süresi doldu';
+      if (status) return `${fallback} (HTTP ${status})`;
+      return fallback;
+    }
+
+    async function fetchLive(){
+      try {
+        setStatus(true, 'Güncelleniyor...');
+        const res = await fetch('/api/gps/live', { credentials: 'include' });
+        const data = await readJsonIfPossible(res);
+        if (!data) {
+          setStatus(false, 'API yanıtı JSON değil (giriş gerekli olabilir)');
+          return;
+        }
+        if (data && data.vehicles) {
+          window.__GPS_CACHE__ = data.vehicles;
+          setLastUpdated(data.meta && data.meta.lastUpdated);
+          if (data.ok) setStatus(true, 'API: OK');
+          else setStatus(false, pickApiErrorMessage(res, data, 'API erişilemedi (cache gösteriliyor)'));
+          renderCountryOptions(window.__GPS_CACHE__);
+          rerender();
+        }
+      } catch (e) {
+        setStatus(false, (e && e.message) ? e.message : 'API erişilemedi (cache)');
+      }
+    }
+
+    async function manualRefresh(){
+      const btn = document.getElementById('gpsRefreshBtn');
+      btn.disabled = true;
+      try {
+        setStatus(true, 'Yenileniyor...');
+        const res = await fetch('/api/gps/refresh', {
+          method: 'POST',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({})
+        });
+        const data = await readJsonIfPossible(res);
+        console.log('[GPS Refresh] Response:', data ? 'OK' : 'NO DATA', data?.vehicles?.length || 0, 'vehicles');
+        
+        if (!data) {
+          setStatus(false, 'Yenileme başarısız (JSON yanıtı yok - giriş gerekli olabilir)');
+          return;
+        }
+
+        if (data.vehicles && data.vehicles.length > 0) {
+          window.__GPS_CACHE__ = data.vehicles;
+          setLastUpdated(data.meta && data.meta.lastUpdated);
+          renderCountryOptions(window.__GPS_CACHE__);
+          rerender();
+          setStatus(true, 'Yenilendi (' + data.vehicles.length + ' araç)');
+          console.log('[GPS Refresh] Cache updated, rerender called');
+        } else {
+          setStatus(false, pickApiErrorMessage(res, data, 'Yenileme başarısız'));
+        }
+      } catch (e) {
+        console.error('[GPS Refresh] Error:', e);
+        setStatus(false, (e && e.message) ? e.message : 'Yenileme başarısız');
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
+    // initial render from server cache
+    renderCountryOptions(window.__GPS_CACHE__);
+    rerender();
+
+    // wire events
+    ['gpsSearch','gpsCountry','fMoving','fStopped','fOffline','fCommsOnly'].forEach(id => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.addEventListener('input', rerender);
+      el.addEventListener('change', rerender);
+    });
+    document.getElementById('gpsRefreshBtn').addEventListener('click', manualRefresh);
+    document.getElementById('gpsResetZoomBtn').addEventListener('click', resetFocus);
+
+    // background refresh
+    fetchLive();
+
+    // Auto-refresh every 15 seconds (15000ms)
+    console.log('[GPS] Auto-refresh interval set: 15 seconds');
+    setInterval(() => {
+      console.log('[GPS] Auto-refresh triggered at', new Date().toLocaleTimeString());
+      manualRefresh();
+    }, 15 * 1000);
+  })();
+</script>

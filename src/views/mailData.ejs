@@ -1,0 +1,656 @@
+<%- include('./partials/navbar') %>
+
+<style>
+  /* ===== GLOBAL PAGE STYLES ===== */
+  html, body {
+    background: #0a1628 !important;
+    min-height: 100vh;
+  }
+
+  /* ===== FLOATING PARTICLES ===== */
+  .floating-particles {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    overflow: hidden;
+    z-index: -1;
+  }
+
+  .floating-particle {
+    position: absolute;
+    width: 4px;
+    height: 4px;
+    background: rgba(59, 130, 246, 0.6);
+    border-radius: 50%;
+    animation: floatParticle 15s infinite linear;
+  }
+
+  @keyframes floatParticle {
+    0% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+    10% { opacity: 1; }
+    90% { opacity: 1; }
+    100% { transform: translateY(-100vh) rotate(720deg); opacity: 0; }
+  }
+
+  .mail-data-page {
+    max-width: 1100px;
+    margin: 0 auto 32px;
+    padding: 8px 24px 24px;
+    box-sizing: border-box;
+    position: relative;
+    z-index: 1;
+  }
+
+  .mail-data-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding: 20px;
+    background: rgba(15, 23, 42, 0.6);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(59, 130, 246, 0.2);
+    border-radius: 16px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), 0 0 30px rgba(59, 130, 246, 0.1);
+  }
+
+  .mail-data-header h1 {
+    margin: 0;
+    font-size: 24px;
+    font-weight: 600;
+    color: #f9fafb;
+    text-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
+  }
+
+  .back-link {
+    color: #60a5fa;
+    text-decoration: none;
+    font-size: 13px;
+    padding: 8px 16px;
+    border-radius: 10px;
+    background: rgba(59, 130, 246, 0.1);
+    border: 1px solid rgba(59, 130, 246, 0.3);
+    transition: all 0.3s ease;
+  }
+
+  .back-link:hover {
+    background: rgba(59, 130, 246, 0.2);
+    box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
+    color: #93c5fd;
+    transform: translateY(-2px);
+  }
+
+  .alert {
+    padding: 14px 18px;
+    border-radius: 12px;
+    margin-bottom: 16px;
+    font-size: 14px;
+    backdrop-filter: blur(10px);
+  }
+
+  .alert-success {
+    background: rgba(34, 197, 94, 0.15);
+    border: 1px solid rgba(34, 197, 94, 0.5);
+    color: #86efac;
+    box-shadow: 0 0 20px rgba(34, 197, 94, 0.2);
+  }
+
+  .alert-error {
+    background: rgba(239, 68, 68, 0.15);
+    border: 1px solid rgba(239, 68, 68, 0.5);
+    color: #fca5a5;
+    box-shadow: 0 0 20px rgba(239, 68, 68, 0.2);
+  }
+
+  .form-card {
+    background: rgba(15, 23, 42, 0.6);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(59, 130, 246, 0.2);
+    border-radius: 16px;
+    padding: 24px;
+    margin-bottom: 24px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), 0 0 30px rgba(59, 130, 246, 0.1);
+    transition: all 0.3s ease;
+  }
+
+  .form-card:hover {
+    border-color: rgba(59, 130, 246, 0.4);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), 0 0 40px rgba(59, 130, 246, 0.15);
+  }
+
+  .form-card h2 {
+    margin: 0 0 20px;
+    font-size: 18px;
+    font-weight: 600;
+    color: #e5e7eb;
+    text-shadow: 0 0 15px rgba(59, 130, 246, 0.2);
+  }
+
+  .form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr auto;
+    gap: 16px;
+    align-items: end;
+  }
+
+  .form-field {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .form-label {
+    font-size: 13px;
+    color: #9ca3af;
+    font-weight: 500;
+  }
+
+  .form-input {
+    background: rgba(2, 6, 23, 0.8);
+    border: 1px solid rgba(59, 130, 246, 0.3);
+    border-radius: 10px;
+    padding: 10px 14px;
+    color: #e5e7eb;
+    font-size: 14px;
+    transition: all 0.3s ease;
+  }
+
+  .form-input:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
+  }
+
+  .table-card {
+    background: rgba(15, 23, 42, 0.6);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(59, 130, 246, 0.2);
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), 0 0 30px rgba(59, 130, 246, 0.1);
+  }
+
+  .table-card h2 {
+    margin: 0 0 20px;
+    font-size: 18px;
+    font-weight: 600;
+    color: #e5e7eb;
+    text-shadow: 0 0 15px rgba(59, 130, 246, 0.2);
+  }
+
+  .mail-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
+  .mail-table thead th {
+    background: rgba(15, 23, 42, 0.9);
+    padding: 14px 16px;
+    text-align: left;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #60a5fa;
+    font-weight: 600;
+    border-bottom: 2px solid rgba(59, 130, 246, 0.3);
+  }
+
+  .mail-table tbody td {
+    padding: 14px 16px;
+    font-size: 13px;
+    color: #cbd5e1;
+    border-bottom: 1px solid rgba(59, 130, 246, 0.1);
+    transition: all 0.2s ease;
+  }
+
+  .email-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .email-item {
+    display: inline-block;
+    padding: 3px 8px;
+    background: rgba(30, 41, 59, 0.8);
+    border: 1px solid rgba(59, 130, 246, 0.2);
+    border-radius: 6px;
+    font-size: 12px;
+    color: #94a3b8;
+    word-break: break-all;
+  }
+
+  .email-more {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px 10px;
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.3), rgba(37, 99, 235, 0.2));
+    color: #60a5fa;
+    border-radius: 8px;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1px solid rgba(59, 130, 246, 0.3);
+    transition: all 0.2s ease;
+  }
+
+  .email-more:hover {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.5), rgba(37, 99, 235, 0.4));
+    transform: scale(1.05);
+  }
+
+  .mail-table tbody tr {
+    transition: all 0.2s ease;
+  }
+
+  .mail-table tbody tr:hover {
+    background: rgba(59, 130, 246, 0.1);
+  }
+
+  .mail-table tbody tr:hover td {
+    color: #f9fafb;
+  }
+
+  .status-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+  }
+
+  .status-active {
+    background: rgba(34, 197, 94, 0.2);
+    color: #86efac;
+    border: 1px solid rgba(34, 197, 94, 0.4);
+    box-shadow: 0 0 10px rgba(34, 197, 94, 0.2);
+  }
+
+  .status-inactive {
+    background: rgba(239, 68, 68, 0.2);
+    color: #fca5a5;
+    border: 1px solid rgba(239, 68, 68, 0.4);
+    box-shadow: 0 0 10px rgba(239, 68, 68, 0.2);
+  }
+
+  .action-buttons {
+    display: flex;
+    gap: 8px;
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 20px;
+    border-radius: 10px;
+    border: none;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 50%, #1d4ed8 100%);
+    color: #fff;
+    box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+  }
+
+  .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 25px rgba(59, 130, 246, 0.4);
+  }
+
+  .btn-sm {
+    padding: 8px 14px;
+    font-size: 12px;
+  }
+
+  .btn-danger {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
+  }
+
+  .btn-danger:hover {
+    box-shadow: 0 6px 25px rgba(239, 68, 68, 0.4);
+  }
+
+  .empty-state {
+    padding: 50px;
+    text-align: center;
+    color: #6b7280;
+    font-size: 14px;
+  }
+
+  @media (max-width: 768px) {
+    .form-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+
+<!-- Floating Particles -->
+<div class="floating-particles">
+  <% for(let i = 0; i < 15; i++) { %>
+    <div class="floating-particle" style="left: <%= Math.random() * 100 %>%; animation-delay: <%= Math.random() * 15 %>s; animation-duration: <%= 10 + Math.random() * 10 %>s;"></div>
+  <% } %>
+</div>
+
+<div class="mail-data-page">
+  <div class="mail-data-header">
+    <h1>📧 Mail Data – Alıcı / Mail Tanımları</h1>
+    <a href="/loads" class="back-link">← Yüklemeler</a>
+  </div>
+
+  <% if (locals.success) { %>
+    <div class="alert alert-success">
+      ✓ <%= success %>
+    </div>
+  <% } %>
+
+  <% if (locals.error) { %>
+    <div class="alert alert-error">
+      ✗ <%= error %>
+    </div>
+  <% } %>
+
+  <!-- Yeni Kayıt Formu -->
+  <div class="form-card">
+    <h2>➕ Yeni Mail Alıcısı Ekle</h2>
+    <form method="POST" action="/mail-data">
+      <div class="form-grid">
+        <div class="form-field">
+          <label class="form-label">Alıcı Adı</label>
+          <!-- Visible select for consistent styling; fallback to free-text when 'Diğer' selected -->
+          <select id="alici_select" class="form-input" style="appearance: none; -webkit-appearance: none; background-image: linear-gradient(45deg, transparent 50%, #94a3b8 50%), linear-gradient(135deg, #94a3b8 50%, transparent 50%); background-position: calc(100% - 18px) calc(1em + 2px), calc(100% - 13px) calc(1em + 2px); background-size: 6px 6px, 6px 6px; background-repeat: no-repeat;" aria-label="Alıcı seç" >
+            <option value="">-- Seçiniz veya Diğer --</option>
+            <% (customers || []).forEach(function(c) { %>
+              <option value="<%- c.replace(/"/g, '&quot;') %>"><%= c %></option>
+            <% }); %>
+            <option value="__other__">Diğer...</option>
+          </select>
+
+          <!-- Hidden input that actually posts the value expected by server -->
+          <input type="hidden" name="alici_adi" id="alici_adi_hidden" value="" />
+
+          <!-- Free-text input shown only when Diğer selected -->
+          <input type="text" id="alici_other_input" class="form-input" placeholder="Yeni alıcı adı girin..." style="display:none; margin-top:8px;" />
+        </div>
+        <div class="form-field">
+          <label class="form-label">Email Adresi</label>
+          <div style="display:flex; gap:8px; align-items:center;">
+            <input 
+              type="text" 
+              name="email" 
+              class="form-input" 
+              placeholder="ornek@mail.com"
+              required
+            />
+            <select name="type" class="form-input" style="width:110px;">
+              <option value="to">To</option>
+              <option value="cc">CC</option>
+            </select>
+            <input type="text" name="sender_company" class="form-input" placeholder="(Opsiyonel) Gönderici Firma" style="width:220px;" title="Bu alıcı sadece belirtilen gönderici için görünür" />
+          </div>
+        </div>
+        <button type="submit" class="btn" style="background: #22c55e; color: white; padding: 8px 20px;">
+          Ekle
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Mevcut Kayıtlar Tablosu -->
+  <div class="table-card">
+    <h2>📋 Mevcut Kayıtlar (<%= mailRecipients.length %>)</h2>
+    
+    <% if (mailRecipients.length === 0) { %>
+      <div class="empty-state">
+        Henüz hiç mail alıcısı eklenmemiş.
+      </div>
+    <% } else { %>
+      <table class="mail-table">
+        <thead>
+          <tr>
+            <th style="width: 150px;">Alıcı Adı</th>
+            <th>To</th>
+            <th>CC</th>
+            <th style="width: 70px; text-align: center;">Durum</th>
+            <th style="width: 100px; text-align: center;">Tarih</th>
+            <th style="width: 150px; text-align: center;">İşlemler</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% mailRecipients.forEach(function(company) { %>
+            <tr>
+              <td><strong><%= company.alici_adi %></strong></td>
+              <td>
+                <% 
+                  const toEmails = (company.to || []).map(t => t.email);
+                  const toDisplay = toEmails.slice(0, 2);
+                  const toRest = toEmails.length - 2;
+                %>
+                <div class="email-list">
+                  <% toDisplay.forEach(function(email) { %>
+                    <span class="email-item"><%= email %></span>
+                  <% }); %>
+                  <% if (toRest > 0) { %>
+                    <span class="email-more" title="<%= toEmails.slice(2).join('\n') %>">+<%= toRest %> daha</span>
+                  <% } %>
+                </div>
+              </td>
+              <td>
+                <% 
+                  const ccEmails = (company.cc || []).map(c => c.email);
+                  const ccDisplay = ccEmails.slice(0, 2);
+                  const ccRest = ccEmails.length - 2;
+                %>
+                <div class="email-list">
+                  <% ccDisplay.forEach(function(email) { %>
+                    <span class="email-item"><%= email %></span>
+                  <% }); %>
+                  <% if (ccRest > 0) { %>
+                    <span class="email-more" title="<%= ccEmails.slice(2).join('\n') %>">+<%= ccRest %> daha</span>
+                  <% } %>
+                </div>
+              </td>
+              <td>
+                <% if (company.any_active) { %>
+                  <span class="status-badge status-active">Aktif</span>
+                <% } else { %>
+                  <span class="status-badge status-inactive">Pasif</span>
+                <% } %>
+              </td>
+              <td>
+                <% if (company.latest_created_at) { %>
+                  <%= new Date(company.latest_created_at).toLocaleDateString('tr-TR') %>
+                  <%= new Date(company.latest_created_at).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' }) %>
+                <% } else { %>
+                  -
+                <% } %>
+              </td>
+              <td>
+                <div class="action-buttons">
+                  <button type="button" class="btn btn-sm" style="background: #3b82f6; color: white;" data-name="<%- company.alici_adi.replace(/"/g, '&quot;') %>" onclick="openEditModal(this.dataset.name)">
+                    Düzenle
+                  </button>
+                  <form method="POST" action="/mail-data/<%= encodeURIComponent(company.alici_adi) %>/delete-all" style="display: inline;">
+                    <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Bu alıcı ile ilişkili tüm e-postaları silmek istediğinize emin misiniz?')">
+                      Tümünü Sil
+                    </button>
+                  </form>
+                </div>
+              </td>
+            </tr>
+          <% }); %>
+        </tbody>
+      </table>
+    <% } %>
+  </div>
+</div>
+
+<script>
+  // Sync select / other input into hidden alici_adi before submit
+  (function(){
+    const select = document.getElementById('alici_select');
+    const otherInput = document.getElementById('alici_other_input');
+    const hidden = document.getElementById('alici_adi_hidden');
+    const form = select && select.closest('form');
+
+    function updateHidden() {
+      if (!select) return;
+      if (select.value === '__other__') {
+        otherInput.style.display = 'block';
+        hidden.value = otherInput.value || '';
+      } else {
+        otherInput.style.display = 'none';
+        hidden.value = select.value || '';
+      }
+    }
+
+    if (select) {
+      select.addEventListener('change', updateHidden);
+    }
+    if (otherInput) {
+      otherInput.addEventListener('input', function(){
+        hidden.value = otherInput.value;
+      });
+    }
+
+    if (form) {
+      form.addEventListener('submit', function(e){
+        // Ensure hidden has a value; if empty, prevent submit and focus
+        updateHidden();
+        if (!hidden.value || hidden.value.trim() === '') {
+          e.preventDefault();
+          if (select) select.focus();
+          alert('Lütfen alıcı adı girin veya seçin.');
+        }
+      });
+    }
+  })();
+</script>
+
+<!-- Edit Modal -->
+<div id="mailEditModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:9999; align-items:center; justify-content:center;">
+  <div style="background:#0b1220; border-radius:10px; width:520px; max-width:95%; padding:18px; box-shadow:0 8px 24px rgba(2,6,23,0.6);">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+      <strong id="modalTitle" style="color:#e5e7eb">Alıcı Düzenle</strong>
+      <button type="button" onclick="closeEditModal()" style="background:transparent; border:0; color:#94a3b8; font-size:18px;">✕</button>
+    </div>
+
+    <div style="max-height:300px; overflow:auto; margin-bottom:12px;" id="modalEmailList">
+      <!-- emails will be rendered here -->
+    </div>
+
+    <div style="display:flex; gap:8px; align-items:center;">
+      <input id="modalAddEmailInput" type="text" placeholder="yeni@mail.com" style="flex:1; padding:8px 10px; border-radius:6px; border:1px solid #1f2937; background:#020617; color:#e5e7eb;" />
+      <select id="modalAddEmailType" style="width:100px; padding:8px; border-radius:6px; border:1px solid #1f2937; background:#020617; color:#e5e7eb;">
+        <option value="to">To</option>
+        <option value="cc">CC</option>
+      </select>
+      <input id="modalAddEmailSender" type="text" placeholder="(Opsiyonel) Gönderici Firma" style="width:180px; padding:8px; border-radius:6px; border:1px solid #1f2937; background:#020617; color:#e5e7eb;" />
+      <button type="button" onclick="modalAddEmail()" style="background:#22c55e; color:white; padding:8px 12px; border-radius:6px;">Ekle</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Modal logic for editing emails for a given alici_adi
+  (function(){
+    let currentEditName = '';
+
+    window.openEditModal = async function(name) {
+      currentEditName = name || '';
+      document.getElementById('modalTitle').textContent = 'Alıcı Düzenle – ' + currentEditName;
+      document.getElementById('mailEditModal').style.display = 'flex';
+      await refreshModalEmails();
+    };
+
+    window.closeEditModal = function() {
+      document.getElementById('mailEditModal').style.display = 'none';
+      currentEditName = '';
+    };
+
+    async function refreshModalEmails() {
+      const listEl = document.getElementById('modalEmailList');
+      listEl.innerHTML = '<div style="color:#9ca3af; padding:8px">Yükleniyor…</div>';
+      try {
+        const res = await fetch('/mail-data/emails-full?name=' + encodeURIComponent(currentEditName), { credentials: 'same-origin' });
+        const data = await res.json();
+        const emails = data.emails || [];
+        if (!emails.length) {
+          listEl.innerHTML = '<div style="color:#9ca3af; padding:8px">Kayıtlı e-posta bulunamadı.</div>';
+          return;
+        }
+
+        listEl.innerHTML = emails.map(e => {
+          const typeLabel = (e.recipient_type || 'to').toString().toUpperCase();
+          const senderLabel = e.sender_company ? (' <span style="color:#9ca3af; margin-left:8px; font-size:12px;">(Gönderici: ' + escapeHtml(e.sender_company) + ')</span>') : '';
+          return `
+            <div style="display:flex; justify-content:space-between; align-items:center; padding:8px; border-bottom:1px solid rgba(148,163,184,0.06);">
+              <div style="color:#e5e7eb">${escapeHtml(e.email)} <span style="color:#9ca3af; margin-left:8px; font-size:12px;">[${typeLabel}]</span>${senderLabel}</div>
+              <div style="display:flex; gap:8px;">
+                <button onclick="modalDeleteEmail(${e.id})" style="background:#ef4444; color:white; padding:6px 10px; border-radius:6px; border:0;">Sil</button>
+              </div>
+            </div>
+          `;
+        }).join('');
+      } catch (err) {
+        listEl.innerHTML = '<div style="color:#fca5a5; padding:8px">Hata: ' + (err.message || err) + '</div>';
+      }
+    }
+
+    window.modalAddEmail = async function() {
+        const input = document.getElementById('modalAddEmailInput');
+      const typeSel = document.getElementById('modalAddEmailType');
+      const senderInput = document.getElementById('modalAddEmailSender');
+      const email = (input.value || '').trim();
+      const type = (typeSel && typeSel.value) ? typeSel.value : 'to';
+      const senderCompany = senderInput ? (senderInput.value || '').trim() : '';
+      if (!email) return alert('Lütfen e-posta girin');
+      try {
+        const res = await fetch('/mail-data/add-email', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ alici_adi: currentEditName, email, type, sender_company: senderCompany })
+        });
+        const data = await res.json();
+        if (!data.success) return alert('Ekleme başarısız: ' + (data.error || ''));
+        input.value = '';
+        if (senderInput) senderInput.value = '';
+        await refreshModalEmails();
+      } catch (err) {
+        alert('Sunucu hatası: ' + (err.message || err));
+      }
+    };
+
+    window.modalDeleteEmail = async function(id) {
+      if (!confirm('Bu e-postayı silmek istediğinize emin misiniz?')) return;
+      try {
+        const res = await fetch('/mail-data/' + id + '/delete', { method: 'POST', credentials: 'same-origin' });
+        if (res.redirected) {
+          // server redirects back; we'll just refresh
+        }
+        await refreshModalEmails();
+      } catch (err) {
+        alert('Silme hata: ' + (err.message || err));
+      }
+    };
+
+    function escapeHtml(s){
+      if(!s) return '';
+      return String(s).replace(/[&<>"']/g, function(c){
+        return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#39;"}[c];
+      });
+    }
+  })();
+</script>
+
+

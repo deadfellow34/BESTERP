@@ -1,0 +1,565 @@
+<%- include('../partials/navbar') %>
+<style>
+  .profit-page {
+    max-width: 100%;
+    margin: 0 auto;
+    padding: 24px 32px;
+    box-sizing: border-box;
+  }
+
+  .profit-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+
+  .profit-title {
+    font-size: 28px;
+    font-weight: 800;
+    color: var(--text-primary, #f9fafb);
+    margin: 0;
+  }
+
+  .profit-subtitle {
+    color: var(--text-muted, #9ca3af);
+    font-size: 14px;
+    margin-top: 4px;
+  }
+
+  /* Summary Cards */
+  .summary-cards {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .summary-card {
+    background: var(--bg-card-solid, #0f172a);
+    border: 1px solid var(--border-default, rgba(255,255,255,0.04));
+    border-radius: 12px;
+    padding: 16px 20px;
+    min-width: 160px;
+    box-shadow: var(--shadow-md, 0 4px 16px rgba(2,6,23,0.5));
+  }
+
+  .summary-card.highlight {
+    background: var(--summary-highlight-bg, #064e3b);
+    border: 1px solid var(--summary-highlight-border, rgba(16,185,129,0.15));
+  }
+
+  .summary-card.primary {
+    background: var(--summary-primary-bg, #1e3a5f);
+    border: 1px solid var(--summary-primary-border, rgba(59,130,246,0.15));
+  }
+
+  .summary-label {
+    font-size: 12px;
+    color: var(--text-muted, #9ca3af);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 6px;
+  }
+
+  .summary-value {
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--text-primary, #f9fafb);
+  }
+
+  .summary-value.positive {
+    color: var(--success, #10b981);
+  }
+
+  .summary-value.negative {
+    color: var(--danger, #ef4444);
+  }
+
+  /* Rates Info */
+  .rates-info {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    background: var(--bg-surface-alt, rgba(255,255,255,0.02));
+    border: 1px solid var(--border-subtle, transparent);
+    padding: 8px 14px;
+    border-radius: 8px;
+    font-size: 12px;
+    color: var(--text-muted, #9ca3af);
+  }
+
+  .rate-item {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+  }
+
+  .rate-item strong {
+    color: var(--accent-primary, #60a5fa);
+  }
+
+  /* Search & Filter */
+  .filter-bar {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+  }
+
+  .search-input {
+    background: var(--bg-input, #0f172a);
+    border: 1px solid var(--border-default, #1f2937);
+    border-radius: 8px;
+    padding: 10px 14px;
+    color: var(--text-primary, #e5e7eb);
+    font-size: 14px;
+    width: 300px;
+    max-width: 100%;
+  }
+
+  .search-input:focus {
+    outline: none;
+    border-color: var(--accent-primary, #3b82f6);
+    box-shadow: 0 0 0 2px var(--accent-primary-light, rgba(59,130,246,0.2));
+  }
+
+  .filter-btn {
+    background: var(--bg-surface, #1f2937);
+    border: 1px solid var(--border-default, #374151);
+    border-radius: 8px;
+    padding: 10px 16px;
+    color: var(--text-muted, #9ca3af);
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .filter-btn:hover, .filter-btn.active {
+    background: var(--bg-surface-hover, #374151);
+    color: var(--text-primary, #f9fafb);
+  }
+
+  /* Table Container */
+  .table-container {
+    background: var(--bg-card, rgba(15, 23, 42, 0.9));
+    border: 1px solid var(--border-default, #1f2937);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: var(--shadow-lg, 0 8px 24px rgba(2,6,23,0.6));
+  }
+
+  .profit-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+
+  .profit-table thead th {
+    text-align: left;
+    padding: 12px 14px;
+    font-weight: 600;
+    color: var(--text-muted, #9ca3af);
+    background: var(--bg-surface, #0b1120);
+    border-bottom: 1px solid var(--border-default, #1f2937);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    white-space: nowrap;
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.15s;
+  }
+
+  .profit-table thead th:hover {
+    background: var(--bg-surface-hover, #111827);
+    color: var(--text-primary, #f9fafb);
+  }
+
+  .profit-table thead th .sort-icon {
+    margin-left: 4px;
+    opacity: 0.5;
+  }
+
+  .profit-table tbody tr {
+    transition: background 0.15s;
+  }
+
+  .profit-table tbody tr:hover {
+    background: var(--table-row-hover, rgba(59,130,246,0.05));
+  }
+
+  .profit-table tbody td {
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--border-default, #1f2937);
+    color: var(--text-primary, #e5e7eb);
+    vertical-align: middle;
+    font-size: 14px;
+  }
+
+  .profit-table tbody tr:last-child td {
+    border-bottom: none;
+  }
+
+  /* Position link */
+  .position-link {
+    color: var(--accent-primary, #60a5fa);
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 14px;
+  }
+
+  .position-link:hover {
+    color: var(--accent-primary-hover, #93c5fd);
+    text-decoration: underline;
+  }
+
+  /* Status badges */
+  .status-badge {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  .status-active {
+    background: rgba(251,191,36,0.15);
+    color: #fbbf24;
+  }
+
+  .status-completed {
+    background: rgba(16,185,129,0.15);
+    color: #10b981;
+  }
+
+  /* Profit cell styling */
+  .profit-positive {
+    color: var(--success, #10b981);
+    font-weight: 700;
+  }
+
+  .profit-negative {
+    color: var(--danger, #ef4444);
+    font-weight: 700;
+  }
+
+  .profit-zero {
+    color: #6b7280;
+  }
+
+  /* Route styling */
+  .route-cell {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 14px;
+  }
+
+  .route-arrow {
+    color: #6b7280;
+  }
+
+  /* Number formatting */
+  .num-cell {
+    text-align: right;
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    font-size: 12px;
+  }
+
+  /* Financial cells - larger text */
+  .financial-cell {
+    font-size: 15px !important;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+
+  /* Revenue cell - green */
+  .revenue-cell {
+    color: #10b981 !important;
+  }
+
+  /* Expense cell - red */
+  .expense-cell {
+    color: #ef4444 !important;
+  }
+
+  /* Profit box styling */
+  .profit-value {
+    display: inline-block;
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-weight: 800;
+  }
+
+  .profit-positive-box {
+    background: rgba(16, 185, 129, 0.15);
+    color: #10b981;
+    border: 1px solid rgba(16, 185, 129, 0.3);
+  }
+
+  .profit-negative-box {
+    background: rgba(239, 68, 68, 0.15);
+    color: #ef4444;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+  }
+
+  /* Responsive */
+  @media (max-width: 1200px) {
+    .profit-page {
+      padding: 16px;
+    }
+    
+    .summary-cards {
+      flex-wrap: wrap;
+    }
+    
+    .summary-card {
+      min-width: 140px;
+    }
+  }
+
+  /* Empty state */
+  .empty-state {
+    text-align: center;
+    padding: 48px 24px;
+    color: #6b7280;
+  }
+
+  .empty-state-icon {
+    font-size: 48px;
+    margin-bottom: 12px;
+  }
+
+  /* Scrollable table wrapper */
+  .table-scroll {
+    overflow-x: auto;
+  }
+</style>
+
+<div class="profit-page">
+  <!-- Header -->
+  <div class="profit-header">
+    <div>
+      <h1 class="profit-title">💰 Sefer Karlılığı (PROFIT) - <%= selectedYear %></h1>
+      <p class="profit-subtitle">Tüm pozisyonların AMETA bazlı kar/zarar analizi</p>
+    </div>
+
+    <div style="display: flex; align-items: center; gap: 16px;">
+      <a href="/profit/dashboard<%= selectedYear ? '?year=' + selectedYear : '' %>" class="btn" style="background: linear-gradient(135deg, #3b82f6, #2563eb); color: white; padding: 10px 20px; border-radius: 10px; text-decoration: none; font-weight: 600; display: flex; align-items: center; gap: 8px; font-size: 14px;">
+        📊 Dashboard
+      </a>
+    </div>
+  </div>
+
+  <!-- Summary Cards Row -->
+  <div class="summary-cards" style="margin-bottom: 16px;">
+      <div class="summary-card primary">
+        <div class="summary-label">Toplam Pozisyon</div>
+        <div class="summary-value"><%= summary.totalPositions %></div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-label">Toplam Gelir (EUR)</div>
+        <div class="summary-value">€ <%= Number(summary.totalRevenueEUR).toLocaleString('tr-TR') %></div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-label">Toplam Gider (EUR)</div>
+        <div class="summary-value">€ <%= Number(summary.totalCostsEUR).toLocaleString('tr-TR') %></div>
+      </div>
+      <div class="summary-card highlight">
+        <div class="summary-label">Toplam Kar (EUR)</div>
+        <div class="summary-value <%= Number(summary.totalProfitEUR) >= 0 ? 'positive' : 'negative' %>">
+          € <%= Number(summary.totalProfitEUR).toLocaleString('tr-TR') %>
+        </div>
+      </div>
+      <div class="summary-card highlight">
+        <div class="summary-label">Ortalama Kar (EUR)</div>
+        <div class="summary-value <%= Number(summary.avgProfitEUR) >= 0 ? 'positive' : 'negative' %>">
+          € <%= Number(summary.avgProfitEUR).toLocaleString('tr-TR') %>
+        </div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-label">Ortalama Marj (%)</div>
+        <div class="summary-value"><%= summary.avgMarginPercent %>%</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Rates Info -->
+  <div class="rates-info" style="margin-bottom: 16px;">
+    <span>📈 Güncel Kurlar:</span>
+    <div class="rate-item"><strong>EUR:</strong> <%= rates.EUR %> TL</div>
+    <div class="rate-item"><strong>USD:</strong> <%= rates.USD %> TL</div>
+    <div class="rate-item"><strong>GBP:</strong> <%= rates.GBP %> TL</div>
+  </div>
+
+  <!-- Filter Bar -->
+  <div class="filter-bar">
+    <input type="text" id="searchInput" class="search-input" placeholder="🔍 Pozisyon, tür veya plaka ara...">
+    <button class="filter-btn active" data-filter="all">Tümü</button>
+    <button class="filter-btn" data-filter="positive">Karlı</button>
+    <button class="filter-btn" data-filter="negative">Zararlı</button>
+    <button class="filter-btn" data-filter="completed">Tamamlanan</button>
+  </div>
+
+  <!-- Table -->
+  <div class="table-container">
+    <div class="table-scroll">
+      <% if (profitData && profitData.length > 0) { %>
+        <table class="profit-table" id="profitTable">
+          <thead>
+            <tr>
+              <th data-sort="position_no">Pozisyon <span class="sort-icon">↕</span></th>
+              <th data-sort="type_name">Tür <span class="sort-icon">↕</span></th>
+              <th data-sort="loading_address">Yükleme Adresi <span class="sort-icon">↕</span></th>
+              <th data-sort="truck_plate">Araç <span class="sort-icon">↕</span></th>
+              <th data-sort="driver_name">Şoför <span class="sort-icon">↕</span></th>
+              <th data-sort="loading_date">Yükleme Tarihi <span class="sort-icon">↕</span></th>
+              <th data-sort="status">Durum <span class="sort-icon">↕</span></th>
+              <th data-sort="revenueEUR" class="num-cell" style="min-width:100px; text-align:center;">Gelir <span class="sort-icon">↕</span></th>
+              <th data-sort="costsEUR" class="num-cell" style="min-width:100px; text-align:center;">Gider <span class="sort-icon">↕</span></th>
+              <th data-sort="profitEUR" class="num-cell" style="min-width:110px; text-align:center;">Kar <span class="sort-icon">↕</span></th>
+            </tr>
+          </thead>
+          <tbody>
+            <% profitData.forEach(function(item) { %>
+              <tr data-profit="<%= item.profitEUR %>" data-status="<%= item.status %>">
+                <td>
+                  <a href="/loads/position/<%= item.position_no %>" class="position-link"><%= item.position_no %></a>
+                </td>
+                <td title="<%= item.type_name %>">
+                  <span style="color:#3b82f6; font-weight:700;"><%= (item.type_name || '-').substring(0, 30) %><%= (item.type_name || '').length > 30 ? '...' : '' %></span>
+                </td>
+                <td title="<%= item.loading_location %>">
+                  <div class="route-cell">
+                    <span><%= item.loading_location || '-' %></span>
+                  </div>
+                </td>
+                <td title="Çekici: <%= item.truck_plate %> | Dorse: <%= item.trailer_plate %>">
+                  <div style="font-size:14px; line-height:1.4;">
+                    <div><strong>Ç:</strong> <%= item.truck_plate %></div>
+                    <div><strong>D:</strong> <%= item.trailer_plate %></div>
+                  </div>
+                </td>
+                <td><%= item.driver_name %></td>
+                <td>
+                  <% 
+                    let formattedDate = '-';
+                    if (item.loading_date) {
+                      const d = new Date(item.loading_date);
+                      if (!isNaN(d.getTime())) {
+                        const day = String(d.getDate()).padStart(2, '0');
+                        const month = String(d.getMonth() + 1).padStart(2, '0');
+                        const year = d.getFullYear();
+                        formattedDate = day + '.' + month + '.' + year;
+                      } else {
+                        formattedDate = item.loading_date;
+                      }
+                    }
+                  %>
+                  <%= formattedDate %>
+                </td>
+                <td>
+                  <span class="status-badge status-<%= item.status === 'completed' ? 'completed' : 'active' %>">
+                    <%= item.status === 'completed' ? 'Tamamlandı' : 'Dosya henüz tamamlanmadı' %>
+                  </span>
+                </td>
+                <td class="num-cell financial-cell revenue-cell" style="text-align:center;">€ <%= Number(item.revenueEUR).toLocaleString('tr-TR', {minimumFractionDigits: 2, maximumFractionDigits: 2}) %></td>
+                <td class="num-cell financial-cell expense-cell" style="text-align:center;">€ <%= Number(item.costsEUR).toLocaleString('tr-TR', {minimumFractionDigits: 2, maximumFractionDigits: 2}) %></td>
+                <td class="num-cell financial-cell profit-box" style="text-align:center;">
+                  <span class="profit-value <%= item.profitEUR >= 0 ? 'profit-positive-box' : 'profit-negative-box' %>">
+                    € <%= Number(item.profitEUR).toLocaleString('tr-TR', {minimumFractionDigits: 2, maximumFractionDigits: 2}) %>
+                  </span>
+                </td>
+              </tr>
+            <% }); %>
+          </tbody>
+        </table>
+      <% } else { %>
+        <div class="empty-state">
+          <div class="empty-state-icon">📭</div>
+          <p>Henüz pozisyon verisi bulunmuyor.</p>
+        </div>
+      <% } %>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Search functionality
+  const searchInput = document.getElementById('searchInput');
+  const table = document.getElementById('profitTable');
+  const rows = table ? table.querySelectorAll('tbody tr') : [];
+
+  if (searchInput) {
+    searchInput.addEventListener('input', function() {
+      const searchTerm = this.value.toLowerCase();
+      rows.forEach(row => {
+        const text = row.textContent.toLowerCase();
+        row.style.display = text.includes(searchTerm) ? '' : 'none';
+      });
+    });
+  }
+
+  // Filter buttons
+  const filterBtns = document.querySelectorAll('.filter-btn');
+  filterBtns.forEach(btn => {
+    btn.addEventListener('click', function() {
+      filterBtns.forEach(b => b.classList.remove('active'));
+      this.classList.add('active');
+      
+      const filter = this.dataset.filter;
+      rows.forEach(row => {
+        const profit = parseFloat(row.dataset.profit) || 0;
+        const status = row.dataset.status;
+        
+        let show = true;
+        if (filter === 'positive') show = profit > 0;
+        else if (filter === 'negative') show = profit < 0;
+        else if (filter === 'completed') show = status === 'completed';
+        
+        row.style.display = show ? '' : 'none';
+      });
+    });
+  });
+
+  // Column sorting
+  const headers = table ? table.querySelectorAll('thead th[data-sort]') : [];
+  let sortDirection = {};
+
+  headers.forEach(header => {
+    header.addEventListener('click', function() {
+      const sortKey = this.dataset.sort;
+      const tbody = table.querySelector('tbody');
+      const rowsArray = Array.from(tbody.querySelectorAll('tr'));
+      
+      sortDirection[sortKey] = !sortDirection[sortKey];
+      const dir = sortDirection[sortKey] ? 1 : -1;
+
+      rowsArray.sort((a, b) => {
+        let aVal, bVal;
+        
+        if (['revenueEUR', 'costsEUR', 'profitEUR', 'marginPercent', 'total_km'].includes(sortKey)) {
+          const aCell = a.querySelector(`td:nth-child(${Array.from(headers).indexOf(this) + 1})`);
+          const bCell = b.querySelector(`td:nth-child(${Array.from(headers).indexOf(this) + 1})`);
+          aVal = parseFloat(aCell.textContent.replace(/[^0-9.-]/g, '').replace(',', '.')) || 0;
+          bVal = parseFloat(bCell.textContent.replace(/[^0-9.-]/g, '').replace(',', '.')) || 0;
+        } else {
+          const aCell = a.querySelector(`td:nth-child(${Array.from(headers).indexOf(this) + 1})`);
+          const bCell = b.querySelector(`td:nth-child(${Array.from(headers).indexOf(this) + 1})`);
+          aVal = aCell.textContent.trim().toLowerCase();
+          bVal = bCell.textContent.trim().toLowerCase();
+        }
+        
+        if (aVal < bVal) return -1 * dir;
+        if (aVal > bVal) return 1 * dir;
+        return 0;
+      });
+
+      rowsArray.forEach(row => tbody.appendChild(row));
+    });
+  });
+</script>

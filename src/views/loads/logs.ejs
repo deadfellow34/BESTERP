@@ -1,0 +1,208 @@
+<style>
+  .page-container {
+    max-width: 1100px;
+    margin: 0 auto 32px;
+    padding: 24px 24px 32px;
+    box-sizing: border-box;
+  }
+
+  .page-header {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+
+  .page-title {
+    font-size: 22px;
+    font-weight: 600;
+    color: #f9fafb;
+    margin: 0;
+  }
+
+  .page-subtitle {
+    font-size: 13px;
+    color: #9ca3af;
+  }
+
+  .page-header-actions {
+    margin-top: 8px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .btn-secondary,
+  .btn-primary,
+  .btn-outline {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px 12px;
+    border-radius: 999px;
+    font-size: 13px;
+    border: 1px solid transparent;
+    text-decoration: none;
+    cursor: pointer;
+  }
+
+  .btn-secondary {
+    background: rgba(31, 41, 55, 0.9);
+    color: #e5e7eb;
+    border-color: rgba(55, 65, 81, 0.9);
+  }
+
+  .btn-secondary:hover {
+    background: rgba(55, 65, 81, 1);
+  }
+
+  .btn-primary {
+    background: linear-gradient(135deg, #3b82f6, #06b6d4);
+    color: white;
+    border: none;
+  }
+
+  .btn-primary:hover {
+    filter: brightness(1.05);
+  }
+
+  .btn-outline {
+    background: transparent;
+    color: #e5e7eb;
+    border-color: rgba(75, 85, 99, 0.9);
+  }
+
+  .btn-outline:hover {
+    background: rgba(31, 41, 55, 0.9);
+  }
+
+  .card {
+    background: rgba(15, 23, 42, 0.9);
+    border-radius: 10px;
+    padding: 14px 16px;
+    border: 1px solid rgba(148, 163, 184, 0.3);
+    box-shadow: 0 18px 40px rgba(15, 23, 42, 0.8);
+  }
+
+  .card h2 {
+    margin: 0 0 10px;
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    color: #9ca3af;
+  }
+
+  .log-table-wrapper {
+    margin-top: 6px;
+    overflow-x: auto;
+  }
+
+  .log-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+    min-width: 700px;
+  }
+
+  .log-table th,
+  .log-table td {
+    padding: 6px 8px;
+    border-bottom: 1px solid #1f2937;
+  }
+
+  .log-table th {
+    text-align: left;
+    font-weight: 600;
+    color: #9ca3af;
+  }
+
+  .log-table td {
+    color: #e5e7eb;
+  }
+
+  .log-field {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+      'Liberation Mono', 'Courier New', monospace;
+    font-size: 11px;
+  }
+
+  .log-old {
+    color: #f97373;
+  }
+
+  .log-new {
+    color: #4ade80;
+  }
+
+  .log-empty {
+    font-size: 13px;
+    color: #9ca3af;
+    padding: 4px 0;
+  }
+</style>
+
+<div class="page-container">
+  <div class="page-header">
+    <h1 class="page-title">
+      Pozisyon: <%= load.position_no %> – Değişiklik Log'u
+    </h1>
+    <div class="page-subtitle">
+      Gönderici:
+      <strong><%= load.customer_name || 'Belirtilmemiş' %></strong>
+      <% if (load.loading_city || load.unloading_city) { %>
+        · <%= load.loading_city || '' %> → <%= load.unloading_city || '' %>
+      <% } %>
+    </div>
+
+    <div class="page-header-actions">
+      <a href="/loads/<%= load.id %>" class="btn-outline">
+        ← Detay sayfasına dön
+      </a>
+      <a href="/loads" class="btn-secondary">
+        Listeye dön
+      </a>
+      <a href="/loads/<%= load.id %>/edit" class="btn-primary">
+        Kaydı düzenle
+      </a>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Değişiklik Geçmişi</h2>
+
+    <% if (logs && logs.length) { %>
+      <div class="log-table-wrapper">
+        <table class="log-table">
+          <thead>
+            <tr>
+              <th>Tarih / Saat</th>
+              <th>Kullanıcı</th>
+              <th>Alan</th>
+              <th>Eski Değer</th>
+              <th>Yeni Değer</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% logs.forEach(function (log) { %>
+              <tr>
+                <td><%= log.created_at %></td>
+                <td>
+                  <%= log.username || 'Bilinmiyor' %>
+                  <% if (log.role) { %> (<%= log.role %>) <% } %>
+                </td>
+                <td class="log-field"><%= log.field %></td>
+                <td class="log-old"><%= log.old_value || '-' %></td>
+                <td class="log-new"><%= log.new_value || '-' %></td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+    <% } else { %>
+      <p class="log-empty">
+        Bu pozisyona ait herhangi bir değişiklik kaydı bulunmuyor.
+      </p>
+    <% } %>
+  </div>
+</div>

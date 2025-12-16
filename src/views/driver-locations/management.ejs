@@ -1,0 +1,575 @@
+<%- include('../partials/navbar') %>
+
+<style>
+  /* ========== DRIVER MANAGEMENT PAGE STYLES ========== */
+  .management-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 24px;
+  }
+
+  .page-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+
+  .page-header h1 {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--text-primary, #e2e8f0);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 0;
+  }
+
+  .header-actions {
+    display: flex;
+    gap: 12px;
+  }
+
+  .btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.2s;
+  }
+
+  .btn-primary {
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+    color: white;
+  }
+
+  .btn-primary:hover {
+    background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  }
+
+  .btn-secondary {
+    background: rgba(148, 163, 184, 0.2);
+    color: var(--text-primary, #e2e8f0);
+  }
+
+  .btn-secondary:hover {
+    background: rgba(148, 163, 184, 0.3);
+  }
+
+  /* Info Card */
+  .info-card {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(139, 92, 246, 0.1));
+    border: 1px solid rgba(59, 130, 246, 0.3);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 24px;
+  }
+
+  .info-card h3 {
+    font-size: 16px;
+    font-weight: 600;
+    color: #3b82f6;
+    margin: 0 0 12px 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .info-card p {
+    font-size: 14px;
+    color: var(--text-muted, #94a3b8);
+    margin: 0 0 8px 0;
+    line-height: 1.6;
+  }
+
+  .info-card ul {
+    margin: 12px 0 0 0;
+    padding-left: 20px;
+  }
+
+  .info-card li {
+    font-size: 13px;
+    color: var(--text-muted, #94a3b8);
+    margin-bottom: 6px;
+  }
+
+  .info-card code {
+    background: rgba(0, 0, 0, 0.3);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: 'Monaco', 'Menlo', monospace;
+    font-size: 12px;
+    color: #10b981;
+  }
+
+  /* Drivers Section */
+  .drivers-section {
+    background: var(--bg-card, rgba(30, 41, 59, 0.8));
+    border: 1px solid var(--border-color, rgba(148, 163, 184, 0.1));
+    border-radius: 12px;
+    padding: 24px;
+  }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+  }
+
+  .section-header h2 {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text-primary, #e2e8f0);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .table-container {
+    overflow-x: auto;
+  }
+
+  .drivers-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+  }
+
+  .drivers-table th,
+  .drivers-table td {
+    padding: 14px 16px;
+    text-align: left;
+    border-bottom: 1px solid var(--border-color, rgba(148, 163, 184, 0.1));
+  }
+
+  .drivers-table th {
+    font-weight: 600;
+    color: var(--text-muted, #94a3b8);
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    background: rgba(0, 0, 0, 0.1);
+  }
+
+  .drivers-table tbody tr:hover {
+    background: rgba(59, 130, 246, 0.05);
+  }
+
+  .driver-name {
+    font-weight: 600;
+    color: var(--text-primary, #e2e8f0);
+  }
+
+  .driver-id {
+    font-size: 11px;
+    color: var(--text-muted, #64748b);
+    margin-top: 2px;
+  }
+
+  /* PIN Input */
+  .pin-input-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .pin-input {
+    width: 100px;
+    padding: 8px 12px;
+    background: var(--bg-input, rgba(15, 23, 42, 0.8));
+    border: 1px solid var(--border-color, rgba(148, 163, 184, 0.2));
+    border-radius: 6px;
+    color: var(--text-primary, #e2e8f0);
+    font-size: 14px;
+    font-family: 'Monaco', 'Menlo', monospace;
+    letter-spacing: 2px;
+    text-align: center;
+  }
+
+  .pin-input::placeholder {
+    letter-spacing: normal;
+    color: var(--text-muted, #64748b);
+  }
+
+  .pin-set {
+    color: #10b981;
+    font-weight: 600;
+    font-size: 12px;
+  }
+
+  .pin-not-set {
+    color: #f59e0b;
+    font-size: 12px;
+  }
+
+  /* Truck Select */
+  .truck-select {
+    min-width: 140px;
+    padding: 8px 12px;
+    background: var(--bg-input, rgba(15, 23, 42, 0.8));
+    border: 1px solid var(--border-color, rgba(148, 163, 184, 0.2));
+    border-radius: 6px;
+    color: var(--text-primary, #e2e8f0);
+    font-size: 13px;
+  }
+
+  .truck-select option {
+    background: #1e293b;
+    color: #e2e8f0;
+  }
+
+  /* Status Badge */
+  .status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+  }
+
+  .status-badge.active {
+    background: rgba(16, 185, 129, 0.2);
+    color: #10b981;
+  }
+
+  .status-badge.inactive {
+    background: rgba(148, 163, 184, 0.2);
+    color: #94a3b8;
+  }
+
+  .status-badge.logged-in {
+    background: rgba(59, 130, 246, 0.2);
+    color: #3b82f6;
+  }
+
+  /* Action Buttons */
+  .action-btn {
+    padding: 6px 12px;
+    border: none;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .action-btn.save {
+    background: rgba(16, 185, 129, 0.2);
+    color: #10b981;
+  }
+
+  .action-btn.save:hover {
+    background: rgba(16, 185, 129, 0.3);
+  }
+
+  .action-btn.reset {
+    background: rgba(239, 68, 68, 0.2);
+    color: #ef4444;
+  }
+
+  .action-btn.reset:hover {
+    background: rgba(239, 68, 68, 0.3);
+  }
+
+  .actions-cell {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  /* Toast notification */
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    padding: 16px 24px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    z-index: 9999;
+    animation: slideIn 0.3s ease;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  }
+
+  .toast.success {
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: white;
+  }
+
+  .toast.error {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    color: white;
+  }
+
+  @keyframes slideIn {
+    from {
+      transform: translateX(100%);
+      opacity: 0;
+    }
+    to {
+      transform: translateX(0);
+      opacity: 1;
+    }
+  }
+
+  /* Empty State */
+  .empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--text-muted, #94a3b8);
+  }
+
+  .empty-state .icon {
+    font-size: 48px;
+    margin-bottom: 16px;
+  }
+
+  /* Mobile responsive */
+  @media (max-width: 768px) {
+    .management-container {
+      padding: 16px;
+    }
+
+    .page-header {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .drivers-table {
+      font-size: 12px;
+    }
+
+    .drivers-table th,
+    .drivers-table td {
+      padding: 10px 12px;
+    }
+
+    .pin-input {
+      width: 80px;
+    }
+
+    .truck-select {
+      min-width: 100px;
+    }
+  }
+</style>
+
+<div class="management-container">
+  <div class="page-header">
+    <h1>👨‍✈️ Şoför Yönetimi</h1>
+    <div class="header-actions">
+      <a href="/driver-locations" class="btn btn-secondary">← Konumlara Dön</a>
+    </div>
+  </div>
+
+  <div class="info-card">
+    <h3>📱 Android Uygulama Kurulumu</h3>
+    <p>Şoförlerin konum takibi için Android uygulamasını kullanabilmesi için:</p>
+    <ul>
+      <li>Her şoföre bir <strong>PIN</strong> atayın (en az 4 karakter)</li>
+      <li>Şoförün kullanacağı <strong>plakayı</strong> seçin</li>
+      <li>Şoför uygulamaya <code>Şoför Adı</code> veya <code>ID numarası</code> ve PIN ile giriş yapar</li>
+      <li>Giriş yaptıktan sonra konum takibi başlar ve burada görebilirsiniz</li>
+    </ul>
+  </div>
+
+  <div class="drivers-section">
+    <div class="section-header">
+      <h2>🚛 Şoför Listesi</h2>
+      <span style="color: var(--text-muted); font-size: 12px;"><%= drivers.length %> şoför</span>
+    </div>
+
+    <% if (drivers.length === 0) { %>
+      <div class="empty-state">
+        <div class="icon">👨‍✈️</div>
+        <p>Henüz şoför kaydı bulunmuyor.</p>
+      </div>
+    <% } else { %>
+      <div class="table-container">
+        <table class="drivers-table">
+          <thead>
+            <tr>
+              <th>Şoför</th>
+              <th>PIN</th>
+              <th>Plaka</th>
+              <th>Durum</th>
+              <th>Konum Sayısı</th>
+              <th>İşlemler</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% drivers.forEach(function(driver) { %>
+              <tr data-driver-id="<%= driver.id %>">
+                <td>
+                  <div class="driver-name"><%= driver.name %></div>
+                  <div class="driver-id">ID: <%= driver.id %> <%= driver.phone ? '• 📞 ' + driver.phone : '' %></div>
+                </td>
+                <td>
+                  <div class="pin-input-group">
+                    <input type="text" 
+                           class="pin-input" 
+                           id="pin-<%= driver.id %>" 
+                           value="<%= driver.pin || '' %>" 
+                           placeholder="PIN"
+                           maxlength="10">
+                    <% if (driver.pin) { %>
+                      <span class="pin-set">✓</span>
+                    <% } else { %>
+                      <span class="pin-not-set">Yok</span>
+                    <% } %>
+                  </div>
+                </td>
+                <td>
+                  <select class="truck-select" id="truck-<%= driver.id %>" onchange="updateTruck(<%= driver.id %>)">
+                    <option value="">-- Plaka Seç --</option>
+                    <% trucks.forEach(function(truck) { %>
+                      <option value="<%= truck.plate %>" <%= driver.truck_plate === truck.plate ? 'selected' : '' %>>
+                        <%= truck.plate %>
+                      </option>
+                    <% }); %>
+                  </select>
+                </td>
+                <td>
+                  <% if (driver.auth_token) { %>
+                    <span class="status-badge logged-in">📱 Giriş Yapmış</span>
+                  <% } else if (driver.pin) { %>
+                    <span class="status-badge active">✓ Hazır</span>
+                  <% } else { %>
+                    <span class="status-badge inactive">⚠️ PIN Gerekli</span>
+                  <% } %>
+                </td>
+                <td>
+                  <span style="color: <%= driver.location_count > 0 ? '#10b981' : 'var(--text-muted)' %>;">
+                    📍 <%= driver.location_count || 0 %>
+                  </span>
+                </td>
+                <td class="actions-cell">
+                  <button class="action-btn save" onclick="updatePin(<%= driver.id %>)">
+                    💾 PIN Kaydet
+                  </button>
+                  <% if (driver.auth_token) { %>
+                    <button class="action-btn reset" onclick="resetAuth(<%= driver.id %>)">
+                      🔒 Oturumu Kapat
+                    </button>
+                  <% } %>
+                </td>
+              </tr>
+            <% }); %>
+          </tbody>
+        </table>
+      </div>
+    <% } %>
+  </div>
+</div>
+
+<script>
+  function showToast(message, type = 'success') {
+    const toast = document.createElement('div');
+    toast.className = 'toast ' + type;
+    toast.textContent = message;
+    document.body.appendChild(toast);
+    
+    setTimeout(() => {
+      toast.remove();
+    }, 3000);
+  }
+
+  async function updatePin(driverId) {
+    const pinInput = document.getElementById('pin-' + driverId);
+    const pin = pinInput.value.trim();
+    
+    if (!pin || pin.length < 4) {
+      showToast('PIN en az 4 karakter olmalı', 'error');
+      return;
+    }
+    
+    try {
+      const response = await fetch('/driver-locations/' + driverId + '/update-pin', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ pin })
+      });
+      
+      const data = await response.json();
+      
+      if (data.success) {
+        showToast('PIN güncellendi');
+        // Update UI
+        const row = document.querySelector('tr[data-driver-id="' + driverId + '"]');
+        const pinStatus = row.querySelector('.pin-input-group span');
+        pinStatus.className = 'pin-set';
+        pinStatus.textContent = '✓';
+      } else {
+        showToast(data.message || 'Hata oluştu', 'error');
+      }
+    } catch (err) {
+      console.error('Update PIN error:', err);
+      showToast('Sunucu hatası', 'error');
+    }
+  }
+
+  async function updateTruck(driverId) {
+    const truckSelect = document.getElementById('truck-' + driverId);
+    const truckPlate = truckSelect.value;
+    
+    try {
+      const response = await fetch('/driver-locations/' + driverId + '/update-truck', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ truckPlate })
+      });
+      
+      const data = await response.json();
+      
+      if (data.success) {
+        showToast(truckPlate ? 'Plaka atandı: ' + truckPlate : 'Plaka kaldırıldı');
+      } else {
+        showToast(data.message || 'Hata oluştu', 'error');
+      }
+    } catch (err) {
+      console.error('Update truck error:', err);
+      showToast('Sunucu hatası', 'error');
+    }
+  }
+
+  async function resetAuth(driverId) {
+    if (!confirm('Bu şoförün oturumu kapatılacak ve yeniden giriş yapması gerekecek. Devam edilsin mi?')) {
+      return;
+    }
+    
+    try {
+      const response = await fetch('/driver-locations/' + driverId + '/reset-auth', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      });
+      
+      const data = await response.json();
+      
+      if (data.success) {
+        showToast('Oturum sıfırlandı');
+        // Reload page to update status
+        setTimeout(() => location.reload(), 1000);
+      } else {
+        showToast(data.message || 'Hata oluştu', 'error');
+      }
+    } catch (err) {
+      console.error('Reset auth error:', err);
+      showToast('Sunucu hatası', 'error');
+    }
+  }
+</script>

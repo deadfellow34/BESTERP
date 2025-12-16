@@ -1,0 +1,1081 @@
+<%- include('../partials/navbar') %>
+
+<style>
+  html, body {
+    background: radial-gradient(ellipse at top left, #0a1628 0%, #050d1a 40%, #020810 70%, #000 100%) !important;
+    min-height: 100vh;
+  }
+
+  .vehicle-detail {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 16px 20px 30px;
+  }
+
+  /* Header */
+  .detail-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    padding: 14px 18px;
+    background: rgba(15, 23, 42, 0.85);
+    border: 1px solid rgba(59, 130, 246, 0.15);
+    border-radius: 12px;
+    backdrop-filter: blur(10px);
+  }
+
+  .detail-header h1 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: #e5e7eb;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .plate-badge {
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+    color: white;
+    padding: 4px 12px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 700;
+  }
+
+  .driver-name {
+    color: #9ca3af;
+    font-size: 13px;
+    font-weight: 400;
+    margin-left: 12px;
+  }
+
+  .btn-back {
+    padding: 8px 16px;
+    background: rgba(59, 130, 246, 0.1);
+    border: 1px solid rgba(59, 130, 246, 0.3);
+    color: #60a5fa;
+    border-radius: 8px;
+    font-size: 13px;
+    text-decoration: none;
+    transition: all 0.2s;
+  }
+
+  .btn-back:hover {
+    background: rgba(59, 130, 246, 0.2);
+  }
+
+  /* Stats Grid */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+
+  .stat-card {
+    background: rgba(15, 23, 42, 0.8);
+    border: 1px solid rgba(59, 130, 246, 0.1);
+    border-radius: 10px;
+    padding: 16px;
+    text-align: center;
+  }
+
+  .stat-value {
+    font-size: 22px;
+    font-weight: 700;
+    color: #f9fafb;
+  }
+
+  .stat-value.green { color: #10b981; }
+  .stat-value.blue { color: #3b82f6; }
+  .stat-value.amber { color: #f59e0b; }
+
+  .stat-label {
+    font-size: 12px;
+    color: #9ca3af;
+    margin-top: 4px;
+  }
+
+  .stat-sub {
+    font-size: 11px;
+    color: #6b7280;
+    margin-top: 2px;
+  }
+  
+  /* Accounting stat card special style */
+  .accounting-display {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+  }
+  
+  .accounting-counts {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+  }
+  
+  .accounting-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  
+  .accounting-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+  }
+  
+  .accounting-dot.blue { background: #3b82f6; }
+  .accounting-dot.green { background: #10b981; }
+  
+  .accounting-label {
+    font-size: 13px;
+    color: #9ca3af;
+  }
+  
+  .accounting-num {
+    font-size: 18px;
+    font-weight: 700;
+  }
+  
+  .accounting-num.blue { color: #60a5fa; }
+  .accounting-num.green { color: #34d399; }
+  
+  .accounting-total {
+    font-size: 13px;
+    color: #9ca3af;
+  }
+  
+  .accounting-total strong {
+    color: #34d399;
+    font-weight: 700;
+  }
+
+  /* Main Layout */
+  .main-layout {
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    gap: 16px;
+  }
+
+  /* Trips Section */
+  .trips-section {
+    background: rgba(15, 23, 42, 0.8);
+    border: 1px solid rgba(59, 130, 246, 0.1);
+    border-radius: 10px;
+    padding: 16px;
+  }
+
+  .section-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: #e5e7eb;
+    margin: 0 0 12px 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .trip-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .trip-row {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+    padding: 16px;
+    background: rgba(2, 6, 23, 0.6);
+    border: 1px solid rgba(59, 130, 246, 0.08);
+    border-radius: 10px;
+    transition: all 0.2s;
+  }
+
+  .trip-row:hover {
+    border-color: rgba(59, 130, 246, 0.25);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+  }
+  
+  .trip-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding-bottom: 10px;
+    border-bottom: 1px solid rgba(59, 130, 246, 0.1);
+  }
+  
+  .trip-content {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 16px;
+  }
+
+  /* Trip Left - Position Info */
+  .trip-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .trip-pos {
+    font-size: 15px;
+    font-weight: 700;
+    color: #a855f7;
+  }
+  
+  .trip-pos-details {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  
+  .trip-pos-details span {
+    font-size: 12px;
+    color: #9ca3af;
+  }
+  
+  .trip-pos-details span strong {
+    color: #60a5fa;
+  }
+
+  .trip-meta {
+    font-size: 12px;
+    color: #9ca3af;
+    line-height: 1.6;
+  }
+
+  .trip-meta strong {
+    color: #e5e7eb;
+  }
+  
+  /* Detail Box */
+  .detail-box {
+    background: rgba(15, 23, 42, 0.6);
+    border: 1px solid rgba(59, 130, 246, 0.1);
+    border-radius: 8px;
+    padding: 12px;
+  }
+  
+  .detail-box-title {
+    font-size: 11px;
+    color: #6b7280;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  
+  .detail-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 4px 0;
+  }
+  
+  .detail-row:not(:last-child) {
+    border-bottom: 1px solid rgba(59, 130, 246, 0.05);
+  }
+  
+  .detail-label {
+    font-size: 12px;
+    color: #9ca3af;
+  }
+  
+  .detail-value {
+    font-size: 13px;
+    font-weight: 600;
+    color: #e5e7eb;
+  }
+  
+  .detail-value.blue { color: #60a5fa; }
+  .detail-value.green { color: #34d399; }
+  .detail-value.red { color: #f87171; }
+  .detail-value.amber { color: #fbbf24; }
+
+  /* Trip Middle - Stats */
+  .trip-stats {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+
+  .trip-stat {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .trip-stat-value {
+    font-size: 13px;
+    font-weight: 600;
+    color: #e5e7eb;
+  }
+
+  .trip-stat-label {
+    font-size: 10px;
+    color: #6b7280;
+  }
+
+  .count-pills {
+    display: flex;
+    gap: 8px;
+  }
+
+  .count-pill {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 600;
+  }
+
+  .count-pill.loading {
+    background: rgba(59, 130, 246, 0.15);
+    color: #60a5fa;
+  }
+
+  .count-pill.unloading {
+    background: rgba(16, 185, 129, 0.15);
+    color: #34d399;
+  }
+
+  .dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+  }
+
+  .dot.blue { background: #3b82f6; }
+  .dot.green { background: #10b981; }
+
+  /* Trip Right - Profit & Actions */
+  .trip-right {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .profit-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+  }
+  
+  .profit-card {
+    background: rgba(15, 23, 42, 0.6);
+    border: 1px solid rgba(59, 130, 246, 0.1);
+    border-radius: 8px;
+    padding: 10px 12px;
+    text-align: center;
+  }
+  
+  .profit-card-label {
+    font-size: 10px;
+    color: #6b7280;
+    margin-bottom: 4px;
+  }
+  
+  .profit-card-value {
+    font-size: 15px;
+    font-weight: 700;
+  }
+  
+  .profit-card-value.blue { color: #3b82f6; }
+  .profit-card-value.red { color: #ef4444; }
+  .profit-card-value.green { color: #10b981; }
+  .profit-card-value.amber { color: #f59e0b; }
+
+  .profit-display {
+    text-align: right;
+  }
+
+  .profit-amount {
+    font-size: 16px;
+    font-weight: 700;
+  }
+
+  .profit-amount.positive { color: #10b981; }
+  .profit-amount.negative { color: #ef4444; }
+  .profit-amount.low { color: #f59e0b; }
+
+  .profit-margin {
+    font-size: 10px;
+    color: #6b7280;
+  }
+
+  .profit-tag {
+    display: inline-block;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 700;
+    margin-left: 8px;
+  }
+
+  .profit-tag.kar { background: rgba(16, 185, 129, 0.15); color: #34d399; }
+  .profit-tag.zarar { background: rgba(239, 68, 68, 0.15); color: #f87171; }
+  .profit-tag.dusuk { background: rgba(245, 158, 11, 0.15); color: #fbbf24; }
+
+  .trip-actions {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+  }
+  
+  .trip-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 10px;
+    border-top: 1px solid rgba(59, 130, 246, 0.1);
+  }
+
+  .btn-sm {
+    padding: 5px 10px;
+    font-size: 11px;
+    font-weight: 600;
+    border-radius: 5px;
+    text-decoration: none;
+    transition: all 0.2s;
+  }
+
+  .btn-primary {
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: white;
+    border: none;
+  }
+
+  .btn-outline-sm {
+    background: transparent;
+    border: 1px solid rgba(59, 130, 246, 0.3);
+    color: #60a5fa;
+  }
+
+  .btn-sm:hover {
+    transform: translateY(-1px);
+  }
+
+  /* Notes Section */
+  .notes-section {
+    background: rgba(15, 23, 42, 0.8);
+    border: 1px solid rgba(59, 130, 246, 0.1);
+    border-radius: 10px;
+    padding: 16px;
+    height: fit-content;
+  }
+
+  .notes-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+  }
+
+  .notes-actions {
+    display: flex;
+    gap: 6px;
+  }
+
+  .btn-note {
+    padding: 5px 10px;
+    font-size: 11px;
+    background: transparent;
+    border: 1px solid rgba(59, 130, 246, 0.2);
+    color: #9ca3af;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .btn-note:hover {
+    border-color: rgba(59, 130, 246, 0.4);
+    color: #e5e7eb;
+  }
+
+  .note-form {
+    display: none;
+    margin-bottom: 12px;
+  }
+
+  .note-form textarea {
+    width: 100%;
+    padding: 10px;
+    background: rgba(2, 6, 23, 0.8);
+    border: 1px solid rgba(59, 130, 246, 0.2);
+    border-radius: 6px;
+    color: #e5e7eb;
+    font-size: 12px;
+    resize: vertical;
+    min-height: 80px;
+    box-sizing: border-box;
+  }
+
+  .note-form textarea:focus {
+    outline: none;
+    border-color: #3b82f6;
+  }
+
+  .note-form-actions {
+    display: flex;
+    gap: 6px;
+    justify-content: flex-end;
+    margin-top: 8px;
+  }
+
+  .note-item {
+    padding: 10px;
+    background: rgba(2, 6, 23, 0.5);
+    border-radius: 6px;
+    margin-bottom: 8px;
+  }
+
+  .note-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+  }
+
+  .note-author {
+    font-size: 11px;
+    font-weight: 600;
+    color: #60a5fa;
+  }
+
+  .note-date {
+    font-size: 10px;
+    color: #6b7280;
+  }
+
+  .note-body {
+    font-size: 12px;
+    color: #d1d5db;
+    white-space: pre-wrap;
+    line-height: 1.4;
+  }
+
+  .edit-controls {
+    display: none;
+    gap: 4px;
+  }
+
+  .empty-notes {
+    color: #6b7280;
+    font-size: 12px;
+    text-align: center;
+    padding: 20px;
+  }
+
+  /* Pagination */
+  .pagination {
+    display: flex;
+    gap: 6px;
+    justify-content: center;
+    margin-top: 16px;
+  }
+
+  .pagination a, .pagination span {
+    padding: 6px 12px;
+    font-size: 12px;
+    border-radius: 6px;
+    text-decoration: none;
+    transition: all 0.2s;
+  }
+
+  .pagination a {
+    background: rgba(59, 130, 246, 0.1);
+    border: 1px solid rgba(59, 130, 246, 0.2);
+    color: #60a5fa;
+  }
+
+  .pagination a:hover {
+    background: rgba(59, 130, 246, 0.2);
+  }
+
+  .pagination span.current {
+    background: #3b82f6;
+    color: white;
+  }
+
+  .pagination span.dots {
+    color: #6b7280;
+    border: none;
+  }
+
+  /* Delete Modal */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.7);
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+  }
+
+  .modal-box {
+    background: rgba(15, 23, 42, 0.95);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    border-radius: 12px;
+    padding: 20px;
+    width: 360px;
+    backdrop-filter: blur(20px);
+  }
+
+  .modal-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: #f87171;
+    margin-bottom: 8px;
+  }
+
+  .modal-text {
+    font-size: 13px;
+    color: #9ca3af;
+    margin-bottom: 16px;
+  }
+
+  .modal-actions {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+  }
+
+  .btn-cancel {
+    padding: 8px 14px;
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #9ca3af;
+    border-radius: 6px;
+    font-size: 12px;
+    cursor: pointer;
+  }
+
+  .btn-delete {
+    padding: 8px 14px;
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    border: none;
+    color: white;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  @media (max-width: 1024px) {
+    .main-layout {
+      grid-template-columns: 1fr;
+    }
+    .stats-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+    .trip-row {
+      grid-template-columns: 1fr;
+      gap: 10px;
+    }
+    .trip-right {
+      flex-direction: row;
+      align-items: center;
+    }
+  }
+</style>
+
+<div class="vehicle-detail">
+  <!-- Header -->
+  <div class="detail-header">
+    <h1>
+      🚛 <span class="plate-badge"><%= truck.plate %></span>
+      <span class="driver-name">Sürücü: <%= truck.driver_name || '-' %></span>
+    </h1>
+    <a href="/vehicles" class="btn-back">← Geri</a>
+  </div>
+
+  <% 
+    const _totalKm = Number(stats.total_km || 0);
+    const _kmEuroEstimate = (_totalKm * 0.2).toFixed(2);
+    const _totalProfit = (recentTrips && recentTrips.length) ? recentTrips.reduce((acc, t) => {
+      const p = t && t.tripProfit && t.tripProfit.profitEUR ? Number(t.tripProfit.profitEUR) : 0;
+      return acc + p;
+    }, 0) : 0;
+    
+    let _totalLoading = 0, _totalUnloading = 0, _totalAccountingEuro = 0;
+    if (recentTrips && recentTrips.length) {
+      recentTrips.forEach(t => {
+        if (t && t.km) {
+          const l = (t.km.loading_count || 0) + (t.km.europe_count || 0);
+          const u = (t.km.unloading_count || 0);
+          _totalLoading += l;
+          _totalUnloading += u;
+          _totalAccountingEuro += (l + u) * 25;
+        }
+      });
+    }
+  %>
+
+  <!-- Stats Grid -->
+  <div class="stats-grid">
+    <div class="stat-card" style="position:relative; overflow:hidden; background: linear-gradient(135deg, rgba(59,130,246,0.1) 0%, rgba(30,64,175,0.2) 100%); border: 1px solid rgba(59,130,246,0.3);">
+      <div style="position:absolute; top:-20px; right:-20px; width:80px; height:80px; background:radial-gradient(circle, rgba(59,130,246,0.2) 0%, transparent 70%); border-radius:50%;"></div>
+      <div style="position:absolute; bottom:-10px; left:-10px; width:50px; height:50px; background:radial-gradient(circle, rgba(96,165,250,0.15) 0%, transparent 70%); border-radius:50%;"></div>
+      <div style="position:relative; z-index:1; text-align:center;">
+        <div style="font-size:36px; font-weight:900; background: linear-gradient(135deg, #3b82f6, #60a5fa, #93c5fd); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-shadow: 0 0 40px rgba(59,130,246,0.5);"><%= stats.trip_count %></div>
+        <div style="font-size:11px; color:#9ca3af; letter-spacing:1px; text-transform:uppercase; margin-top:8px;">Toplam Sefer</div>
+      </div>
+    </div>
+    <div class="stat-card" style="position:relative; overflow:hidden; background: linear-gradient(135deg, rgba(139,92,246,0.1) 0%, rgba(91,33,182,0.2) 100%); border: 1px solid rgba(139,92,246,0.3);">
+      <div style="position:absolute; top:-20px; right:-20px; width:80px; height:80px; background:radial-gradient(circle, rgba(139,92,246,0.2) 0%, transparent 70%); border-radius:50%;"></div>
+      <div style="position:absolute; bottom:-10px; left:-10px; width:50px; height:50px; background:radial-gradient(circle, rgba(167,139,250,0.15) 0%, transparent 70%); border-radius:50%;"></div>
+      <div style="position:relative; z-index:1; display:flex; flex-direction:column; justify-content:center; align-items:center; height:100%; min-height:80px;">
+        <div style="display:flex; align-items:center; gap:32px;">
+          <div style="display:flex; align-items:center; gap:10px;">
+            <span style="width:14px; height:14px; border-radius:50%; background:#3b82f6;"></span>
+            <span style="color:#9ca3af; font-size:15px;">Yükleme</span>
+            <span style="color:#60a5fa; font-weight:800; font-size:22px;"><%= _totalLoading %></span>
+          </div>
+          <div style="display:flex; align-items:center; gap:10px;">
+            <span style="width:14px; height:14px; border-radius:50%; background:#10b981;"></span>
+            <span style="color:#9ca3af; font-size:15px;">Boşaltma</span>
+            <span style="color:#34d399; font-weight:800; font-size:22px;"><%= _totalUnloading %></span>
+          </div>
+        </div>
+        <div style="margin-top:12px; font-size:15px; color:#9ca3af;">Yükleme & Boşaltma <strong style="color:#34d399; font-size:18px;"><%= _totalAccountingEuro %> €</strong></div>
+      </div>
+    </div>
+    <div class="stat-card" style="position:relative; overflow:hidden; background: linear-gradient(135deg, rgba(16,185,129,0.1) 0%, rgba(6,78,59,0.2) 100%); border: 1px solid rgba(16,185,129,0.3);">
+      <div style="position:absolute; top:-20px; right:-20px; width:80px; height:80px; background:radial-gradient(circle, rgba(16,185,129,0.2) 0%, transparent 70%); border-radius:50%;"></div>
+      <div style="position:absolute; bottom:-10px; left:-10px; width:50px; height:50px; background:radial-gradient(circle, rgba(52,211,153,0.15) 0%, transparent 70%); border-radius:50%;"></div>
+      <div style="position:relative; z-index:1;">
+        <div style="display:flex; align-items:center; justify-content:center; gap:20px;">
+          <div style="text-align:center;">
+            <div style="font-size:32px; font-weight:900; background: linear-gradient(135deg, #10b981, #34d399, #6ee7b7); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-shadow: 0 0 40px rgba(16,185,129,0.5);"><%= Math.round(_totalKm).toLocaleString() %></div>
+            <div style="font-size:10px; color:#6ee7b7; letter-spacing:2px; text-transform:uppercase;">KİLOMETRE</div>
+          </div>
+          <div style="width:1px; height:40px; background: linear-gradient(180deg, transparent, rgba(16,185,129,0.5), transparent);"></div>
+          <div style="text-align:center;">
+            <div style="font-size:24px; font-weight:800; color:#34d399;">~<%= Number(_kmEuroEstimate).toLocaleString() %> <span style="font-size:16px;">€</span></div>
+          </div>
+        </div>
+      </div>
+      <div style="text-align:center; margin-top:12px; font-size:11px; color:#9ca3af; letter-spacing:1px; text-transform:uppercase;">Toplam Km</div>
+    </div>
+    <div class="stat-card" style="position:relative; overflow:hidden; background: linear-gradient(135deg, rgba(245,158,11,0.1) 0%, rgba(180,83,9,0.2) 100%); border: 1px solid rgba(245,158,11,0.3);">
+      <div style="position:absolute; top:-20px; right:-20px; width:80px; height:80px; background:radial-gradient(circle, rgba(245,158,11,0.2) 0%, transparent 70%); border-radius:50%;"></div>
+      <div style="position:absolute; bottom:-10px; left:-10px; width:50px; height:50px; background:radial-gradient(circle, rgba(251,191,36,0.15) 0%, transparent 70%); border-radius:50%;"></div>
+      <div style="position:relative; z-index:1; text-align:center;">
+        <div style="font-size:28px; font-weight:900; background: linear-gradient(135deg, <%= _totalProfit >= 0 ? '#10b981, #34d399, #6ee7b7' : '#f59e0b, #fbbf24, #fcd34d' %>); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-shadow: 0 0 40px rgba(<%= _totalProfit >= 0 ? '16,185,129' : '245,158,11' %>,0.5);"><%= Number(_totalProfit).toLocaleString('en-US', {minimumFractionDigits:2}) %> €</div>
+        <div style="font-size:11px; color:#9ca3af; letter-spacing:1px; text-transform:uppercase; margin-top:8px;">Toplam Profit</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Layout -->
+  <div class="main-layout">
+    <!-- Trips Section -->
+    <div class="trips-section">
+      <h3 class="section-title">📋 Son Seferler</h3>
+      
+      <div class="trip-list">
+        <% if (recentTrips && recentTrips.length > 0) { %>
+          <% recentTrips.forEach(trip => { %>
+            <% 
+              const uids = (trip.loads || []).map(l => l.uid).filter(Boolean);
+              const faturaKimes = [...new Set((trip.loads || []).map(l => l.fatura_kime).filter(Boolean))];
+              const faturaNolar = (trip.loads || []).map(l => l.fatura_no).filter(Boolean);
+              const ordinos = (trip.loads || []).filter(l => l.ordino_cost && Number(l.ordino_cost) > 0).map(l => ({ cost: l.ordino_cost, fatura_no: l.fatura_no }));
+              const loading = trip.km ? (trip.km.loading_count || 0) + (trip.km.europe_count || 0) : 0;
+              const unloading = trip.km ? (trip.km.unloading_count || 0) : 0;
+              const accountingCost = (loading + unloading) * 25;
+              const totalKm = trip.km ? (trip.km.total_km || 0) : 0;
+              const kmEuro = (totalKm * 0.2).toFixed(2);
+              const profit = trip.tripProfit ? trip.tripProfit.profitEUR : 0;
+              const revenue = trip.tripProfit ? trip.tripProfit.revenueEUR : 0;
+              const costs = trip.tripProfit ? trip.tripProfit.costsEUR : 0;
+              const profitClass = profit < 0 ? 'negative' : (profit === 0 || (revenue && (profit/revenue) < 0.12) ? 'low' : 'positive');
+              const tagClass = profit < 0 ? 'zarar' : (profit === 0 || (revenue && (profit/revenue) < 0.12) ? 'dusuk' : 'kar');
+              const tagText = profit < 0 ? 'ZARAR' : (profit === 0 || (revenue && (profit/revenue) < 0.12) ? 'DÜŞÜK' : 'KÂR');
+            %>
+            <div class="trip-row">
+              <!-- Trip Header -->
+              <div class="trip-header">
+                <div>
+                  <span class="trip-pos">Pozisyon: <%= trip.position_no %></span>
+                  <div class="trip-pos-details">
+                    <span>IHR: <strong><%= trip.ihr_poz || (trip.loads && trip.loads[0] && trip.loads[0].ihr_poz) || '-' %></strong></span>
+                    <span>Dorse: <strong><%= trip.trailer_plate || (trip.loads && trip.loads[0] && trip.loads[0].trailer_plate) || '-' %></strong></span>
+                    <span>Sürücü: <strong><%= trip.driver_name || '-' %></strong></span>
+                  </div>
+                </div>
+                <div class="trip-actions">
+                  <a class="btn-sm btn-outline-sm" href="/loads/position/<%= encodeURIComponent(trip.position_no) %>/ameta" target="_blank">AMETA PDF</a>
+                  <a class="btn-sm btn-primary" href="/loads/position/<%= encodeURIComponent(trip.position_no) %>">Pozisyonu Aç</a>
+                </div>
+              </div>
+              
+              <!-- Trip Content -->
+              <div class="trip-content">
+                <!-- Left: Info -->
+                <div class="detail-box">
+                  <div class="detail-box-title">Yük Bilgileri</div>
+                  <div class="detail-row">
+                    <span class="detail-label">Yükleme Ülkesi</span>
+                    <span class="detail-value"><%= trip.loading_city || (trip.loads && trip.loads[0] && trip.loads[0].loading_city) || '-' %></span>
+                  </div>
+                  <div class="detail-row">
+                    <span class="detail-label">Ağırlık</span>
+                    <span class="detail-value"><%= Number(trip.gross_weight || trip.total_weight_kg || 0).toLocaleString('tr-TR') %> kg</span>
+                  </div>
+                  <div class="detail-row">
+                    <span class="detail-label">Koli / Paket</span>
+                    <span class="detail-value"><%= trip.packages || trip.total_packages || 0 %></span>
+                  </div>
+                  <% if (uids.length) { %>
+                  <div class="detail-row">
+                    <span class="detail-label">Yük UID</span>
+                    <span class="detail-value blue"><%= uids.join(', ') %></span>
+                  </div>
+                  <% } %>
+                  <% if (faturaKimes.length) { %>
+                  <div class="detail-row">
+                    <span class="detail-label">Fatura Kesilen</span>
+                    <span class="detail-value"><%= faturaKimes.join(', ') %></span>
+                  </div>
+                  <% } %>
+                  <% if (faturaNolar.length) { %>
+                  <div class="detail-row">
+                    <span class="detail-label">Fatura No</span>
+                    <span class="detail-value"><%= faturaNolar.join(', ') %></span>
+                  </div>
+                  <% } %>
+                </div>
+                
+                <!-- Middle: Accounting -->
+                <div class="detail-box">
+                  <div class="detail-box-title">Muhasebe</div>
+                  <div style="display:flex; flex-direction:column; align-items:center; gap:8px; padding:8px 0;">
+                    <div style="display:flex; align-items:center; gap:20px;">
+                      <div style="display:flex; align-items:center; gap:6px;">
+                        <span class="accounting-dot blue"></span>
+                        <span style="color:#9ca3af; font-size:12px;">Yükleme</span>
+                        <span style="color:#60a5fa; font-weight:700; font-size:16px;"><%= loading %></span>
+                      </div>
+                      <div style="display:flex; align-items:center; gap:6px;">
+                        <span class="accounting-dot green"></span>
+                        <span style="color:#9ca3af; font-size:12px;">Boşaltma</span>
+                        <span style="color:#34d399; font-weight:700; font-size:16px;"><%= unloading %></span>
+                      </div>
+                    </div>
+                    <div style="color:#9ca3af; font-size:12px;">Yükleme & Boşaltma <strong style="color:#34d399;"><%= accountingCost %> €</strong></div>
+                  </div>
+                  <div class="detail-row">
+                    <span class="detail-label">Toplam KM</span>
+                    <span class="detail-value"><%= totalKm %> km</span>
+                  </div>
+                  <div class="detail-row">
+                    <span class="detail-label">KM Değeri</span>
+                    <span class="detail-value green">~<%= kmEuro %> €</span>
+                  </div>
+                  <% if (ordinos.length) { %>
+                  <div class="detail-row">
+                    <span class="detail-label">Ordino</span>
+                    <span class="detail-value amber"><%= ordinos.map(o => o.cost + '€').join(', ') %></span>
+                  </div>
+                  <% } %>
+                </div>
+                
+                <!-- Right: Profit -->
+                <div class="detail-box">
+                  <div class="detail-box-title">Kar / Zarar</div>
+                  <% if (trip.tripProfit) { %>
+                  <div class="detail-row">
+                    <span class="detail-label">Gelir (EUR)</span>
+                    <span class="detail-value blue"><%= Number(revenue).toLocaleString('en-US') %> €</span>
+                  </div>
+                  <div class="detail-row">
+                    <span class="detail-label">Maliyet (EUR)</span>
+                    <span class="detail-value red"><%= Number(costs).toLocaleString('en-US') %> €</span>
+                  </div>
+                  <div class="detail-row">
+                    <span class="detail-label">PROFIT</span>
+                    <span class="detail-value <%= profit >= 0 ? 'green' : 'red' %>"><%= Number(profit).toLocaleString('en-US') %> €</span>
+                  </div>
+                  <div class="detail-row">
+                    <span class="detail-label">Marj</span>
+                    <span class="detail-value"><%= trip.tripProfit.marginPercent === null ? '-' : trip.tripProfit.marginPercent + '%' %></span>
+                  </div>
+                  <div class="detail-row">
+                    <span class="detail-label">Durum</span>
+                    <span class="profit-tag <%= tagClass %>"><%= tagText %></span>
+                  </div>
+                  <% } else { %>
+                  <div style="color:#6b7280; font-size:12px; text-align:center; padding:20px 0;">Kar verisi yok</div>
+                  <% } %>
+                </div>
+              </div>
+            </div>
+          <% }) %>
+        <% } else { %>
+          <div class="empty-notes">Henüz kayıtlı sefer yok.</div>
+        <% } %>
+      </div>
+
+      <!-- Pagination -->
+      <% if (typeof totalPages !== 'undefined' && totalPages > 1) { %>
+        <div class="pagination">
+          <% const currentPage = page || 1; %>
+          <% const currentYear = typeof year !== 'undefined' ? year : new Date().getFullYear(); %>
+          <% if (currentPage > 1) { %>
+            <a href="/vehicles/<%= truck.id %>?page=<%= currentPage - 1 %>&year=<%= currentYear %>">← Önceki</a>
+          <% } %>
+          <% const maxLinks = 5; const start = Math.max(1, currentPage - Math.floor(maxLinks/2)); const end = Math.min(totalPages, start + maxLinks - 1); %>
+          <% for (let p = start; p <= end; p++) { %>
+            <% if (p === currentPage) { %>
+              <span class="current"><%= p %></span>
+            <% } else { %>
+              <a href="/vehicles/<%= truck.id %>?page=<%= p %>&year=<%= currentYear %>"><%= p %></a>
+            <% } %>
+          <% } %>
+          <% if (end < totalPages) { %>
+            <span class="dots">...</span>
+            <a href="/vehicles/<%= truck.id %>?page=<%= totalPages %>&year=<%= currentYear %>"><%= totalPages %></a>
+          <% } %>
+          <% if (currentPage < totalPages) { %>
+            <a href="/vehicles/<%= truck.id %>?page=<%= currentPage + 1 %>&year=<%= currentYear %>">Sonraki →</a>
+          <% } %>
+        </div>
+      <% } %>
+    </div>
+
+    <!-- Notes Section -->
+    <div class="notes-section">
+      <div class="notes-header">
+        <h3 class="section-title" style="margin:0">📝 Ek Bilgiler</h3>
+        <div class="notes-actions">
+          <button id="add-note-toggle" class="btn-note">+ Ekle</button>
+          <button id="edit-notes-toggle" class="btn-note">Düzenle</button>
+        </div>
+      </div>
+
+      <form id="add-note-form" class="note-form" action="/vehicles/<%= truck.id %>/notes" method="POST">
+        <textarea name="note" rows="3" placeholder="Yeni bilgi veya not girin..."></textarea>
+        <div class="note-form-actions">
+          <button type="button" id="add-note-cancel" class="btn-note">İptal</button>
+          <button type="submit" class="btn-sm btn-primary">Kaydet</button>
+        </div>
+      </form>
+
+      <div id="notes-list">
+        <% if (notes && notes.length) { %>
+          <% notes.forEach(n => { %>
+            <div class="note-item">
+              <div class="note-header">
+                <span class="note-author"><%= n.created_by || 'Anonim' %></span>
+                <span class="note-date"><%= new Date(n.created_at).toLocaleDateString('tr-TR') %></span>
+              </div>
+              <div class="note-body"><%= n.note %></div>
+              <div class="edit-controls">
+                <button data-note-id="<%= n.id %>" class="btn-note edit-btn">Düzenle</button>
+                <button data-note-id="<%= n.id %>" class="btn-note delete-btn" style="color:#f87171">Sil</button>
+                <form id="delete-form-<%= n.id %>" action="/vehicles/<%= truck.id %>/notes/<%= n.id %>?_method=DELETE" method="POST" style="display:none"></form>
+              </div>
+              <form id="edit-form-<%= n.id %>" class="note-form" action="/vehicles/<%= truck.id %>/notes/<%= n.id %>?_method=PUT" method="POST" style="margin-top:8px">
+                <textarea name="note" rows="3"><%= n.note %></textarea>
+                <div class="note-form-actions">
+                  <button type="button" data-form-id="edit-form-<%= n.id %>" class="btn-note cancel-edit">İptal</button>
+                  <button type="submit" class="btn-sm btn-primary">Kaydet</button>
+                </div>
+              </form>
+            </div>
+          <% }) %>
+        <% } else { %>
+          <div class="empty-notes">Henüz ek bilgi yok.</div>
+        <% } %>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Delete Modal -->
+<div id="delete-confirm-modal" class="modal-overlay">
+  <div class="modal-box">
+    <div class="modal-title">🗑️ Notu Sil</div>
+    <div class="modal-text" id="delete-confirm-text">Bu notu silmek istediğinize emin misiniz?</div>
+    <div class="modal-actions">
+      <button id="delete-cancel-btn" class="btn-cancel">İptal</button>
+      <button id="delete-confirm-btn" class="btn-delete">Sil</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  const toggle = document.getElementById('add-note-toggle');
+  const form = document.getElementById('add-note-form');
+  const cancel = document.getElementById('add-note-cancel');
+  const textarea = form?.querySelector('textarea');
+
+  toggle?.addEventListener('click', () => {
+    form.style.display = form.style.display === 'block' ? 'none' : 'block';
+    textarea?.focus();
+  });
+  cancel?.addEventListener('click', () => form.style.display = 'none');
+
+  // Edit mode
+  const editToggle = document.getElementById('edit-notes-toggle');
+  const editControls = document.querySelectorAll('.edit-controls');
+  let editMode = false;
+
+  editToggle?.addEventListener('click', () => {
+    editMode = !editMode;
+    editControls.forEach(el => el.style.display = editMode ? 'flex' : 'none');
+    editToggle.textContent = editMode ? 'Bitir' : 'Düzenle';
+  });
+
+  // Edit/Delete handlers
+  let pendingDeleteId = null;
+  const modal = document.getElementById('delete-confirm-modal');
+
+  document.addEventListener('click', e => {
+    if (e.target.classList.contains('edit-btn')) {
+      e.preventDefault();
+      const id = e.target.dataset.noteId;
+      const editForm = document.getElementById('edit-form-' + id);
+      if (editForm) {
+        editForm.style.display = 'block';
+        editForm.querySelector('textarea')?.focus();
+      }
+    }
+    if (e.target.classList.contains('cancel-edit')) {
+      e.preventDefault();
+      const formId = e.target.dataset.formId;
+      const f = document.getElementById(formId);
+      if (f) f.style.display = 'none';
+    }
+    if (e.target.classList.contains('delete-btn')) {
+      e.preventDefault();
+      pendingDeleteId = e.target.dataset.noteId;
+      modal.style.display = 'flex';
+    }
+  });
+
+  document.getElementById('delete-confirm-btn')?.addEventListener('click', () => {
+    if (pendingDeleteId) {
+      document.getElementById('delete-form-' + pendingDeleteId)?.submit();
+    }
+  });
+
+  document.getElementById('delete-cancel-btn')?.addEventListener('click', () => {
+    modal.style.display = 'none';
+    pendingDeleteId = null;
+  });
+})();
+</script>

@@ -1,0 +1,2274 @@
+<style>
+  .navbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 16px;
+    min-height: 50px;
+    background: var(--bg-navbar, linear-gradient(90deg, #0b1220 0%, #0f1724 100%));
+    border-bottom: 1px solid var(--border-subtle, rgba(255,255,255,0.03));
+    box-shadow: var(--shadow-md, 0 6px 18px rgba(2,6,23,0.6));
+    color: var(--text-primary, #e6eef8);
+    z-index: 1100;
+    flex-wrap: wrap;
+    gap: 8px;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+  
+  body {
+    padding-top: 56px;
+  }
+
+  .nav-left, .nav-right { 
+    display: flex; 
+    align-items: center; 
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .nav-center { 
+    position: absolute; 
+    left: 50%; 
+    transform: translateX(-50%); 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    gap: 16px;
+    pointer-events: auto; 
+    text-align: center;
+    z-index: 50;
+  }
+  
+  .navbar-center-text { 
+    pointer-events: auto; 
+    color: var(--text-muted, #cbd5e1); 
+    font-weight: 600; 
+    white-space: nowrap;
+    font-size: 13px;
+  }
+
+  /* Navbar Rates Display */
+  .navbar-rates {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 6px 14px;
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(5, 150, 105, 0.1));
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    border-radius: 8px;
+    pointer-events: auto;
+  }
+
+  .rate-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  .rate-label {
+    color: #10b981;
+    font-weight: 700;
+  }
+
+  .rate-value {
+    color: #e2e8f0;
+  }
+
+  .rate-divider {
+    width: 1px;
+    height: 16px;
+    background: rgba(16, 185, 129, 0.3);
+  }
+
+  /* Period Selector in Navbar - Compact Modern Design */
+  .navbar-period-selector {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 10px;
+    background: rgba(99, 102, 241, 0.15);
+    border: 1px solid rgba(99, 102, 241, 0.35);
+    border-radius: 6px;
+    pointer-events: auto;
+    transition: all 0.2s ease;
+    height: 28px;
+  }
+
+  .navbar-period-selector:hover {
+    background: rgba(99, 102, 241, 0.25);
+    border-color: rgba(99, 102, 241, 0.5);
+  }
+
+  .navbar-period-selector .period-icon {
+    font-size: 14px;
+    line-height: 1;
+  }
+
+  .navbar-period-selector .period-label {
+    color: #a5b4fc;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    line-height: 1;
+  }
+
+  .navbar-period-select {
+    background: rgba(30, 41, 59, 0.8);
+    color: #f1f5f9;
+    border: 1px solid rgba(99, 102, 241, 0.4);
+    border-radius: 4px;
+    padding: 2px 24px 2px 8px;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%23a5b4fc' stroke-width='2.5'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 6px center;
+    transition: all 0.2s ease;
+    min-width: 70px;
+    height: 22px;
+    line-height: 1;
+  }
+
+  .navbar-period-select:hover {
+    border-color: rgba(99, 102, 241, 0.6);
+    background-color: rgba(30, 41, 59, 0.95);
+  }
+
+  .navbar-period-select:focus {
+    outline: none;
+    border-color: #818cf8;
+    box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+  }
+
+  /* Light theme period selector */
+  [data-theme="light"] .navbar-period-selector {
+    background: rgba(99, 102, 241, 0.1);
+    border-color: rgba(99, 102, 241, 0.25);
+  }
+
+  [data-theme="light"] .navbar-period-selector:hover {
+    background: rgba(99, 102, 241, 0.15);
+    border-color: rgba(99, 102, 241, 0.4);
+  }
+
+  [data-theme="light"] .navbar-period-selector .period-label {
+    color: #4f46e5;
+  }
+
+  [data-theme="light"] .navbar-period-select {
+    background: rgba(255, 255, 255, 0.9);
+    color: #1e293b;
+    border-color: rgba(99, 102, 241, 0.3);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%234f46e5' stroke-width='2.5'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  }
+
+  [data-theme="light"] .navbar-period-select:hover {
+    background: #fff;
+    border-color: rgba(99, 102, 241, 0.5);
+  }
+
+  [data-theme="light"] .navbar-period-select:focus {
+    border-color: #6366f1;
+    box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.15);
+  }
+
+  /* Light theme rates */
+  [data-theme="light"] .navbar-rates {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(5, 150, 105, 0.05));
+    border-color: rgba(16, 185, 129, 0.25);
+  }
+
+  [data-theme="light"] .rate-label {
+    color: #059669;
+  }
+
+  [data-theme="light"] .rate-value {
+    color: #1e293b;
+  }
+
+  [data-theme="light"] .rate-divider {
+    background: rgba(16, 185, 129, 0.25);
+  }
+  
+  .navbar-logo { height: 30px; margin-left: 8px; vertical-align: middle; }
+
+  .navbar .brand {
+    font-weight: 800;
+    font-size: 15px;
+    color: #ffffff;
+    text-decoration: none;
+    padding: 5px 10px;
+    border-radius: 8px;
+    background: linear-gradient(90deg, #063b8b 0%, #0ea5e9 100%);
+    box-shadow: 0 4px 12px rgba(3,105,161,0.18);
+    white-space: nowrap;
+  }
+
+  .navbar .nav-link { 
+    color: var(--text-link, #93c5fd); 
+    text-decoration: none; 
+    padding: 5px 8px; 
+    border-radius: 8px; 
+    font-weight: 600;
+    font-size: 12px;
+    white-space: nowrap;
+    transition: all 0.2s ease;
+  }
+  .navbar .nav-link:hover { 
+    background: var(--bg-surface, rgba(255,255,255,0.02)); 
+    color: var(--text-primary, #ffffff); 
+  }
+
+  .navbar .btn { 
+    display: inline-flex; 
+    align-items: center; 
+    gap: 4px; 
+    padding: 5px 8px; 
+    border-radius: 6px; 
+    font-weight: 600; 
+    color: #fff; 
+    text-decoration: none;
+    font-size: 11px;
+    white-space: nowrap;
+    transition: all 0.2s ease;
+  }
+  .navbar .btn:hover { transform: translateY(-1px); }
+
+  .navbar .db-btn { background: linear-gradient(90deg,#7c3aed 0%,#a78bfa 100%); box-shadow: 0 4px 12px #7c3aed33; }
+  .navbar .acct-btn { background: linear-gradient(90deg,#059669 0%,#10b981 100%); box-shadow: 0 4px 12px #05966933; }
+  .navbar .mail-btn { background: linear-gradient(90deg,#2563eb 0%,#60a5fa 100%); box-shadow: 0 4px 12px #2563eb33; }
+
+  .navbar .user-info { 
+    color: var(--text-secondary, #cbd5f5); 
+    padding: 4px 8px; 
+    border-radius: 6px; 
+    background: var(--bg-surface, rgba(255,255,255,0.02)); 
+    font-weight: 600;
+    font-size: 11px;
+    white-space: nowrap;
+  }
+  
+  .navbar .btn-outline { 
+    background: transparent; 
+    border: 1px solid var(--border-default, rgba(255,255,255,0.06)); 
+    color: var(--text-secondary, #cbd5f5); 
+    padding: 5px 10px; 
+    border-radius: 6px;
+    font-size: 11px;
+    text-decoration: none;
+    transition: all 0.2s ease;
+  }
+  
+  .navbar .btn-outline:hover {
+    border-color: var(--border-accent, rgba(59, 130, 246, 0.3));
+    background: var(--bg-surface, rgba(255,255,255,0.02));
+  }
+  
+  .navbar .logout-form { display: inline-block; margin-left: 4px; }
+
+  /* Theme Toggle - Compact Pill Design */
+  .navbar .theme-toggle {
+    width: 44px;
+    height: 24px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    padding: 2px;
+    position: relative;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.3), 0 1px 2px rgba(0,0,0,0.2);
+    margin-right: 8px;
+  }
+
+  .navbar .theme-toggle:hover {
+    transform: scale(1.05);
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.3), 0 0 12px rgba(99, 102, 241, 0.4);
+  }
+
+  .navbar .theme-toggle .toggle-track {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    position: relative;
+  }
+
+  .navbar .theme-toggle .toggle-thumb {
+    width: 20px;
+    height: 20px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 2px 6px rgba(99, 102, 241, 0.5);
+    position: absolute;
+    left: 2px;
+  }
+
+  .navbar .theme-toggle svg {
+    width: 12px;
+    height: 12px;
+    transition: all 0.3s ease;
+  }
+
+  .navbar .theme-toggle .sun-icon {
+    display: none;
+    color: #fbbf24;
+    stroke: #fbbf24;
+    fill: none;
+  }
+
+  .navbar .theme-toggle .moon-icon {
+    display: block;
+    color: #e0e7ff;
+  }
+
+  /* Light theme styles */
+  [data-theme="light"] .navbar .theme-toggle {
+    background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%);
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.1);
+  }
+
+  [data-theme="light"] .navbar .theme-toggle:hover {
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.1), 0 0 12px rgba(251, 191, 36, 0.4);
+  }
+
+  [data-theme="light"] .navbar .theme-toggle .toggle-thumb {
+    left: 22px;
+    background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+    box-shadow: 0 2px 6px rgba(245, 158, 11, 0.5);
+  }
+
+  [data-theme="light"] .navbar .theme-toggle .sun-icon {
+    display: block;
+  }
+
+  [data-theme="light"] .navbar .theme-toggle .moon-icon {
+    display: none;
+  }
+
+  /* Responsive breakpoints */
+  @media (max-width: 1400px) {
+    .nav-center { display: none; }
+  }
+
+  /* Online Users Badge */
+  .online-users-container {
+    position: relative;
+    display: inline-flex;
+    margin-left: 7px;
+  }
+
+  /* Notification Bell */
+  .notification-container {
+    position: relative;
+    display: inline-flex;
+    margin-left: 4px;
+  }
+
+  .notification-bell {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(139, 92, 246, 0.15));
+    border: 1px solid rgba(99, 102, 241, 0.4);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 16px;
+    position: relative;
+  }
+
+  .notification-bell:hover {
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.3), rgba(139, 92, 246, 0.25));
+    border-color: rgba(99, 102, 241, 0.6);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.25);
+  }
+
+  .notification-bell.has-unread {
+    animation: bellShake 0.5s ease-in-out;
+  }
+
+  @keyframes bellShake {
+    0%, 100% { transform: rotate(0); }
+    25% { transform: rotate(-10deg); }
+    50% { transform: rotate(10deg); }
+    75% { transform: rotate(-5deg); }
+  }
+
+  .notification-badge {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    min-width: 18px;
+    height: 18px;
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    color: #fff;
+    font-size: 10px;
+    font-weight: 700;
+    border-radius: 9px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 4px;
+    box-shadow: 0 2px 6px rgba(239, 68, 68, 0.5);
+    animation: badgePulse 2s infinite;
+  }
+
+  .notification-badge.hidden {
+    display: none;
+  }
+
+  @keyframes badgePulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+  }
+
+  /* Notification Dropdown */
+  .notification-dropdown {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    width: 360px;
+    max-height: 480px;
+    background: #1e293b;
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 14px;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+    z-index: 1500;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-8px) scale(0.95);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .notification-dropdown.show {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0) scale(1);
+  }
+
+  .notification-header {
+    padding: 14px 16px;
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.15), rgba(139, 92, 246, 0.1));
+    border-bottom: 1px solid rgba(99, 102, 241, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .notification-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: #a5b4fc;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .notification-actions {
+    display: flex;
+    gap: 8px;
+  }
+
+  .notification-action-btn {
+    padding: 4px 10px;
+    font-size: 11px;
+    font-weight: 600;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: rgba(99, 102, 241, 0.2);
+    color: #a5b4fc;
+  }
+
+  .notification-action-btn:hover {
+    background: rgba(99, 102, 241, 0.3);
+    color: #fff;
+  }
+
+  .notification-action-btn.settings {
+    background: rgba(148, 163, 184, 0.2);
+    color: #94a3b8;
+  }
+
+  .notification-action-btn.settings:hover {
+    background: rgba(148, 163, 184, 0.3);
+    color: #cbd5e1;
+  }
+
+  .notification-action-btn.delete-all {
+    background: rgba(239, 68, 68, 0.2);
+    color: #fca5a5;
+  }
+
+  .notification-action-btn.delete-all:hover {
+    background: rgba(239, 68, 68, 0.4);
+    color: #fff;
+  }
+
+  .notification-list {
+    flex: 1;
+    overflow-y: auto;
+    max-height: 380px;
+  }
+
+  .notification-item {
+    display: flex;
+    gap: 12px;
+    padding: 12px 16px;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    transition: all 0.15s ease;
+    cursor: pointer;
+  }
+
+  .notification-item:hover {
+    background: rgba(255,255,255,0.05);
+  }
+
+  .notification-item.unread {
+    background: rgba(99, 102, 241, 0.08);
+    border-left: 3px solid #6366f1;
+  }
+
+  .notification-item.unread:hover {
+    background: rgba(99, 102, 241, 0.12);
+  }
+
+  .notification-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    flex-shrink: 0;
+  }
+
+  .notification-icon.new_position { background: rgba(59, 130, 246, 0.2); color: #3b82f6; }
+  .notification-icon.position_completed { background: rgba(16, 185, 129, 0.2); color: #10b981; }
+  .notification-icon.position_deleted { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
+  .notification-icon.documents_uploaded { background: rgba(139, 92, 246, 0.2); color: #8b5cf6; }
+  .notification-icon.expense_missing { background: rgba(245, 158, 11, 0.2); color: #f59e0b; }
+  .notification-icon.chat_message { background: rgba(245, 158, 11, 0.2); color: #f59e0b; }
+  .notification-icon.system { background: rgba(99, 102, 241, 0.2); color: #6366f1; }
+
+  .notification-content {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .notification-text {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-primary, #e2e8f0);
+    margin-bottom: 4px;
+    line-height: 1.4;
+  }
+
+  .notification-message {
+    font-size: 12px;
+    color: var(--text-muted, #94a3b8);
+    margin-bottom: 4px;
+    line-height: 1.5;
+    white-space: pre-line;
+  }
+
+  .notification-time {
+    font-size: 11px;
+    color: var(--text-muted, #64748b);
+  }
+
+  .notification-empty {
+    padding: 40px 20px;
+    text-align: center;
+    color: var(--text-muted, #94a3b8);
+  }
+
+  .notification-empty-icon {
+    font-size: 40px;
+    margin-bottom: 12px;
+    opacity: 0.5;
+  }
+
+  .notification-empty-text {
+    font-size: 14px;
+    font-weight: 500;
+  }
+
+  /* Light theme notification */
+  [data-theme="light"] .notification-bell {
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(139, 92, 246, 0.08));
+    border-color: rgba(99, 102, 241, 0.25);
+  }
+
+  [data-theme="light"] .notification-bell:hover {
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.15), rgba(139, 92, 246, 0.12));
+    border-color: rgba(99, 102, 241, 0.4);
+  }
+
+  [data-theme="light"] .notification-dropdown {
+    background: #ffffff;
+    border-color: #e5e7eb;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.15);
+  }
+
+  [data-theme="light"] .notification-header {
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.08), rgba(139, 92, 246, 0.05));
+    border-bottom-color: rgba(99, 102, 241, 0.1);
+  }
+
+  [data-theme="light"] .notification-title {
+    color: #4f46e5;
+  }
+
+  [data-theme="light"] .notification-item {
+    border-bottom-color: #f1f5f9;
+  }
+
+  [data-theme="light"] .notification-item:hover {
+    background: #f8fafc;
+  }
+
+  [data-theme="light"] .notification-item.unread {
+    background: rgba(99, 102, 241, 0.05);
+  }
+
+  [data-theme="light"] .notification-text {
+    color: #1f2937;
+  }
+
+  .online-users-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 12px;
+    background: linear-gradient(135deg, rgba(34, 197, 94, 0.2), rgba(22, 163, 74, 0.15));
+    border: 1px solid rgba(34, 197, 94, 0.4);
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 12px;
+    font-weight: 600;
+    color: #22c55e;
+  }
+
+  .online-users-badge:hover {
+    background: linear-gradient(135deg, rgba(34, 197, 94, 0.3), rgba(22, 163, 74, 0.25));
+    border-color: rgba(34, 197, 94, 0.6);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(34, 197, 94, 0.25);
+  }
+
+  .online-dot {
+    width: 8px;
+    height: 8px;
+    background: #22c55e;
+    border-radius: 50%;
+    animation: pulse-dot 2s infinite;
+    box-shadow: 0 0 8px rgba(34, 197, 94, 0.6);
+  }
+
+  @keyframes pulse-dot {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.7; transform: scale(0.9); }
+  }
+
+  .online-count {
+    font-weight: 700;
+    color: #4ade80;
+  }
+
+  .online-label {
+    color: #86efac;
+    font-weight: 500;
+  }
+
+  /* Online Users Dropdown */
+  .online-users-dropdown {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    min-width: 280px;
+    max-width: 340px;
+    background: var(--card, #1e293b);
+    border: 1px solid var(--border-color, rgba(255,255,255,0.1));
+    border-radius: 12px;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.4);
+    z-index: 1500;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-8px) scale(0.95);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    backdrop-filter: blur(12px);
+    overflow: hidden;
+  }
+
+  .online-users-container:hover .online-users-dropdown,
+  .online-users-dropdown.show {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0) scale(1);
+  }
+
+  .online-dropdown-header {
+    padding: 14px 16px;
+    background: linear-gradient(135deg, rgba(34, 197, 94, 0.15), rgba(22, 163, 74, 0.1));
+    border-bottom: 1px solid rgba(34, 197, 94, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .online-dropdown-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: #4ade80;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .online-dropdown-count {
+    background: rgba(34, 197, 94, 0.2);
+    color: #22c55e;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 700;
+  }
+
+  .online-users-list {
+    max-height: 300px;
+    overflow-y: auto;
+    padding: 8px 0;
+  }
+
+  .online-user-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 16px;
+    transition: background 0.15s ease;
+  }
+
+  .online-user-item:hover {
+    background: rgba(255,255,255,0.05);
+  }
+
+  .online-user-avatar {
+    width: 36px;
+    height: 36px;
+    background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 700;
+    color: #fff;
+    text-transform: uppercase;
+    flex-shrink: 0;
+    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+  }
+
+  .online-user-info {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .online-user-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: #e2e8f0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .online-user-page {
+    font-size: 11px;
+    color: #94a3b8;
+    margin-top: 2px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .online-user-page::before {
+    content: '📍';
+    font-size: 10px;
+  }
+
+  .online-user-status {
+    width: 10px;
+    height: 10px;
+    background: #22c55e;
+    border-radius: 50%;
+    flex-shrink: 0;
+    box-shadow: 0 0 6px rgba(34, 197, 94, 0.5);
+  }
+
+  /* Light theme */
+  [data-theme="light"] .online-users-badge {
+    background: linear-gradient(135deg, rgba(34, 197, 94, 0.15), rgba(22, 163, 74, 0.1));
+    border-color: rgba(34, 197, 94, 0.35);
+    color: #16a34a;
+  }
+
+  [data-theme="light"] .online-users-badge:hover {
+    background: linear-gradient(135deg, rgba(34, 197, 94, 0.2), rgba(22, 163, 74, 0.15));
+    border-color: rgba(34, 197, 94, 0.5);
+  }
+
+  [data-theme="light"] .online-count {
+    color: #16a34a;
+  }
+
+  [data-theme="light"] .online-label {
+    color: #22c55e;
+  }
+
+  [data-theme="light"] .online-users-dropdown {
+    background: #ffffff;
+    border-color: #e5e7eb;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.15);
+  }
+
+  [data-theme="light"] .online-dropdown-header {
+    background: linear-gradient(135deg, rgba(34, 197, 94, 0.1), rgba(22, 163, 74, 0.05));
+    border-bottom-color: rgba(34, 197, 94, 0.15);
+  }
+
+  [data-theme="light"] .online-dropdown-title {
+    color: #16a34a;
+  }
+
+  [data-theme="light"] .online-user-item:hover {
+    background: rgba(0,0,0,0.03);
+  }
+
+  [data-theme="light"] .online-user-name {
+    color: #1f2937;
+  }
+
+  [data-theme="light"] .online-user-page {
+    color: #6b7280;
+  }
+
+  @media (max-width: 1200px) {
+    .nav-left .nav-link { display: none; }
+    .navbar { padding: 6px 12px; }
+  }
+
+  @media (max-width: 900px) {
+    .navbar {
+      flex-direction: column;
+      align-items: flex-start;
+      padding: 8px 12px;
+      gap: 6px;
+    }
+    
+    .nav-left, .nav-right {
+      width: 100%;
+      justify-content: flex-start;
+    }
+    
+    .nav-right {
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    
+    .nav-center { display: none; }
+    
+    body {
+      padding-top: 100px;
+    }
+  }
+
+  @media (max-width: 600px) {
+    .navbar .brand {
+      font-size: 13px;
+      padding: 4px 8px;
+    }
+    
+    .navbar .btn {
+      padding: 4px 6px;
+      font-size: 10px;
+    }
+    
+    .navbar .user-info {
+      font-size: 10px;
+      padding: 3px 6px;
+    }
+    
+    body {
+      padding-top: 120px;
+    }
+  }
+</style>
+
+<nav class="navbar">
+  <div class="nav-left">
+    <!-- Theme Toggle Button - Compact Pill Design -->
+    <button type="button" class="theme-toggle" id="theme-toggle-btn" title="Tema Değiştir" aria-label="Tema Değiştir">
+      <span class="toggle-track">
+        <span class="toggle-thumb">
+          <svg class="sun-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+            <circle cx="12" cy="12" r="4"/>
+            <path d="M12 2v2m0 16v2M4.93 4.93l1.41 1.41m11.32 11.32l1.41 1.41M2 12h2m16 0h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/>
+          </svg>
+          <svg class="moon-icon" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z"/>
+          </svg>
+        </span>
+      </span>
+    </button>
+    <a href="/loads" class="brand" onclick="return goToLoadsWithYear(event)">BEST Freight ERP</a>
+    <a href="/help" class="nav-link">Yardım</a>
+    <!-- Rate calculator removed -->
+    <a href="/loads" class="nav-link" onclick="return goToLoadsWithYear(event)">AytuğERP V3.0
+      <% if (typeof navbarLogo !== 'undefined' && navbarLogo) { %>
+        <img src="<%= navbarLogo %>" alt="Logo" class="navbar-logo" />
+      <% } %>
+    </a>
+    <!-- Period Selector - Modern Design -->
+    <div class="navbar-period-selector">
+      <span class="period-icon">📅</span>
+      <span class="period-label">Dönem</span>
+      <select id="globalYearSelect" class="navbar-period-select" onchange="changeGlobalYear(this.value)">
+        <% if (typeof availableYears !== 'undefined' && availableYears.length > 0) { %>
+          <% const currentYear = typeof year !== 'undefined' ? year : (typeof selectedYear !== 'undefined' ? selectedYear : availableYears[0]); %>
+          <% availableYears.forEach(function(y) { %>
+            <option value="<%= y %>" <%= y == currentYear ? 'selected' : '' %>><%= y %></option>
+          <% }); %>
+        <% } else { %>
+          <option value="2026" selected>2026</option>
+          <option value="2025">2025</option>
+        <% } %>
+      </select>
+    </div>
+    <!-- Online Users Badge -->
+    <div class="online-users-container">
+      <div class="online-users-badge" id="online-users-badge">
+        <span class="online-dot"></span>
+        <span class="online-count" id="online-count">0</span>
+        <span class="online-label">Online Kullanıcı</span>
+      </div>
+      <div class="online-users-dropdown" id="online-users-dropdown">
+        <div class="online-dropdown-header">
+          <span class="online-dropdown-title">🟢 Aktif Kullanıcılar</span>
+          <span class="online-dropdown-count" id="online-dropdown-count">0</span>
+        </div>
+        <div class="online-users-list" id="online-users-list">
+          <!-- Users will be populated here -->
+        </div>
+      </div>
+    </div>
+    
+    <!-- Notification Bell -->
+    <% if (currentUser) { %>
+    <div class="notification-container" id="notification-container">
+      <div class="notification-bell" id="notification-bell" title="Bildirimler">
+        🔔
+        <span class="notification-badge hidden" id="notification-badge">0</span>
+      </div>
+      <div class="notification-dropdown" id="notification-dropdown">
+        <div class="notification-header">
+          <span class="notification-title">🔔 Bildirimler</span>
+          <div class="notification-actions">
+            <button class="notification-action-btn delete-all" id="delete-all-notifications-btn" title="Tüm bildirimleri sil">
+              🗑️ Temizle
+            </button>
+            <button class="notification-action-btn" id="mark-all-read-btn" title="Tümünü okundu işaretle">
+              ✓ Okundu
+            </button>
+            <button class="notification-action-btn settings" id="notification-settings-btn" title="Bildirim Ayarları">
+              ⚙️
+            </button>
+          </div>
+        </div>
+        <div class="notification-list" id="notification-list">
+          <div class="notification-empty">
+            <div class="notification-empty-icon">🔔</div>
+            <div class="notification-empty-text">Henüz bildirim yok</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <% } %>
+  </div>
+
+  <div class="nav-center">
+    <div class="navbar-rates">
+      <div class="rate-item">
+        <span class="rate-label">EUR</span>
+        <span class="rate-value"><%= navbarRates && navbarRates.EUR ? navbarRates.EUR.toFixed(4) : '-' %> ₺</span>
+      </div>
+      <div class="rate-divider"></div>
+      <div class="rate-item">
+        <span class="rate-label">GBP</span>
+        <span class="rate-value"><%= navbarRates && navbarRates.GBP ? navbarRates.GBP.toFixed(4) : '-' %> ₺</span>
+      </div>
+    </div>
+    <div id="navbar-datetime" class="navbar-center-text"></div>
+  </div>
+
+  <div class="nav-right">
+    <% if (currentUser) { %>
+      <% const isReadOnly = currentUser.role === 'accounting_readonly' || currentUser.role === 'readonly'; %>
+      <a href="/vizebest" title="VizeBest" style="display:flex; align-items:center; gap:6px; padding:6px 12px; border-radius:6px; background:linear-gradient(90deg,#7dd3fc,#38bdf8); color:#fff; font-size:13px; font-weight:600; text-decoration:none; transition:all 0.2s; box-shadow:0 2px 8px rgba(56,189,248,0.3);">
+        🗂️ Vizebest
+      </a>
+
+      <div class="gps-dropdown" style="position:relative; display:inline-block;">
+        <span class="gps-dropdown-trigger" style="display:flex; align-items:center; gap:6px; cursor:pointer; padding:6px 12px; border-radius:6px; background:linear-gradient(90deg,#0ea5e9,#2563eb); color:#fff; font-size:13px; font-weight:600; transition:all 0.2s; box-shadow:0 2px 8px rgba(37,99,235,0.3);">
+          🛰️ GPS
+          <span style="font-size:10px;">▼</span>
+        </span>
+        <div class="gps-dropdown-menu" style="display:none; position:absolute; top:100%; right:0; margin-top:4px; background:var(--bg-card, #1e293b); border:1px solid var(--border-color, #334155); border-radius:8px; box-shadow:0 8px 24px rgba(0,0,0,0.4); min-width:180px; z-index:9999; overflow:hidden;">
+          <a href="/gps/live" class="gps-dropdown-item" style="display:block; padding:10px 16px; color:var(--text-primary, #e2e8f0); text-decoration:none; font-size:13px; font-weight:500; transition:all 0.2s; border-bottom:1px solid var(--border-color, #334155);">
+            🛰️ Canlı Takip
+          </a>
+          <a href="/gps/tachograph" class="gps-dropdown-item" style="display:block; padding:10px 16px; color:var(--text-primary, #e2e8f0); text-decoration:none; font-size:13px; font-weight:500; transition:all 0.2s;">
+            ⏱️ Takograf / Hız
+          </a>
+        </div>
+      </div>
+
+      <% if (!isReadOnly) { %>
+      <div class="acc-dropdown" style="position:relative; display:inline-block;">
+        <span class="acc-dropdown-trigger" style="display:flex; align-items:center; gap:6px; cursor:pointer; padding:6px 12px; border-radius:6px; background:linear-gradient(90deg,#10b981,#059669); color:#fff; font-size:13px; font-weight:600; transition:all 0.2s; box-shadow:0 2px 8px rgba(16,185,129,0.3);">
+          💰 Finans
+          <span style="font-size:10px;">▼</span>
+        </span>
+        <div class="acc-dropdown-menu" style="display:none; position:absolute; top:100%; right:0; margin-top:4px; background:var(--bg-card, #1e293b); border:1px solid var(--border-color, #334155); border-radius:8px; box-shadow:0 8px 24px rgba(0,0,0,0.4); min-width:180px; z-index:9999; overflow:hidden;">
+          <a href="/accounting" class="acc-dropdown-item" style="display:block; padding:10px 16px; color:var(--text-primary, #e2e8f0); text-decoration:none; font-size:13px; font-weight:500; transition:all 0.2s; border-bottom:1px solid var(--border-color, #334155);">
+            📁 Muhasebe
+          </a>
+          <a href="/vehicles" class="acc-dropdown-item" style="display:block; padding:10px 16px; color:var(--text-primary, #e2e8f0); text-decoration:none; font-size:13px; font-weight:500; transition:all 0.2s; border-bottom:1px solid var(--border-color, #334155);">
+            🚛 Araç&Sefer Bilgisi
+          </a>
+          <a href="/profit" class="acc-dropdown-item" style="display:block; padding:10px 16px; color:var(--text-primary, #e2e8f0); text-decoration:none; font-size:13px; font-weight:500; transition:all 0.2s;">
+            💰 Profit
+          </a>
+        </div>
+      </div>
+      <% } else { %>
+        <a href="/accounting" class="btn acct-btn btn-sm" title="Muhasebe">📁 Muhasebe</a>
+        <% if (currentUser.role === 'readonly') { %>
+          <a href="/vehicles" class="btn" title="Araç & Sefer Bilgisi" style="background: linear-gradient(90deg,#06b6d4,#0891b2); box-shadow: 0 4px 12px rgba(6,182,212,0.12);">🚛 Araç & Sefer Bilgisi</a>
+        <% } %>
+        <a href="/profit" class="btn" title="Sefer Karlılığı" style="background: linear-gradient(90deg,#10b981,#059669); box-shadow: 0 4px 12px rgba(16,185,129,0.12);">💰 Profit</a>
+      <% } %>
+      <% if (!isReadOnly) { %>
+      <div class="db-dropdown" style="position:relative; display:inline-block;">
+        <span class="db-dropdown-trigger" style="display:flex; align-items:center; gap:6px; cursor:pointer; padding:6px 12px; border-radius:6px; background:linear-gradient(90deg,#6366f1,#8b5cf6); color:#fff; font-size:13px; font-weight:600; transition:all 0.2s; box-shadow:0 2px 8px rgba(99,102,241,0.3);">
+          🗄️ Database
+          <span style="font-size:10px;">▼</span>
+        </span>
+        <div class="db-dropdown-menu" style="display:none; position:absolute; top:100%; right:0; margin-top:4px; background:var(--bg-card, #1e293b); border:1px solid var(--border-color, #334155); border-radius:8px; box-shadow:0 8px 24px rgba(0,0,0,0.4); min-width:180px; z-index:9999; overflow:hidden;">
+          <a href="/database" class="db-dropdown-item" style="display:block; padding:10px 16px; color:var(--text-primary, #e2e8f0); text-decoration:none; font-size:13px; font-weight:500; transition:all 0.2s; border-bottom:1px solid var(--border-color, #334155);">
+            🗄️ Veritabanı
+          </a>
+          <a href="/mail-data" class="db-dropdown-item" style="display:block; padding:10px 16px; color:var(--text-primary, #e2e8f0); text-decoration:none; font-size:13px; font-weight:500; transition:all 0.2s; border-bottom:1px solid var(--border-color, #334155);">
+            📧 Müşteri&Mail Veritabanı
+          </a>
+          <a href="/driver-upload/management" class="db-dropdown-item" style="display:block; padding:10px 16px; color:var(--text-primary, #e2e8f0); text-decoration:none; font-size:13px; font-weight:500; transition:all 0.2s; border-bottom:1px solid var(--border-color, #334155);">
+            🔗 CMR/Token Takip
+          </a>
+          <a href="/driver-locations" class="db-dropdown-item" style="display:block; padding:10px 16px; color:var(--text-primary, #e2e8f0); text-decoration:none; font-size:13px; font-weight:500; transition:all 0.2s; border-bottom:1px solid var(--border-color, #334155);">
+            📍 Şoför Konumları
+          </a>
+          <a href="/uid-base" class="db-dropdown-item" style="display:block; padding:10px 16px; color:var(--text-primary, #e2e8f0); text-decoration:none; font-size:13px; font-weight:500; transition:all 0.2s; border-bottom:1px solid var(--border-color, #334155);">
+            🔢 UID Base
+          </a>
+          <a href="/luca" class="db-dropdown-item" style="display:block; padding:10px 16px; color:var(--text-primary, #e2e8f0); text-decoration:none; font-size:13px; font-weight:500; transition:all 0.2s; border-bottom:1px solid var(--border-color, #334155);">
+            📄 Luca e-Fatura <span style="color: #ef4444; font-weight: 700;">(BETA)</span>
+          </a>
+          <a href="/contracts" class="db-dropdown-item" style="display:block; padding:10px 16px; color:var(--text-primary, #e2e8f0); text-decoration:none; font-size:13px; font-weight:500; transition:all 0.2s;">
+            📑 Sözleşmeler
+          </a>
+        </div>
+      </div>
+      <% } %>
+      <div class="user-dropdown" style="position:relative; display:inline-block;">
+        <span class="user-info user-dropdown-trigger" style="display:flex; align-items:center; gap:8px; cursor:pointer; padding:6px 12px; border-radius:6px; background:rgba(59,130,246,0.1); border:1px solid rgba(59,130,246,0.3); transition:all 0.2s;">
+          <strong><%= currentUser.username %></strong>
+          (<%= currentUser.role %>)
+          <span style="font-size:10px;">▼</span>
+        </span>
+        <div class="user-dropdown-menu" style="display:none; position:absolute; top:100%; right:0; margin-top:4px; background:var(--bg-card, #1e293b); border:1px solid var(--border-color, #334155); border-radius:8px; box-shadow:0 8px 24px rgba(0,0,0,0.4); min-width:150px; z-index:9999; overflow:hidden;">
+          <% if (currentUser.role === 'admin') { %>
+          <a href="/admin" class="user-dropdown-item" style="display:block; padding:10px 16px; color:#ef4444; text-decoration:none; font-size:13px; font-weight:600; transition:all 0.2s; border-bottom:1px solid var(--border-color, #334155); background:rgba(239,68,68,0.1);">
+            🛡️ Admin Panel
+          </a>
+          <% } %>
+          <a href="/logs" class="user-dropdown-item" style="display:block; padding:10px 16px; color:var(--text-primary, #e2e8f0); text-decoration:none; font-size:13px; font-weight:500; transition:all 0.2s; border-bottom:1px solid var(--border-color, #334155);">
+            📝 Kayıtlar
+          </a>
+          <a href="/changelog" class="user-dropdown-item" style="display:block; padding:10px 16px; color:var(--text-primary, #e2e8f0); text-decoration:none; font-size:13px; font-weight:500; transition:all 0.2s; border-bottom:1px solid var(--border-color, #334155);">
+            📋 Changelog
+          </a>
+          <a href="/logout" class="user-dropdown-item logout-item" style="display:block; padding:10px 16px; color:#ef4444; text-decoration:none; font-size:13px; font-weight:600; transition:all 0.2s;">
+            🚪 Çıkış
+          </a>
+        </div>
+      </div>
+    <% } else { %>
+      <a href="/login" class="btn db-btn">Giriş</a>
+    <% } %>
+  </div>
+</nav>
+
+<script>
+  // Acc dropdown toggle
+  (function() {
+    const accDropdown = document.querySelector('.acc-dropdown');
+    if (accDropdown) {
+      const trigger = accDropdown.querySelector('.acc-dropdown-trigger');
+      const menu = accDropdown.querySelector('.acc-dropdown-menu');
+      
+      trigger.addEventListener('click', function(e) {
+        e.stopPropagation();
+        // Close other dropdowns
+        const dbMenu = document.querySelector('.db-dropdown-menu');
+        const gpsMenu = document.querySelector('.gps-dropdown-menu');
+        const userMenu = document.querySelector('.user-dropdown-menu');
+        if (dbMenu) dbMenu.style.display = 'none';
+        if (gpsMenu) gpsMenu.style.display = 'none';
+        if (userMenu) userMenu.style.display = 'none';
+        menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
+      });
+      
+      // Hover effect for dropdown items
+      const items = menu.querySelectorAll('.acc-dropdown-item');
+      items.forEach(function(item) {
+        item.addEventListener('mouseenter', function() {
+          this.style.background = 'rgba(16,185,129,0.2)';
+        });
+        item.addEventListener('mouseleave', function() {
+          this.style.background = 'transparent';
+        });
+      });
+    }
+  })();
+
+  // Database dropdown toggle
+  (function() {
+    const dbDropdown = document.querySelector('.db-dropdown');
+    if (dbDropdown) {
+      const trigger = dbDropdown.querySelector('.db-dropdown-trigger');
+      const menu = dbDropdown.querySelector('.db-dropdown-menu');
+      
+      trigger.addEventListener('click', function(e) {
+        e.stopPropagation();
+        // Close other dropdowns
+        const accMenu = document.querySelector('.acc-dropdown-menu');
+        const gpsMenu = document.querySelector('.gps-dropdown-menu');
+        const userMenu = document.querySelector('.user-dropdown-menu');
+        if (accMenu) accMenu.style.display = 'none';
+        if (gpsMenu) gpsMenu.style.display = 'none';
+        if (userMenu) userMenu.style.display = 'none';
+        menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
+      });
+      
+      // Hover effect for dropdown items
+      const items = menu.querySelectorAll('.db-dropdown-item');
+      items.forEach(function(item) {
+        item.addEventListener('mouseenter', function() {
+          this.style.background = 'rgba(99,102,241,0.2)';
+        });
+        item.addEventListener('mouseleave', function() {
+          this.style.background = 'transparent';
+        });
+      });
+    }
+  })();
+
+  // GPS dropdown toggle
+  (function() {
+    const gpsDropdown = document.querySelector('.gps-dropdown');
+    if (gpsDropdown) {
+      const trigger = gpsDropdown.querySelector('.gps-dropdown-trigger');
+      const menu = gpsDropdown.querySelector('.gps-dropdown-menu');
+
+      trigger.addEventListener('click', function(e) {
+        e.stopPropagation();
+        // Close other dropdowns
+        const accMenu = document.querySelector('.acc-dropdown-menu');
+        const dbMenu = document.querySelector('.db-dropdown-menu');
+        const userMenu = document.querySelector('.user-dropdown-menu');
+        if (accMenu) accMenu.style.display = 'none';
+        if (dbMenu) dbMenu.style.display = 'none';
+        if (userMenu) userMenu.style.display = 'none';
+        menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
+      });
+
+      // Hover effect for dropdown items
+      const items = menu.querySelectorAll('.gps-dropdown-item');
+      items.forEach(function(item) {
+        item.addEventListener('mouseenter', function() {
+          this.style.background = 'rgba(37,99,235,0.2)';
+        });
+        item.addEventListener('mouseleave', function() {
+          this.style.background = 'transparent';
+        });
+      });
+    }
+  })();
+
+  // User dropdown toggle
+  (function() {
+    const dropdown = document.querySelector('.user-dropdown');
+    if (dropdown) {
+      const trigger = dropdown.querySelector('.user-dropdown-trigger');
+      const menu = dropdown.querySelector('.user-dropdown-menu');
+      
+      trigger.addEventListener('click', function(e) {
+        e.stopPropagation();
+        // Close other dropdowns
+        const accMenu = document.querySelector('.acc-dropdown-menu');
+        const dbMenu = document.querySelector('.db-dropdown-menu');
+        const gpsMenu = document.querySelector('.gps-dropdown-menu');
+        if (accMenu) accMenu.style.display = 'none';
+        if (dbMenu) dbMenu.style.display = 'none';
+        if (gpsMenu) gpsMenu.style.display = 'none';
+        menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
+      });
+      
+      // Hover effect for dropdown items
+      const items = menu.querySelectorAll('.user-dropdown-item');
+      items.forEach(function(item) {
+        item.addEventListener('mouseenter', function() {
+          if (item.classList.contains('logout-item')) {
+            this.style.background = 'rgba(239,68,68,0.2)';
+          } else {
+            this.style.background = 'rgba(59,130,246,0.2)';
+          }
+        });
+        item.addEventListener('mouseleave', function() {
+          this.style.background = 'transparent';
+        });
+      });
+    }
+  })();
+
+  // Close all dropdowns on outside click
+  document.addEventListener('click', function(e) {
+    const accDropdown = document.querySelector('.acc-dropdown');
+    const dbDropdown = document.querySelector('.db-dropdown');
+    const gpsDropdown = document.querySelector('.gps-dropdown');
+    const userDropdown = document.querySelector('.user-dropdown');
+    
+    if (accDropdown && !accDropdown.contains(e.target)) {
+      const accMenu = accDropdown.querySelector('.acc-dropdown-menu');
+      if (accMenu) accMenu.style.display = 'none';
+    }
+    if (dbDropdown && !dbDropdown.contains(e.target)) {
+      const dbMenu = dbDropdown.querySelector('.db-dropdown-menu');
+      if (dbMenu) dbMenu.style.display = 'none';
+    }
+    if (gpsDropdown && !gpsDropdown.contains(e.target)) {
+      const gpsMenu = gpsDropdown.querySelector('.gps-dropdown-menu');
+      if (gpsMenu) gpsMenu.style.display = 'none';
+    }
+    if (userDropdown && !userDropdown.contains(e.target)) {
+      const userMenu = userDropdown.querySelector('.user-dropdown-menu');
+      if (userMenu) userMenu.style.display = 'none';
+    }
+  });
+
+  // Helper function for brand links to always use saved year
+  function goToLoadsWithYear(event) {
+    event.preventDefault();
+    const savedYear = localStorage.getItem('bestfreight-selected-year') || new Date().getFullYear();
+    window.location.href = '/loads?year=' + savedYear;
+    return false;
+  }
+
+  // ========== GLOBAL YEAR MANAGEMENT ==========
+  // Store selected year in localStorage and automatically add to URLs
+  (function() {
+    const YEAR_KEY = 'bestfreight-selected-year';
+    const currentYear = new Date().getFullYear();
+    
+    // Get year from URL, localStorage, or default to current year
+    function getSelectedYear() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const urlYear = urlParams.get('year');
+      if (urlYear) {
+        localStorage.setItem(YEAR_KEY, urlYear);
+        return urlYear;
+      }
+      return localStorage.getItem(YEAR_KEY) || currentYear;
+    }
+    
+    // Pages that should have year parameter
+    const yearPages = ['/loads', '/profit', '/vehicles', '/accounting', '/vizebest', '/logs'];
+    
+    // Check if current page needs year parameter
+    function needsYearParam() {
+      const path = window.location.pathname;
+      return yearPages.some(p => path.startsWith(p));
+    }
+    
+    // Add year to URL if missing
+    function ensureYearInUrl() {
+      if (!needsYearParam()) return;
+      
+      const urlParams = new URLSearchParams(window.location.search);
+      if (!urlParams.has('year')) {
+        const savedYear = localStorage.getItem(YEAR_KEY);
+        if (savedYear) {
+          urlParams.set('year', savedYear);
+          const newUrl = window.location.pathname + '?' + urlParams.toString() + window.location.hash;
+          window.history.replaceState({}, '', newUrl);
+        }
+      }
+    }
+    
+    // Initialize on page load
+    const selectedYear = getSelectedYear();
+    ensureYearInUrl();
+    
+    // Sync navbar dropdown with saved year
+    const yearSelect = document.getElementById('globalYearSelect');
+    if (yearSelect) {
+      yearSelect.value = selectedYear;
+    }
+    
+    // Intercept all link clicks and form submissions to add year parameter
+    document.addEventListener('click', function(e) {
+      if (!e.target || typeof e.target.closest !== 'function') return;
+      const link = e.target.closest('a[href]');
+      if (!link) return;
+      
+      const href = link.getAttribute('href');
+      if (!href || href.startsWith('#') || href.startsWith('javascript:') || href.startsWith('mailto:') || href.startsWith('tel:')) return;
+      
+      // Don't intercept links that open in new tab
+      if (link.getAttribute('target') === '_blank') return;
+      
+      // Check if this link should have year parameter
+      const shouldAddYear = yearPages.some(p => href.startsWith(p));
+      if (!shouldAddYear) return;
+      
+      // Don't modify if year already in href
+      if (href.includes('year=')) return;
+      
+      const savedYear = localStorage.getItem(YEAR_KEY);
+      if (!savedYear) return;
+      
+      e.preventDefault();
+      const separator = href.includes('?') ? '&' : '?';
+      window.location.href = href + separator + 'year=' + savedYear;
+    });
+    
+    // Also intercept form submissions
+    document.addEventListener('submit', function(e) {
+      const form = e.target;
+      if (!form || form.method.toLowerCase() === 'post') return;
+      
+      // Don't intercept forms that open in new tab
+      if (form.getAttribute('target') === '_blank') return;
+      
+      const action = form.getAttribute('action') || window.location.pathname;
+      const shouldAddYear = yearPages.some(p => action.startsWith(p));
+      if (!shouldAddYear) return;
+      
+      // Add hidden year field if not exists
+      let yearInput = form.querySelector('input[name="year"]');
+      if (!yearInput) {
+        yearInput = document.createElement('input');
+        yearInput.type = 'hidden';
+        yearInput.name = 'year';
+        form.appendChild(yearInput);
+      }
+      yearInput.value = localStorage.getItem(YEAR_KEY) || currentYear;
+    });
+  })();
+
+  // Check if we're on a position detail page
+  function isOnPositionPage() {
+    return window.location.pathname.match(/^\/loads\/position\//);
+  }
+
+  // Disable period selector on position pages
+  (function() {
+    if (isOnPositionPage()) {
+      const yearSelect = document.getElementById('globalYearSelect');
+      if (yearSelect) {
+        yearSelect.disabled = true;
+        yearSelect.style.opacity = '0.5';
+        yearSelect.style.cursor = 'not-allowed';
+        yearSelect.title = 'Pozisyon içerisindeyken Dönem Tarihi değiştirilemez';
+      }
+      const periodSelector = document.querySelector('.navbar-period-selector');
+      if (periodSelector) {
+        periodSelector.style.opacity = '0.6';
+        periodSelector.title = 'Pozisyon içerisindeyken Dönem Tarihi değiştirilemez';
+      }
+    }
+  })();
+
+  // Global year change function - works on all pages
+  function changeGlobalYear(year) {
+    // Check if on position detail page
+    if (isOnPositionPage()) {
+      alert('⚠️ Pozisyon içerisindeyken Dönem Tarihi değiştirilemez.\n\nLütfen önce ana sayfaya dönün.');
+      // Reset select to current value
+      const urlParams = new URLSearchParams(window.location.search);
+      const currentYear = urlParams.get('year') || localStorage.getItem('bestfreight-selected-year') || new Date().getFullYear();
+      document.getElementById('globalYearSelect').value = currentYear;
+      return;
+    }
+    
+    // Save to localStorage
+    localStorage.setItem('bestfreight-selected-year', year);
+    
+    const currentPath = window.location.pathname;
+    const url = new URL(window.location.href);
+    url.searchParams.set('year', year);
+    window.location.href = url.toString();
+  }
+
+  // Navbar clock showing GMT+3 time with Turkish month names, updates every second
+  (function() {
+    const el = document.getElementById('navbar-datetime');
+    if (!el) return;
+    const months = ['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'];
+
+    function pad(n) { return n < 10 ? '0' + n : n; }
+
+    function updateClock() {
+      const nowLocal = new Date();
+      // Convert to UTC then add +3 hours for GMT+3
+      const utc = new Date(nowLocal.getTime() + (nowLocal.getTimezoneOffset() * 60000));
+      const tz3 = new Date(utc.getTime() + 3 * 3600000);
+
+      const day = tz3.getDate();
+      const month = months[tz3.getMonth()];
+      const year = tz3.getFullYear();
+      const hours = pad(tz3.getHours());
+      const minutes = pad(tz3.getMinutes());
+      const seconds = pad(tz3.getSeconds());
+
+      el.textContent = `${day} ${month} ${year} ${hours}:${minutes}:${seconds}`;
+    }
+
+    updateClock();
+    setInterval(updateClock, 1000);
+  })();
+
+  // ========== ONLINE USERS - Socket.IO Integration ==========
+  (function() {
+    const countEl = document.getElementById('online-count');
+    const dropdownCountEl = document.getElementById('online-dropdown-count');
+    const listEl = document.getElementById('online-users-list');
+    
+    if (!countEl || !listEl) return;
+    
+    // Show loading state immediately
+    listEl.innerHTML = '<div style="padding: 16px; text-align: center; color: var(--muted, #94a3b8); font-size: 12px;">⏳ Bağlanıyor...</div>';
+    
+    // Get current user from navbar
+    const userInfoEl = document.querySelector('.user-info strong');
+    const currentUsername = userInfoEl ? userInfoEl.textContent.trim() : 'Misafir';
+    
+    // Load Socket.IO if not already loaded
+    function loadSocketIO(callback) {
+      if (window.io) {
+        callback();
+        return;
+      }
+      const script = document.createElement('script');
+      script.src = '/socket.io/socket.io.js';
+      script.onload = callback;
+      script.onerror = function() {
+        listEl.innerHTML = '<div style="padding: 16px; text-align: center; color: #ef4444; font-size: 12px;">❌ Bağlantı hatası</div>';
+      };
+      document.head.appendChild(script);
+    }
+    
+    loadSocketIO(function() {
+      const socket = io({
+        transports: ['websocket'],  // WebSocket first for speed
+        upgrade: true,
+        reconnectionAttempts: 5,
+        timeout: 5000,
+        forceNew: false
+      });
+      
+      // Make socket globally available for notifications
+      window.mainSocket = socket;
+      
+      // Register user on connect and request current users immediately
+      socket.on('connect', function() {
+        socket.emit('register', {
+          name: currentUsername,
+          page: window.location.pathname
+        });
+        // Request current online users immediately
+        socket.emit('getOnlineUsers');
+        // Join notification room
+        socket.emit('joinUserRoom', currentUsername);
+        console.log('[Socket] Connected and joined notification room for:', currentUsername);
+      });
+      
+      // ========== NOTIFICATION EVENTS ==========
+      socket.on('notification', function(notification) {
+        
+        // Play notification sound
+        if (window.playNotificationSound) {
+          window.playNotificationSound();
+        }
+        
+        // Update badge
+        if (window.updateNotificationBadge) {
+          window.updateNotificationBadge();
+        }
+        
+        // Show toast notification
+        if (window.showNotificationToast) {
+          window.showNotificationToast(notification);
+        }
+      });
+      
+      socket.on('notificationCountRefresh', function() {
+        if (window.updateNotificationBadge) {
+          window.updateNotificationBadge();
+        }
+      });
+      // ========== END NOTIFICATION EVENTS ==========
+      
+      // Update page on navigation (for SPA-like behavior)
+      let lastPage = window.location.pathname;
+      setInterval(function() {
+        if (window.location.pathname !== lastPage) {
+          lastPage = window.location.pathname;
+          socket.emit('pageChange', lastPage);
+        }
+      }, 1000);
+      
+      // Handle online users updates
+      socket.on('onlineUsers', function(users) {
+        updateOnlineUsersUI(users);
+      });
+      
+      function updateOnlineUsersUI(users) {
+        const count = users.length;
+        
+        // Update counts
+        countEl.textContent = count;
+        if (dropdownCountEl) dropdownCountEl.textContent = count + ' kişi';
+        
+        // Build user list HTML
+        if (count === 0) {
+          listEl.innerHTML = '<div style="padding: 20px; text-align: center; color: var(--muted, #94a3b8); font-size: 13px;">Henüz kimse online değil</div>';
+          return;
+        }
+        
+        // Sort: current user first, then alphabetically
+        users.sort((a, b) => {
+          if (a.name === currentUsername) return -1;
+          if (b.name === currentUsername) return 1;
+          return a.name.localeCompare(b.name, 'tr');
+        });
+        
+        let html = '';
+        users.forEach(function(user) {
+          const initials = user.name.substring(0, 2).toUpperCase();
+          const isMe = user.name === currentUsername;
+          const avatarStyle = isMe ? 
+            'background: linear-gradient(135deg, #22c55e, #16a34a);' : 
+            'background: linear-gradient(135deg, #3b82f6, #8b5cf6);';
+          
+          html += `
+            <div class="online-user-item">
+              <div class="online-user-avatar" style="${avatarStyle}">${initials}</div>
+              <div class="online-user-info">
+                <div class="online-user-name">${user.name}${isMe ? ' (Sen)' : ''}</div>
+                <div class="online-user-page">${user.pageDisplay || 'Bilinmiyor'}</div>
+              </div>
+              <div class="online-user-status"></div>
+            </div>
+          `;
+        });
+        
+        listEl.innerHTML = html;
+      }
+    });
+  })();
+
+  // ========== NOTIFICATION SYSTEM ==========
+  (function() {
+    const bellEl = document.getElementById('notification-bell');
+    const badgeEl = document.getElementById('notification-badge');
+    const dropdownEl = document.getElementById('notification-dropdown');
+    const listEl = document.getElementById('notification-list');
+    const markAllBtn = document.getElementById('mark-all-read-btn');
+    const settingsBtn = document.getElementById('notification-settings-btn');
+    
+    if (!bellEl || !dropdownEl) return;
+    
+    let isOpen = false;
+
+    function normalizeIconId(iconId) {
+      if (!iconId) return 'bf-icon-bell';
+      return iconId.startsWith('bf-icon-') ? iconId : `bf-icon-${iconId}`;
+    }
+
+    function renderIcon(iconId, sizeClass = 'bf-icon--md') {
+      const id = normalizeIconId(iconId);
+      return `<svg class="bf-icon ${sizeClass}" aria-hidden="true" focusable="false"><use href="#${id}"></use></svg>`;
+    }
+    
+    // Icon map for notification types
+    const typeIcons = {
+      new_position: 'plus-circle',
+      position_completed: 'check-circle',
+      position_deleted: 'trash',
+      documents_uploaded: 'file-up',
+      expense_missing: 'alert-triangle',
+      chat_message: 'message',
+      system: 'bell'
+    };
+    
+    // Toggle dropdown
+    bellEl.addEventListener('click', function(e) {
+      e.stopPropagation();
+      isOpen = !isOpen;
+      dropdownEl.classList.toggle('show', isOpen);
+      
+      if (isOpen) {
+        loadNotifications();
+      }
+    });
+    
+    // Close on outside click
+    document.addEventListener('click', function(e) {
+      if (isOpen && !dropdownEl.contains(e.target) && !bellEl.contains(e.target)) {
+        isOpen = false;
+        dropdownEl.classList.remove('show');
+      }
+    });
+    
+    // Load notifications from API
+    async function loadNotifications() {
+      try {
+        const res = await fetch('/notifications?limit=30');
+        const data = await res.json();
+        
+        if (data.success && data.notifications) {
+          renderNotifications(data.notifications);
+        }
+      } catch (err) {
+        console.error('[Notifications] Load error:', err);
+        listEl.innerHTML = `<div class="notification-empty"><div class="notification-empty-icon">${renderIcon('x-circle', 'bf-icon--xl')}</div><div class="notification-empty-text">Yüklenemedi</div></div>`;
+      }
+    }
+    
+    // Render notifications
+    function renderNotifications(notifications) {
+      if (!notifications || notifications.length === 0) {
+        listEl.innerHTML = `<div class="notification-empty"><div class="notification-empty-icon">${renderIcon('bell', 'bf-icon--xl')}</div><div class="notification-empty-text">Henüz bildirim yok</div></div>`;
+        return;
+      }
+      
+      let html = '';
+      notifications.forEach(function(n) {
+        const iconId = (n.meta && n.meta.icon) ? n.meta.icon : (typeIcons[n.type] || 'bell');
+        const unreadClass = n.is_read ? '' : 'unread';
+        const timeAgo = formatTimeAgo(n.created_at);
+        
+        // Mesajdaki yeni satırları <br> ile değiştir
+        const formattedMessage = n.message ? escapeHtml(n.message).replace(/\n/g, '<br>') : '';
+        
+        html += `
+          <div class="notification-item ${unreadClass}" data-id="${n.id}" data-link="${n.link || ''}" onclick="handleNotificationClick(this)">
+            <div class="notification-icon ${n.type}">${renderIcon(iconId, 'bf-icon--md')}</div>
+            <div class="notification-content">
+              <div class="notification-text">${escapeHtml(n.title)}</div>
+              ${formattedMessage ? `<div class="notification-message">${formattedMessage}</div>` : ''}
+              <div class="notification-time">${timeAgo}</div>
+            </div>
+          </div>
+        `;
+      });
+      
+      listEl.innerHTML = html;
+    }
+    
+    // Format time ago
+    function formatTimeAgo(dateStr) {
+      if (!dateStr) return '';
+      const date = new Date(dateStr);
+      const now = new Date();
+      const diffMs = now - date;
+      const diffMins = Math.floor(diffMs / 60000);
+      const diffHours = Math.floor(diffMs / 3600000);
+      const diffDays = Math.floor(diffMs / 86400000);
+      
+      if (diffMins < 1) return 'Az önce';
+      if (diffMins < 60) return diffMins + ' dakika önce';
+      if (diffHours < 24) return diffHours + ' saat önce';
+      if (diffDays < 7) return diffDays + ' gün önce';
+      
+      return date.toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' });
+    }
+    
+    // Escape HTML
+    function escapeHtml(str) {
+      if (!str) return '';
+      return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+    
+    // Handle notification click
+    window.handleNotificationClick = async function(el) {
+      const id = el.dataset.id;
+      const link = el.dataset.link;
+      
+      // Mark as read
+      try {
+        await fetch('/notifications/' + id + '/read', { method: 'POST' });
+        el.classList.remove('unread');
+        updateBadgeCount();
+      } catch (err) {
+        console.error('[Notifications] Mark read error:', err);
+      }
+      
+      // Navigate if link exists
+      if (link) {
+        window.location.href = link;
+      }
+    };
+    
+    // Mark all as read
+    if (markAllBtn) {
+      markAllBtn.addEventListener('click', async function(e) {
+        e.stopPropagation();
+        try {
+          await fetch('/notifications/read-all', { method: 'POST' });
+          // Update UI
+          document.querySelectorAll('.notification-item.unread').forEach(el => el.classList.remove('unread'));
+          updateBadgeCount();
+        } catch (err) {
+          console.error('[Notifications] Mark all read error:', err);
+        }
+      });
+    }
+    
+    // Delete all notifications
+    const deleteAllBtn = document.getElementById('delete-all-notifications-btn');
+    if (deleteAllBtn) {
+      deleteAllBtn.addEventListener('click', async function(e) {
+        e.stopPropagation();
+        try {
+          const response = await fetch('/notifications/clear-all', { method: 'DELETE' });
+          const data = await response.json();
+          
+          if (data.success) {
+            // Clear list UI
+            listEl.innerHTML = '<div class="notification-empty"><div class="notification-empty-icon">🔔</div><div class="notification-empty-text">Henüz bildirim yok</div></div>';
+            updateBadgeCount();
+          }
+        } catch (err) {
+          console.error('[Notifications] Delete all error:', err);
+        }
+      });
+    }
+    
+    // Settings button - opens preferences modal
+    if (settingsBtn) {
+      settingsBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        openNotificationSettings();
+      });
+    }
+    
+    // Update badge count
+    async function updateBadgeCount() {
+      try {
+        const res = await fetch('/notifications/count');
+        const data = await res.json();
+        
+        if (data.success) {
+          const count = data.count || 0;
+          badgeEl.textContent = count > 99 ? '99+' : count;
+          badgeEl.classList.toggle('hidden', count === 0);
+          
+          if (count > 0) {
+            bellEl.classList.add('has-unread');
+            setTimeout(() => bellEl.classList.remove('has-unread'), 500);
+          }
+        }
+      } catch (err) {
+        console.error('[Notifications] Count error:', err);
+      }
+    }
+    
+    // Make updateBadgeCount globally available
+    window.updateNotificationBadge = updateBadgeCount;
+    
+    // Initial badge count
+    updateBadgeCount();
+    
+    // Poll for new notifications every 30 seconds
+    setInterval(updateBadgeCount, 30000);
+    
+    // Play notification sound - make global
+    // Pre-create AudioContext on first user interaction
+    let notificationAudioCtx = null;
+    let audioUnlocked = false;
+    
+    // Unlock audio on first user interaction
+    function unlockAudio() {
+      if (audioUnlocked) return;
+      try {
+        notificationAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        // Create a silent buffer to unlock
+        const buffer = notificationAudioCtx.createBuffer(1, 1, 22050);
+        const source = notificationAudioCtx.createBufferSource();
+        source.buffer = buffer;
+        source.connect(notificationAudioCtx.destination);
+        source.start(0);
+        audioUnlocked = true;
+      } catch (e) {
+        // Audio unlock failed
+      }
+    }
+    
+    // Unlock on any user interaction
+    document.addEventListener('click', unlockAudio, { once: true });
+    document.addEventListener('keydown', unlockAudio, { once: true });
+    document.addEventListener('touchstart', unlockAudio, { once: true });
+    
+    window.playNotificationSound = function() {
+      try {
+        // If not unlocked yet, try to create new context
+        if (!notificationAudioCtx || notificationAudioCtx.state === 'closed') {
+          notificationAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        
+        // Resume if suspended
+        if (notificationAudioCtx.state === 'suspended') {
+          notificationAudioCtx.resume();
+        }
+        
+        const oscillator = notificationAudioCtx.createOscillator();
+        const gainNode = notificationAudioCtx.createGain();
+        
+        oscillator.connect(gainNode);
+        gainNode.connect(notificationAudioCtx.destination);
+        
+        // Pleasant notification tone
+        oscillator.frequency.setValueAtTime(880, notificationAudioCtx.currentTime); // A5
+        oscillator.frequency.setValueAtTime(1100, notificationAudioCtx.currentTime + 0.1); // C#6
+        oscillator.frequency.setValueAtTime(880, notificationAudioCtx.currentTime + 0.2); // A5
+        
+        oscillator.type = 'sine';
+        gainNode.gain.setValueAtTime(0.3, notificationAudioCtx.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, notificationAudioCtx.currentTime + 0.4);
+        
+        oscillator.start(notificationAudioCtx.currentTime);
+        oscillator.stop(notificationAudioCtx.currentTime + 0.4);
+      } catch (e) {
+        // Sound error
+      }
+    };
+    
+    // Show notification toast - make global
+    window.showNotificationToast = function(notification) {
+      // Refresh notification list if dropdown is open
+      if (isOpen) {
+        loadNotifications();
+      }
+      
+      // Create toast element
+      const toast = document.createElement('div');
+      toast.className = 'notification-toast';
+      const formattedMsg = notification.message ? escapeHtml(notification.message).replace(/\n/g, '<br>') : '';
+      toast.innerHTML = `
+        <div class="notification-toast-icon">${typeIcons[notification.type] || '🔔'}</div>
+        <div class="notification-toast-content">
+          <div class="notification-toast-title">${escapeHtml(notification.title)}</div>
+          ${formattedMsg ? `<div class="notification-toast-message">${formattedMsg}</div>` : ''}
+        </div>
+        <button class="notification-toast-close" onclick="this.parentElement.remove()">×</button>
+      `;
+      
+      // Add styles if not exists
+      if (!document.getElementById('notification-toast-styles')) {
+        const style = document.createElement('style');
+        style.id = 'notification-toast-styles';
+        style.textContent = `
+          .notification-toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            max-width: 350px;
+            background: var(--bg-card, #1e293b);
+            border: 1px solid var(--border-color, rgba(255,255,255,0.1));
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+            padding: 14px 16px;
+            display: flex;
+            gap: 12px;
+            align-items: flex-start;
+            z-index: 10000;
+            animation: slideInRight 0.3s ease;
+          }
+          @keyframes slideInRight {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+          }
+          .notification-toast-icon { font-size: 24px; }
+          .notification-toast-content { flex: 1; min-width: 0; }
+          .notification-toast-title { font-size: 13px; font-weight: 600; color: var(--text-primary, #e2e8f0); }
+          .notification-toast-message { font-size: 12px; color: var(--text-muted, #94a3b8); margin-top: 4px; }
+          .notification-toast-close {
+            background: none;
+            border: none;
+            color: var(--text-muted, #64748b);
+            font-size: 18px;
+            cursor: pointer;
+            padding: 0;
+            line-height: 1;
+          }
+          .notification-toast-close:hover { color: var(--text-primary, #e2e8f0); }
+        `;
+        document.head.appendChild(style);
+      }
+      
+      document.body.appendChild(toast);
+      
+      // Auto remove after 5 seconds
+      setTimeout(() => {
+        toast.style.animation = 'slideInRight 0.3s ease reverse';
+        setTimeout(() => toast.remove(), 300);
+      }, 5000);
+    }
+    
+    // Open notification settings modal
+    window.openNotificationSettings = async function() {
+      // Create modal if not exists
+      let modal = document.getElementById('notification-settings-modal');
+      if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'notification-settings-modal';
+        modal.className = 'notification-settings-overlay';
+        
+        // Check if light theme
+        const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+        const bgColor = isLight ? '#ffffff' : '#1e293b';
+        const headerBg = isLight ? '#f8fafc' : 'linear-gradient(135deg, rgba(99, 102, 241, 0.15), rgba(139, 92, 246, 0.1))';
+        const textColor = isLight ? '#1e293b' : '#e2e8f0';
+        const descColor = isLight ? '#64748b' : '#94a3b8';
+        const borderColor = isLight ? '#e2e8f0' : 'rgba(255,255,255,0.1)';
+        
+        modal.innerHTML = `
+          <div class="notification-settings-modal" style="background: ${bgColor} !important;">
+            <div class="notification-settings-header" style="background: ${headerBg}; border-color: ${borderColor};">
+              <h3 style="color: ${textColor} !important;">⚙️ Bildirim Ayarları</h3>
+              <button class="notification-settings-close" onclick="closeNotificationSettings()" style="color: ${descColor};">×</button>
+            </div>
+            <div class="notification-settings-body" style="background: ${bgColor} !important;">
+              <div class="notification-setting-item" style="background: ${bgColor} !important; border-color: ${borderColor};">
+                <div class="notification-setting-info" style="background: ${bgColor} !important;">
+                  <div class="notification-setting-title" style="color: ${textColor} !important; background: ${bgColor} !important;">Yeni Pozisyon</div>
+                  <div class="notification-setting-desc" style="color: ${descColor} !important; background: ${bgColor} !important;">Yeni pozisyon oluşturulduğunda bildirim al</div>
+                </div>
+                <label class="notification-toggle">
+                  <input type="checkbox" id="pref-new_position" checked>
+                  <span class="notification-toggle-slider"></span>
+                </label>
+              </div>
+              <div class="notification-setting-item" style="background: ${bgColor} !important; border-color: ${borderColor};">
+                <div class="notification-setting-info" style="background: ${bgColor} !important;">
+                  <div class="notification-setting-title" style="color: ${textColor} !important; background: ${bgColor} !important;">Pozisyon Tamamlandı</div>
+                  <div class="notification-setting-desc" style="color: ${descColor} !important; background: ${bgColor} !important;">Bir pozisyon tamamlandığında bildirim al</div>
+                </div>
+                <label class="notification-toggle">
+                  <input type="checkbox" id="pref-position_completed" checked>
+                  <span class="notification-toggle-slider"></span>
+                </label>
+              </div>
+              <div class="notification-setting-item" style="background: ${bgColor} !important; border-color: ${borderColor};">
+                <div class="notification-setting-info" style="background: ${bgColor} !important;">
+                  <div class="notification-setting-title" style="color: ${textColor} !important; background: ${bgColor} !important;">Pozisyon Silindi</div>
+                  <div class="notification-setting-desc" style="color: ${descColor} !important; background: ${bgColor} !important;">Bir pozisyon silindiğinde bildirim al</div>
+                </div>
+                <label class="notification-toggle">
+                  <input type="checkbox" id="pref-position_deleted" checked>
+                  <span class="notification-toggle-slider"></span>
+                </label>
+              </div>
+              <div class="notification-setting-item" style="background: ${bgColor} !important; border-color: ${borderColor};">
+                <div class="notification-setting-info" style="background: ${bgColor} !important;">
+                  <div class="notification-setting-title" style="color: ${textColor} !important; background: ${bgColor} !important;">Evrak Yüklendi</div>
+                  <div class="notification-setting-desc" style="color: ${descColor} !important; background: ${bgColor} !important;">Muhasebe evrakları tamamlandığında bildirim al</div>
+                </div>
+                <label class="notification-toggle">
+                  <input type="checkbox" id="pref-documents_uploaded" checked>
+                  <span class="notification-toggle-slider"></span>
+                </label>
+              </div>
+              <div class="notification-setting-item" style="background: ${bgColor} !important; border-color: ${borderColor};">
+                <div class="notification-setting-info" style="background: ${bgColor} !important;">
+                  <div class="notification-setting-title" style="color: ${textColor} !important; background: ${bgColor} !important;">Chat Mesajı</div>
+                  <div class="notification-setting-desc" style="color: ${descColor} !important; background: ${bgColor} !important;">Özel mesaj geldiğinde bildirim al</div>
+                </div>
+                <label class="notification-toggle">
+                  <input type="checkbox" id="pref-chat_message" checked>
+                  <span class="notification-toggle-slider"></span>
+                </label>
+              </div>
+              <div class="notification-setting-item" style="background: ${bgColor} !important; border-color: ${borderColor};">
+                <div class="notification-setting-info" style="background: ${bgColor} !important;">
+                  <div class="notification-setting-title" style="color: ${textColor} !important; background: ${bgColor} !important;">Masrafı Eksik</div>
+                  <div class="notification-setting-desc" style="color: ${descColor} !important; background: ${bgColor} !important;">Pozisyon masrafı eksik işaretlendiğinde bildirim al</div>
+                </div>
+                <label class="notification-toggle">
+                  <input type="checkbox" id="pref-expense_missing" checked>
+                  <span class="notification-toggle-slider"></span>
+                </label>
+              </div>
+            </div>
+            <div class="notification-settings-footer" style="background: ${headerBg}; border-color: ${borderColor};">
+              <button class="notification-settings-save" onclick="saveNotificationSettings()">Kaydet</button>
+            </div>
+          </div>
+        `;
+        
+        // Add styles
+        const style = document.createElement('style');
+        style.textContent = `
+          .notification-settings-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(4px);
+            z-index: 20000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+          }
+          .notification-settings-overlay.show { display: flex; }
+          .notification-settings-modal {
+            background: var(--bg-card, #1e293b);
+            border: 1px solid var(--border-color, rgba(255,255,255,0.1));
+            border-radius: 16px;
+            width: 100%;
+            max-width: 420px;
+            margin: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+          }
+          .notification-settings-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border-color, rgba(255,255,255,0.1));
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+          }
+          .notification-settings-header h3 { margin: 0; font-size: 16px; color: var(--text-primary, #e2e8f0); }
+          .notification-settings-close {
+            background: none;
+            border: none;
+            color: var(--text-muted, #64748b);
+            font-size: 24px;
+            cursor: pointer;
+          }
+          .notification-settings-body { padding: 16px 20px; }
+          .notification-setting-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border-color, rgba(255,255,255,0.05));
+          }
+          .notification-setting-item:last-child { border-bottom: none; }
+          .notification-setting-title { font-size: 14px; font-weight: 600; color: var(--text-primary, #e2e8f0); }
+          .notification-setting-desc { font-size: 12px; color: var(--text-muted, #94a3b8); margin-top: 2px; }
+          .notification-toggle { position: relative; width: 44px; height: 24px; cursor: pointer; }
+          .notification-toggle input { opacity: 0; width: 0; height: 0; }
+          .notification-toggle-slider {
+            position: absolute;
+            inset: 0;
+            background: #475569;
+            border-radius: 12px;
+            transition: 0.3s;
+          }
+          .notification-toggle-slider::before {
+            content: '';
+            position: absolute;
+            width: 18px;
+            height: 18px;
+            background: #fff;
+            border-radius: 50%;
+            left: 3px;
+            top: 3px;
+            transition: 0.3s;
+          }
+          .notification-toggle input:checked + .notification-toggle-slider { background: #6366f1; }
+          .notification-toggle input:checked + .notification-toggle-slider::before { transform: translateX(20px); }
+          .notification-settings-footer {
+            padding: 16px 20px;
+            border-top: 1px solid var(--border-color, rgba(255,255,255,0.1));
+          }
+          .notification-settings-save {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            border: none;
+            border-radius: 8px;
+            color: #fff;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+          }
+          .notification-settings-save:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(99,102,241,0.3); }
+          
+          /* Light theme styles */
+          [data-theme="light"] .notification-settings-modal {
+            background: #ffffff !important;
+            border-color: #e2e8f0 !important;
+          }
+          [data-theme="light"] .notification-settings-header {
+            border-color: #e2e8f0 !important;
+            background: #f8fafc !important;
+          }
+          [data-theme="light"] .notification-settings-header h3 {
+            color: #1e293b !important;
+          }
+          [data-theme="light"] .notification-settings-close {
+            color: #64748b !important;
+          }
+          [data-theme="light"] .notification-settings-close:hover {
+            color: #1e293b !important;
+          }
+          [data-theme="light"] .notification-settings-body {
+            background: #ffffff !important;
+          }
+          [data-theme="light"] .notification-setting-item {
+            border-color: #e2e8f0 !important;
+            background: transparent !important;
+          }
+          [data-theme="light"] .notification-setting-info {
+            background: transparent !important;
+          }
+          [data-theme="light"] .notification-setting-title {
+            color: #1e293b !important;
+            background: transparent !important;
+          }
+          [data-theme="light"] .notification-setting-desc {
+            color: #64748b !important;
+            background: transparent !important;
+          }
+          [data-theme="light"] .notification-settings-footer {
+            border-color: #e2e8f0 !important;
+            background: #f8fafc !important;
+          }
+          [data-theme="light"] .notification-toggle-slider {
+            background: #cbd5e1 !important;
+          }
+          [data-theme="light"] .notification-toggle input:checked + .notification-toggle-slider {
+            background: #6366f1 !important;
+          }
+          
+          /* Remove all selection/focus highlights */
+          .notification-settings-modal *::selection {
+            background: rgba(99, 102, 241, 0.2) !important;
+            color: inherit !important;
+          }
+          .notification-setting-info,
+          .notification-setting-item {
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+          }
+          .notification-settings-modal *:focus {
+            outline: none !important;
+          }
+        `;
+        document.head.appendChild(style);
+        document.body.appendChild(modal);
+      }
+      
+      // Load current preferences
+      try {
+        const res = await fetch('/notifications/preferences');
+        const data = await res.json();
+        if (data.success && data.preferences) {
+          const prefs = data.preferences;
+          document.getElementById('pref-new_position').checked = prefs.new_position;
+          document.getElementById('pref-position_completed').checked = prefs.position_completed;
+          document.getElementById('pref-position_deleted').checked = prefs.position_deleted;
+          document.getElementById('pref-documents_uploaded').checked = prefs.documents_uploaded;
+          document.getElementById('pref-expense_missing').checked = prefs.expense_missing;
+          document.getElementById('pref-chat_message').checked = prefs.chat_message;
+        }
+      } catch (err) {
+        console.error('[Notifications] Load preferences error:', err);
+      }
+      
+      modal.classList.add('show');
+    };
+    
+    // Close settings modal
+    window.closeNotificationSettings = function() {
+      const modal = document.getElementById('notification-settings-modal');
+      if (modal) modal.classList.remove('show');
+    };
+    
+    // Save settings
+    window.saveNotificationSettings = async function() {
+      const prefs = {
+        new_position: document.getElementById('pref-new_position').checked,
+        position_completed: document.getElementById('pref-position_completed').checked,
+        position_deleted: document.getElementById('pref-position_deleted').checked,
+        documents_uploaded: document.getElementById('pref-documents_uploaded').checked,
+        expense_missing: document.getElementById('pref-expense_missing').checked,
+        chat_message: document.getElementById('pref-chat_message').checked
+      };
+      
+      try {
+        await fetch('/notifications/preferences', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(prefs)
+        });
+        closeNotificationSettings();
+      } catch (err) {
+        console.error('[Notifications] Save preferences error:', err);
+        alert('Tercihler kaydedilemedi');
+      }
+    };
+  })();
+</script>

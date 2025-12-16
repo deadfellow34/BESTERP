@@ -1,0 +1,242 @@
+<%- include('../partials/navbar') %>
+
+<style>
+  .vehicles-page {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 16px 20px 30px;
+  }
+
+  .vehicles-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    padding: 14px 18px;
+    background: rgba(15, 23, 42, 0.85);
+    border: 1px solid rgba(59, 130, 246, 0.15);
+    border-radius: 12px;
+    backdrop-filter: blur(10px);
+  }
+
+  .vehicles-header h1 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: #e5e7eb;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .stat-count {
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+    color: white;
+    padding: 3px 10px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    margin-left: 8px;
+  }
+
+  .search-input {
+    padding: 8px 14px;
+    border-radius: 8px;
+    border: 1px solid rgba(59, 130, 246, 0.2);
+    background: rgba(15, 23, 42, 0.9);
+    color: #e6eef8;
+    font-size: 13px;
+    width: 220px;
+    transition: all 0.2s ease;
+  }
+
+  .search-input:focus {
+    outline: none;
+    border-color: #3b82f6;
+  }
+
+  .search-input::placeholder {
+    color: #64748b;
+  }
+
+  .vehicles-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 16px;
+  }
+
+  .vehicle-card {
+    background: rgba(15, 23, 42, 0.8);
+    border: 1px solid rgba(59, 130, 246, 0.1);
+    border-radius: 12px;
+    padding: 18px;
+    transition: all 0.25s ease;
+  }
+
+  .vehicle-card:hover {
+    border-color: rgba(59, 130, 246, 0.3);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+  }
+
+  .vehicle-plate {
+    font-size: 16px;
+    font-weight: 700;
+    color: #60a5fa;
+    text-decoration: none;
+    display: block;
+    margin-bottom: 6px;
+    letter-spacing: 0.5px;
+  }
+
+  .vehicle-plate:hover {
+    color: #93c5fd;
+  }
+
+  .vehicle-driver {
+    font-size: 13px;
+    color: #9ca3af;
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .vehicle-trips {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+    padding: 10px 14px;
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(5, 150, 105, 0.1));
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.1);
+  }
+
+  .vehicle-trips-label {
+    font-size: 12px;
+    color: #10b981;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+  }
+
+  .vehicle-trips-count {
+    font-size: 20px;
+    font-weight: 800;
+    color: #10b981;
+    text-shadow: 0 0 10px rgba(16, 185, 129, 0.3);
+  }
+
+  .vehicle-trips-zero .vehicle-trips-count,
+  .vehicle-trips.zero-trips .vehicle-trips-count {
+    color: #64748b;
+    text-shadow: none;
+  }
+
+  .vehicle-trips.zero-trips {
+    background: rgba(100, 116, 139, 0.1);
+    border-color: rgba(100, 116, 139, 0.2);
+    box-shadow: none;
+  }
+
+  .vehicle-trips.zero-trips .vehicle-trips-label {
+    color: #64748b;
+  }
+
+  /* Light theme styles */
+  [data-theme="light"] .vehicle-trips {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.12), rgba(5, 150, 105, 0.08));
+    border-color: rgba(16, 185, 129, 0.35);
+  }
+
+  [data-theme="light"] .vehicle-trips-label {
+    color: #059669;
+  }
+
+  [data-theme="light"] .vehicle-trips-count {
+    color: #059669;
+    text-shadow: none;
+  }
+
+  [data-theme="light"] .vehicle-trips.zero-trips {
+    background: rgba(100, 116, 139, 0.08);
+    border-color: rgba(100, 116, 139, 0.2);
+  }
+
+  [data-theme="light"] .vehicle-trips.zero-trips .vehicle-trips-label,
+  [data-theme="light"] .vehicle-trips.zero-trips .vehicle-trips-count {
+    color: #94a3b8;
+  }
+
+  .btn-view {
+    display: block;
+    width: 100%;
+    padding: 10px 14px;
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .btn-view:hover {
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+    transform: translateY(-1px);
+  }
+
+  .empty-state {
+    grid-column: 1 / -1;
+    padding: 50px;
+    background: rgba(15, 23, 42, 0.6);
+    border: 1px solid rgba(59, 130, 246, 0.1);
+    border-radius: 12px;
+    text-align: center;
+    color: #9ca3af;
+    font-size: 15px;
+  }
+</style>
+
+<div class="vehicles-page">
+  <div class="vehicles-header">
+    <h1>🚛 Araçlar <span class="stat-count"><%= trucks ? trucks.length : 0 %></span></h1>
+    <input id="vehicle-search" class="search-input" placeholder="Plaka veya şoför ara..." />
+  </div>
+
+  <% if (trucks && trucks.length > 0) { %>
+    <div id="vehicles-grid" class="vehicles-grid">
+      <% const currentYear = typeof year !== 'undefined' ? year : new Date().getFullYear(); %>
+      <% trucks.forEach(function(t){ %>
+        <div class="vehicle-card" data-plate="<%= (t.plate || '').toLowerCase() %>" data-driver="<%= (t.driver_name || '').toLowerCase() %>">
+          <a href="/vehicles/<%= t.id %>?year=<%= currentYear %>" class="vehicle-plate"><%= t.plate %></a>
+          <div class="vehicle-driver">👤 <%= t.driver_name || '-' %></div>
+          <div class="vehicle-trips <%= t.trip_count === 0 ? 'zero-trips' : '' %>">
+            <span class="vehicle-trips-label">Sefer Sayısı</span>
+            <span class="vehicle-trips-count"><%= t.trip_count || 0 %></span>
+          </div>
+          <a href="/vehicles/<%= t.id %>?year=<%= currentYear %>" class="btn-view">Görüntüle</a>
+        </div>
+      <% }) %>
+    </div>
+  <% } else { %>
+    <div class="vehicles-grid">
+      <div class="empty-state">Henüz araç kaydı yok.</div>
+    </div>
+  <% } %>
+</div>
+
+<script>
+  document.getElementById('vehicle-search')?.addEventListener('input', function(e){
+    const q = e.target.value.trim().toLowerCase();
+    document.querySelectorAll('#vehicles-grid .vehicle-card').forEach(card => {
+      const match = card.dataset.plate.includes(q) || card.dataset.driver.includes(q);
+      card.style.display = match ? 'block' : 'none';
+    });
+  });
+</script>

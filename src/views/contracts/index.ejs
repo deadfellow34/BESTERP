@@ -1,0 +1,1347 @@
+<%- include('../partials/navbar') %>
+
+<style>
+  .contracts-container {
+    padding: 24px;
+    max-width: 1600px;
+    margin: 0 auto;
+  }
+
+  .page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+
+  .page-title {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--text-primary, #e2e8f0);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .page-title-icon {
+    font-size: 28px;
+  }
+
+  .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+  }
+
+  .btn-primary:hover {
+    background: linear-gradient(135deg, #2563eb, #1d4ed8);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(59, 130, 246, 0.4);
+  }
+
+  /* Stats Cards */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+
+  .stat-card {
+    background: var(--bg-card, #1e293b);
+    border: 1px solid var(--border-color, rgba(255,255,255,0.06));
+    border-radius: 12px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .stat-card.warning {
+    border-color: rgba(245, 158, 11, 0.3);
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), transparent);
+  }
+
+  .stat-card.danger {
+    border-color: rgba(239, 68, 68, 0.3);
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), transparent);
+  }
+
+  .stat-label {
+    font-size: 13px;
+    color: var(--text-muted, #94a3b8);
+    font-weight: 500;
+  }
+
+  .stat-value {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--text-primary, #e2e8f0);
+  }
+
+  .stat-card.warning .stat-value {
+    color: #f59e0b;
+  }
+
+  .stat-card.danger .stat-value {
+    color: #ef4444;
+  }
+
+  .alert {
+    padding: 12px 16px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    font-size: 14px;
+    font-weight: 500;
+  }
+
+  .alert-success {
+    background: rgba(16, 185, 129, 0.15);
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    color: #10b981;
+  }
+
+  .alert-error {
+    background: rgba(239, 68, 68, 0.15);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    color: #ef4444;
+  }
+
+  .contracts-table-wrapper {
+    background: var(--bg-card, #1e293b);
+    border: 1px solid var(--border-color, rgba(255,255,255,0.06));
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.2);
+  }
+
+  .table-responsive {
+    overflow-x: auto;
+  }
+
+  .contracts-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 1000px;
+  }
+
+  .contracts-table th {
+    padding: 14px 12px;
+    text-align: left;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-muted, #94a3b8);
+    background: rgba(0, 0, 0, 0.2);
+    border-bottom: 1px solid var(--border-color, rgba(255,255,255,0.06));
+    white-space: nowrap;
+  }
+
+  .contracts-table td {
+    padding: 14px 12px;
+    font-size: 13px;
+    color: var(--text-primary, #e2e8f0);
+    border-bottom: 1px solid var(--border-color, rgba(255,255,255,0.04));
+    vertical-align: middle;
+  }
+
+  .contracts-table tr:hover {
+    background: rgba(255, 255, 255, 0.02);
+  }
+
+  .contracts-table tr:last-child td {
+    border-bottom: none;
+  }
+
+  .contract-title {
+    font-weight: 600;
+    color: var(--text-primary, #e2e8f0);
+  }
+
+  .contract-type-badge {
+    display: inline-block;
+    padding: 4px 10px;
+    background: rgba(99, 102, 241, 0.15);
+    color: #818cf8;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 600;
+  }
+
+  .status-badge {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 600;
+  }
+
+  .status-badge.active {
+    background: rgba(16, 185, 129, 0.15);
+    color: #10b981;
+  }
+
+  .status-badge.passive {
+    background: rgba(100, 116, 139, 0.15);
+    color: #94a3b8;
+  }
+
+  .status-badge.expired {
+    background: rgba(239, 68, 68, 0.15);
+    color: #ef4444;
+  }
+
+  .status-badge.cancelled {
+    background: rgba(239, 68, 68, 0.15);
+    color: #ef4444;
+  }
+
+  .status-badge.renewed {
+    background: rgba(59, 130, 246, 0.15);
+    color: #3b82f6;
+  }
+
+  .expiry-cell {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .expiry-date {
+    font-weight: 500;
+  }
+
+  .expiry-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 700;
+  }
+
+  .expiry-badge.critical {
+    background: rgba(239, 68, 68, 0.2);
+    color: #ef4444;
+  }
+
+  .expiry-badge.warning {
+    background: rgba(245, 158, 11, 0.2);
+    color: #f59e0b;
+  }
+
+  .expiry-badge.normal {
+    background: rgba(16, 185, 129, 0.2);
+    color: #10b981;
+  }
+
+  .expiry-badge.expired {
+    background: rgba(239, 68, 68, 0.3);
+    color: #ef4444;
+  }
+
+  .party-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .party-name {
+    font-weight: 500;
+  }
+
+  .party-contact {
+    font-size: 11px;
+    color: var(--text-muted, #94a3b8);
+  }
+
+  .contract-value {
+    font-weight: 600;
+    color: #10b981;
+    white-space: nowrap;
+  }
+
+  .btn-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px 10px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    border: none;
+  }
+
+  .btn-view {
+    background: rgba(16, 185, 129, 0.15);
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    color: #10b981;
+  }
+
+  .btn-view:hover {
+    background: rgba(16, 185, 129, 0.25);
+  }
+
+  .btn-edit {
+    background: rgba(59, 130, 246, 0.15);
+    border: 1px solid rgba(59, 130, 246, 0.3);
+    color: #3b82f6;
+  }
+
+  .btn-edit:hover {
+    background: rgba(59, 130, 246, 0.25);
+  }
+
+  .btn-delete {
+    background: rgba(239, 68, 68, 0.15);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    color: #ef4444;
+  }
+
+  .btn-delete:hover {
+    background: rgba(239, 68, 68, 0.25);
+  }
+
+  .actions-cell {
+    display: flex;
+    gap: 6px;
+    flex-wrap: nowrap;
+  }
+
+  .empty-state {
+    padding: 60px 20px;
+    text-align: center;
+  }
+
+  .empty-state-icon {
+    font-size: 48px;
+    margin-bottom: 16px;
+    opacity: 0.5;
+  }
+
+  .empty-state-text {
+    font-size: 16px;
+    color: var(--text-muted, #94a3b8);
+    margin-bottom: 20px;
+  }
+
+  .contract-count {
+    background: rgba(59, 130, 246, 0.2);
+    color: #60a5fa;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 700;
+    margin-left: 12px;
+  }
+
+  /* Light theme */
+  [data-theme="light"] .page-title {
+    color: #1f2937;
+  }
+
+  [data-theme="light"] .btn-primary {
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+    color: #ffffff;
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25);
+  }
+
+  [data-theme="light"] .btn-primary:hover {
+    background: linear-gradient(135deg, #2563eb, #1d4ed8);
+    box-shadow: 0 6px 16px rgba(59, 130, 246, 0.35);
+  }
+
+  [data-theme="light"] .stat-card {
+    background: #ffffff;
+    border-color: #e5e7eb;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  }
+
+  [data-theme="light"] .stat-card.warning {
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.08), #ffffff);
+    border-color: rgba(245, 158, 11, 0.3);
+  }
+
+  [data-theme="light"] .stat-card.danger {
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.08), #ffffff);
+    border-color: rgba(239, 68, 68, 0.3);
+  }
+
+  [data-theme="light"] .stat-label {
+    color: #64748b;
+  }
+
+  [data-theme="light"] .stat-value {
+    color: #1f2937;
+  }
+
+  [data-theme="light"] .contract-count {
+    background: rgba(59, 130, 246, 0.15);
+    color: #2563eb;
+  }
+
+  [data-theme="light"] .contracts-table-wrapper {
+    background: #ffffff;
+    border-color: #e5e7eb;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+  }
+
+  [data-theme="light"] .contracts-table th {
+    background: #f8fafc;
+    color: #64748b;
+    border-bottom-color: #e5e7eb;
+  }
+
+  [data-theme="light"] .contracts-table td {
+    color: #1f2937;
+    border-bottom-color: #f1f5f9;
+  }
+
+  [data-theme="light"] .contracts-table tr:hover {
+    background: #f8fafc;
+  }
+
+  [data-theme="light"] .contract-title {
+    color: #1f2937;
+  }
+
+  [data-theme="light"] .contract-type-badge {
+    background: rgba(99, 102, 241, 0.1);
+    color: #6366f1;
+  }
+
+  [data-theme="light"] .status-badge.active {
+    background: rgba(16, 185, 129, 0.1);
+    color: #059669;
+  }
+
+  [data-theme="light"] .status-badge.passive {
+    background: rgba(100, 116, 139, 0.1);
+    color: #64748b;
+  }
+
+  [data-theme="light"] .status-badge.expired,
+  [data-theme="light"] .status-badge.cancelled {
+    background: rgba(239, 68, 68, 0.1);
+    color: #dc2626;
+  }
+
+  [data-theme="light"] .status-badge.renewed {
+    background: rgba(59, 130, 246, 0.1);
+    color: #2563eb;
+  }
+
+  [data-theme="light"] .expiry-badge.critical {
+    background: rgba(239, 68, 68, 0.15);
+    color: #dc2626;
+  }
+
+  [data-theme="light"] .expiry-badge.warning {
+    background: rgba(245, 158, 11, 0.15);
+    color: #d97706;
+  }
+
+  [data-theme="light"] .expiry-badge.normal {
+    background: rgba(16, 185, 129, 0.15);
+    color: #059669;
+  }
+
+  [data-theme="light"] .expiry-badge.expired {
+    background: rgba(239, 68, 68, 0.2);
+    color: #dc2626;
+  }
+
+  [data-theme="light"] .party-name {
+    color: #1f2937;
+  }
+
+  [data-theme="light"] .party-contact {
+    color: #64748b;
+  }
+
+  [data-theme="light"] .contract-value {
+    color: #059669;
+  }
+
+  [data-theme="light"] .btn-view {
+    background: rgba(16, 185, 129, 0.1);
+    border-color: rgba(16, 185, 129, 0.3);
+    color: #059669;
+  }
+
+  [data-theme="light"] .btn-view:hover {
+    background: rgba(16, 185, 129, 0.2);
+  }
+
+  [data-theme="light"] .btn-edit {
+    background: rgba(59, 130, 246, 0.1);
+    border-color: rgba(59, 130, 246, 0.3);
+    color: #2563eb;
+  }
+
+  [data-theme="light"] .btn-edit:hover {
+    background: rgba(59, 130, 246, 0.2);
+  }
+
+  [data-theme="light"] .btn-delete {
+    background: rgba(239, 68, 68, 0.1);
+    border-color: rgba(239, 68, 68, 0.3);
+    color: #dc2626;
+  }
+
+  [data-theme="light"] .btn-delete:hover {
+    background: rgba(239, 68, 68, 0.2);
+  }
+
+  [data-theme="light"] .empty-state-text {
+    color: #64748b;
+  }
+
+  [data-theme="light"] .alert-success {
+    background: rgba(16, 185, 129, 0.1);
+    border-color: rgba(16, 185, 129, 0.3);
+    color: #059669;
+  }
+
+  [data-theme="light"] .alert-error {
+    background: rgba(239, 68, 68, 0.1);
+    border-color: rgba(239, 68, 68, 0.3);
+    color: #dc2626;
+  }
+
+  /* Search/Filter Styles */
+  .search-filter-panel {
+    background: var(--bg-card, #1e293b);
+    border: 1px solid var(--border-color, rgba(255,255,255,0.06));
+    border-radius: 14px;
+    padding: 20px;
+    margin-bottom: 20px;
+  }
+
+  .filter-toggle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: transparent;
+    border: none;
+    color: var(--text-primary, #e2e8f0);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 0;
+  }
+
+  .filter-toggle:hover {
+    color: #3b82f6;
+  }
+
+  .filter-toggle .toggle-icon {
+    transition: transform 0.2s ease;
+  }
+
+  .filter-toggle.active .toggle-icon {
+    transform: rotate(180deg);
+  }
+
+  .search-row {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    margin-bottom: 16px;
+  }
+
+  .search-input-wrapper {
+    flex: 1;
+    position: relative;
+  }
+
+  .search-input-wrapper input {
+    width: 100%;
+    padding: 10px 14px 10px 40px;
+    border: 1px solid var(--border-color, rgba(255,255,255,0.1));
+    border-radius: 10px;
+    background: var(--bg-secondary, #0f172a);
+    color: var(--text-primary, #e2e8f0);
+    font-size: 14px;
+  }
+
+  .search-input-wrapper input:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+  }
+
+  .search-input-wrapper .search-icon {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-muted, #94a3b8);
+    font-size: 16px;
+  }
+
+  .filter-grid {
+    display: none;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 16px;
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border-color, rgba(255,255,255,0.06));
+  }
+
+  .filter-grid.show {
+    display: grid;
+  }
+
+  .filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .filter-group label {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-muted, #94a3b8);
+  }
+
+  .filter-group select,
+  .filter-group input[type="date"] {
+    padding: 8px 12px;
+    border: 1px solid var(--border-color, rgba(255,255,255,0.1));
+    border-radius: 8px;
+    background: var(--bg-secondary, #0f172a);
+    color: var(--text-primary, #e2e8f0);
+    font-size: 13px;
+  }
+
+  .filter-group select:focus,
+  .filter-group input[type="date"]:focus {
+    outline: none;
+    border-color: #3b82f6;
+  }
+
+  .filter-actions {
+    display: flex;
+    gap: 10px;
+    align-items: flex-end;
+  }
+
+  .btn-filter {
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .btn-apply {
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+    color: #fff;
+    border: none;
+  }
+
+  .btn-apply:hover {
+    background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  }
+
+  .btn-clear {
+    background: transparent;
+    border: 1px solid var(--border-color, rgba(255,255,255,0.2));
+    color: var(--text-muted, #94a3b8);
+  }
+
+  .btn-clear:hover {
+    background: rgba(255,255,255,0.05);
+    color: var(--text-primary, #e2e8f0);
+  }
+
+  .active-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 12px;
+  }
+
+  .filter-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    background: rgba(59, 130, 246, 0.15);
+    border: 1px solid rgba(59, 130, 246, 0.3);
+    border-radius: 20px;
+    font-size: 12px;
+    color: #60a5fa;
+  }
+
+  .filter-tag .remove-filter {
+    cursor: pointer;
+    opacity: 0.7;
+  }
+
+  .filter-tag .remove-filter:hover {
+    opacity: 1;
+  }
+
+  /* Light theme filter styles */
+  [data-theme="light"] .search-filter-panel {
+    background: #ffffff;
+    border-color: #e5e7eb;
+  }
+
+  [data-theme="light"] .filter-toggle {
+    color: #1f2937;
+  }
+
+  [data-theme="light"] .search-input-wrapper input {
+    background: #f8fafc;
+    border-color: #e5e7eb;
+    color: #1f2937;
+  }
+
+  [data-theme="light"] .search-input-wrapper .search-icon {
+    color: #64748b;
+  }
+
+  [data-theme="light"] .filter-grid {
+    border-top-color: #e5e7eb;
+  }
+
+  [data-theme="light"] .filter-group label {
+    color: #64748b;
+  }
+
+  [data-theme="light"] .filter-group select,
+  [data-theme="light"] .filter-group input[type="date"] {
+    background: #f8fafc;
+    border-color: #e5e7eb;
+    color: #1f2937;
+  }
+
+  [data-theme="light"] .btn-clear {
+    border-color: #e5e7eb;
+    color: #64748b;
+  }
+
+  [data-theme="light"] .btn-clear:hover {
+    background: #f1f5f9;
+    color: #1f2937;
+  }
+
+  [data-theme="light"] .filter-tag {
+    background: rgba(59, 130, 246, 0.1);
+    color: #2563eb;
+  }
+
+  @media (max-width: 768px) {
+    .contracts-container {
+      padding: 16px;
+    }
+
+    .page-header {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .stats-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    .contracts-table th,
+    .contracts-table td {
+      padding: 10px 8px;
+    }
+
+    .search-row {
+      flex-direction: column;
+    }
+
+    .filter-grid {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+</style>
+
+<div class="contracts-container">
+  <div class="page-header">
+    <h1 class="page-title">
+      <span class="page-title-icon">📑</span>
+      Sözleşmeler
+      <span class="contract-count"><%= contracts.length %></span>
+    </h1>
+    <a href="/contracts/new" class="btn-primary">
+      ➕ Yeni Sözleşme Ekle
+    </a>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <span class="stat-label">📋 Toplam</span>
+      <span class="stat-value"><%= stats.total || 0 %></span>
+    </div>
+    <div class="stat-card">
+      <span class="stat-label">✅ Aktif</span>
+      <span class="stat-value"><%= stats.active || 0 %></span>
+    </div>
+    <div class="stat-card warning">
+      <span class="stat-label">⚠️ Yaklaşan Bitiş (30 gün)</span>
+      <span class="stat-value"><%= stats.expiring_soon || 0 %></span>
+    </div>
+    <div class="stat-card danger">
+      <span class="stat-label">❌ Süresi Dolmuş</span>
+      <span class="stat-value"><%= stats.expired || 0 %></span>
+    </div>
+  </div>
+
+  <!-- Search & Filter Panel -->
+  <div class="search-filter-panel">
+    <form method="GET" action="/contracts" id="filterForm">
+      <div class="search-row">
+        <div class="search-input-wrapper">
+          <span class="search-icon">🔍</span>
+          <input type="text" name="search" placeholder="Sözleşme adı, karşı taraf veya e-posta ara..." 
+                 value="<%= filters && filters.search ? filters.search : '' %>">
+        </div>
+        <button type="button" class="filter-toggle <%= (filters && (filters.contract_type || filters.status || filters.start_date_from || filters.expiry_date_from)) ? 'active' : '' %>" onclick="toggleFilters()">
+          <span>🔧 Filtreler</span>
+          <span class="toggle-icon">▼</span>
+        </button>
+      </div>
+
+      <div class="filter-grid <%= (filters && (filters.contract_type || filters.status || filters.start_date_from || filters.expiry_date_from)) ? 'show' : '' %>" id="filterGrid">
+        <div class="filter-group">
+          <label>Sözleşme Türü</label>
+          <select name="contract_type">
+            <option value="all">Tümü</option>
+            <% Object.keys(contractTypes).forEach(function(key) { %>
+              <option value="<%= key %>" <%= (filters && filters.contract_type === key) ? 'selected' : '' %>>
+                <%= contractTypes[key] %>
+              </option>
+            <% }); %>
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <label>Durum</label>
+          <select name="status">
+            <option value="all">Tümü</option>
+            <% Object.keys(contractStatuses).forEach(function(key) { %>
+              <option value="<%= key %>" <%= (filters && filters.status === key) ? 'selected' : '' %>>
+                <%= contractStatuses[key] %>
+              </option>
+            <% }); %>
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <label>Başlangıç (Min)</label>
+          <input type="date" name="start_date_from" value="<%= filters && filters.start_date_from ? filters.start_date_from : '' %>">
+        </div>
+
+        <div class="filter-group">
+          <label>Başlangıç (Max)</label>
+          <input type="date" name="start_date_to" value="<%= filters && filters.start_date_to ? filters.start_date_to : '' %>">
+        </div>
+
+        <div class="filter-group">
+          <label>Bitiş (Min)</label>
+          <input type="date" name="expiry_date_from" value="<%= filters && filters.expiry_date_from ? filters.expiry_date_from : '' %>">
+        </div>
+
+        <div class="filter-group">
+          <label>Bitiş (Max)</label>
+          <input type="date" name="expiry_date_to" value="<%= filters && filters.expiry_date_to ? filters.expiry_date_to : '' %>">
+        </div>
+
+        <div class="filter-actions">
+          <button type="submit" class="btn-filter btn-apply">🔍 Filtrele</button>
+          <button type="button" class="btn-filter btn-clear" onclick="clearFilters()">✖ Temizle</button>
+        </div>
+      </div>
+    </form>
+
+    <% 
+      const activeFilters = [];
+      if (filters && filters.search) activeFilters.push({ key: 'search', label: 'Arama: ' + filters.search });
+      if (filters && filters.contract_type && filters.contract_type !== 'all') activeFilters.push({ key: 'contract_type', label: 'Tür: ' + contractTypes[filters.contract_type] });
+      if (filters && filters.status && filters.status !== 'all') activeFilters.push({ key: 'status', label: 'Durum: ' + contractStatuses[filters.status] });
+      if (filters && filters.start_date_from) activeFilters.push({ key: 'start_date_from', label: 'Başlangıç ≥ ' + filters.start_date_from });
+      if (filters && filters.start_date_to) activeFilters.push({ key: 'start_date_to', label: 'Başlangıç ≤ ' + filters.start_date_to });
+      if (filters && filters.expiry_date_from) activeFilters.push({ key: 'expiry_date_from', label: 'Bitiş ≥ ' + filters.expiry_date_from });
+      if (filters && filters.expiry_date_to) activeFilters.push({ key: 'expiry_date_to', label: 'Bitiş ≤ ' + filters.expiry_date_to });
+    %>
+    <% if (activeFilters.length > 0) { %>
+      <div class="active-filters">
+        <% activeFilters.forEach(function(filter) { %>
+          <span class="filter-tag">
+            <%= filter.label %>
+            <span class="remove-filter" onclick="removeFilter('<%= filter.key %>')">✕</span>
+          </span>
+        <% }); %>
+      </div>
+    <% } %>
+  </div>
+
+  <div class="contracts-table-wrapper">
+    <% if (contracts && contracts.length > 0) { %>
+      <div class="table-responsive">
+        <table class="contracts-table">
+          <thead>
+            <tr>
+              <th>Sözleşme Adı</th>
+              <th>Açıklama</th>
+              <th>Tür</th>
+              <th>Durum</th>
+              <th>Bitiş Tarihi</th>
+              <th>Karşı Taraf</th>
+              <th>Değer</th>
+              <th>Oluşturma</th>
+              <th>İşlemler</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% contracts.forEach(function(contract) { %>
+              <tr>
+                <td>
+                  <span class="contract-title"><%= contract.title %></span>
+                </td>
+                <td>
+                  <span class="contract-description" title="<%= contract.description || '' %>">
+                    <%= contract.description ? (contract.description.length > 40 ? contract.description.substring(0, 40) + '...' : contract.description) : '-' %>
+                  </span>
+                </td>
+                <td>
+                  <span class="contract-type-badge"><%= contract.contract_type_label %></span>
+                </td>
+                <td>
+                  <span class="status-badge <%= contract.status %>"><%= contract.status_label %></span>
+                </td>
+                <td>
+                  <div class="expiry-cell">
+                    <span class="expiry-date"><%= contract.expiry_date_formatted || '-' %></span>
+                    <% if (contract.days_until_expiry !== null && contract.status === 'active') { %>
+                      <% if (contract.days_until_expiry < 0) { %>
+                        <span class="expiry-badge expired">Süresi doldu</span>
+                      <% } else if (contract.days_until_expiry === 0) { %>
+                        <span class="expiry-badge critical">Bugün bitiyor!</span>
+                      <% } else if (contract.days_until_expiry <= 7) { %>
+                        <span class="expiry-badge critical"><%= contract.days_until_expiry %> gün kaldı</span>
+                      <% } else if (contract.days_until_expiry <= 30) { %>
+                        <span class="expiry-badge warning"><%= contract.days_until_expiry %> gün kaldı</span>
+                      <% } else { %>
+                        <span class="expiry-badge normal"><%= contract.days_until_expiry %> gün kaldı</span>
+                      <% } %>
+                    <% } %>
+                  </div>
+                </td>
+                <td>
+                  <% if (contract.party_name) { %>
+                    <div class="party-info">
+                      <span class="party-name"><%= contract.party_name %></span>
+                      <% if (contract.party_contact) { %>
+                        <span class="party-contact">📞 <%= contract.party_contact %></span>
+                      <% } %>
+                      <% if (contract.party_email) { %>
+                        <span class="party-contact">✉️ <%= contract.party_email %></span>
+                      <% } %>
+                    </div>
+                  <% } else { %>
+                    <span style="color: var(--text-muted);">-</span>
+                  <% } %>
+                </td>
+                <td>
+                  <% if (contract.contract_value_formatted) { %>
+                    <span class="contract-value"><%= contract.contract_value_formatted %></span>
+                  <% } else { %>
+                    <span style="color: var(--text-muted);">-</span>
+                  <% } %>
+                </td>
+                <td>
+                  <span style="font-size: 12px; color: var(--text-muted);"><%= contract.created_at_formatted %></span>
+                </td>
+                <td>
+                  <div class="actions-cell">
+                    <button type="button" class="btn-action btn-view" title="PDF Aç" onclick="openLatestPdf(<%= contract.id %>, '<%= contract.file_path %>')">
+                      📥
+                    </button>
+                    <a href="/contracts/<%= contract.id %>/edit" class="btn-action btn-edit" title="Düzenle">
+                      ✏️
+                    </a>
+                    <button type="button" class="btn-action btn-delete" title="Sil" onclick="confirmDelete(<%= contract.id %>, '<%= contract.title.replace(/'/g, "\\'") %>')">
+                      🗑️
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            <% }); %>
+          </tbody>
+        </table>
+      </div>
+    <% } else { %>
+      <div class="empty-state">
+        <div class="empty-state-icon">📑</div>
+        <div class="empty-state-text">Henüz sözleşme eklenmemiş.</div>
+        <a href="/contracts/new" class="btn-primary">
+          ➕ İlk Sözleşmeyi Ekle
+        </a>
+      </div>
+    <% } %>
+  </div>
+</div>
+
+<!-- Modern Toast Container -->
+<div id="toastContainer" class="toast-container"></div>
+
+<!-- Modern Confirm Modal -->
+<div id="confirmModal" class="modal-overlay" style="display:none;">
+  <div class="modal-box">
+    <div class="modal-icon">⚠️</div>
+    <h3 class="modal-title">Silme Onayı</h3>
+    <p class="modal-message" id="confirmMessage">Bu sözleşmeyi silmek istediğinizden emin misiniz?</p>
+    <div class="modal-actions">
+      <button type="button" class="modal-btn modal-btn-cancel" onclick="closeConfirmModal()">İptal</button>
+      <form id="deleteForm" method="POST" style="display:inline;">
+        <button type="submit" class="modal-btn modal-btn-danger">🗑️ Evet, Sil</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<style>
+  /* Toast Styles */
+  .toast-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 10000;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .toast {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 20px;
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    animation: toastIn 0.3s ease forwards;
+    min-width: 300px;
+    max-width: 450px;
+  }
+
+  .toast.hiding {
+    animation: toastOut 0.3s ease forwards;
+  }
+
+  @keyframes toastIn {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+  }
+
+  @keyframes toastOut {
+    from { transform: translateX(0); opacity: 1; }
+    to { transform: translateX(100%); opacity: 0; }
+  }
+
+  .toast-success {
+    background: linear-gradient(135deg, #059669, #10b981);
+    color: #fff;
+  }
+
+  .toast-error {
+    background: linear-gradient(135deg, #dc2626, #ef4444);
+    color: #fff;
+  }
+
+  .toast-warning {
+    background: linear-gradient(135deg, #d97706, #f59e0b);
+    color: #fff;
+  }
+
+  .toast-info {
+    background: linear-gradient(135deg, #2563eb, #3b82f6);
+    color: #fff;
+  }
+
+  .toast-icon {
+    font-size: 24px;
+  }
+
+  .toast-content {
+    flex: 1;
+  }
+
+  .toast-title {
+    font-weight: 700;
+    font-size: 14px;
+    margin-bottom: 2px;
+  }
+
+  .toast-message {
+    font-size: 13px;
+    opacity: 0.9;
+  }
+
+  .toast-close {
+    background: transparent;
+    border: none;
+    color: inherit;
+    font-size: 18px;
+    cursor: pointer;
+    opacity: 0.7;
+    padding: 4px;
+  }
+
+  .toast-close:hover {
+    opacity: 1;
+  }
+
+  /* Modal Styles */
+  .modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+    z-index: 10001;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: fadeIn 0.2s ease;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  .modal-box {
+    background: var(--bg-card, #1e293b);
+    border: 1px solid var(--border-color, rgba(255,255,255,0.1));
+    border-radius: 16px;
+    padding: 32px;
+    max-width: 400px;
+    width: 90%;
+    text-align: center;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+    animation: modalIn 0.3s ease;
+  }
+
+  @keyframes modalIn {
+    from { transform: scale(0.9); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+  }
+
+  .modal-icon {
+    font-size: 48px;
+    margin-bottom: 16px;
+  }
+
+  .modal-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text-primary, #e2e8f0);
+    margin-bottom: 12px;
+  }
+
+  .modal-message {
+    font-size: 14px;
+    color: var(--text-muted, #94a3b8);
+    margin-bottom: 24px;
+    line-height: 1.5;
+  }
+
+  .modal-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+  }
+
+  .modal-btn {
+    padding: 12px 24px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: none;
+  }
+
+  .modal-btn-cancel {
+    background: rgba(100, 116, 139, 0.2);
+    border: 1px solid rgba(100, 116, 139, 0.4);
+    color: var(--text-secondary, #94a3b8);
+  }
+
+  .modal-btn-cancel:hover {
+    background: rgba(100, 116, 139, 0.3);
+  }
+
+  .modal-btn-danger {
+    background: linear-gradient(135deg, #dc2626, #ef4444);
+    color: #fff;
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+  }
+
+  .modal-btn-danger:hover {
+    background: linear-gradient(135deg, #b91c1c, #dc2626);
+    transform: translateY(-1px);
+  }
+
+  /* Light theme modal */
+  [data-theme="light"] .modal-box {
+    background: #ffffff;
+    border-color: #e5e7eb;
+  }
+
+  [data-theme="light"] .modal-title {
+    color: #1f2937;
+  }
+
+  [data-theme="light"] .modal-message {
+    color: #64748b;
+  }
+
+  [data-theme="light"] .modal-btn-cancel {
+    background: #f1f5f9;
+    border-color: #e5e7eb;
+    color: #64748b;
+  }
+</style>
+
+<script>
+  // Toast System
+  function showToast(type, title, message, duration = 4000) {
+    const container = document.getElementById('toastContainer');
+    const icons = {
+      success: '✅',
+      error: '❌',
+      warning: '⚠️',
+      info: 'ℹ️'
+    };
+
+    const toast = document.createElement('div');
+    toast.className = `toast toast-${type}`;
+    toast.innerHTML = `
+      <span class="toast-icon">${icons[type]}</span>
+      <div class="toast-content">
+        <div class="toast-title">${title}</div>
+        <div class="toast-message">${message}</div>
+      </div>
+      <button class="toast-close" onclick="this.parentElement.remove()">✕</button>
+    `;
+
+    container.appendChild(toast);
+
+    // Auto remove
+    setTimeout(() => {
+      toast.classList.add('hiding');
+      setTimeout(() => toast.remove(), 300);
+    }, duration);
+  }
+
+  // Confirm Delete Modal
+  function confirmDelete(contractId, contractTitle) {
+    const modal = document.getElementById('confirmModal');
+    const message = document.getElementById('confirmMessage');
+    const form = document.getElementById('deleteForm');
+    
+    message.innerHTML = `<strong>"${contractTitle}"</strong> sözleşmesini silmek istediğinizden emin misiniz?<br><br><small style="color:#ef4444;">Bu işlem geri alınamaz!</small>`;
+    form.action = `/contracts/${contractId}/delete`;
+    modal.style.display = 'flex';
+  }
+
+  function closeConfirmModal() {
+    document.getElementById('confirmModal').style.display = 'none';
+  }
+
+  // Close modal on overlay click
+  document.getElementById('confirmModal').addEventListener('click', function(e) {
+    if (e.target === this) closeConfirmModal();
+  });
+
+  // Close modal on Escape key
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closeConfirmModal();
+  });
+
+  // Open latest PDF for contract
+  async function openLatestPdf(contractId, originalFilePath) {
+    try {
+      const response = await fetch(`/contracts/${contractId}/files`);
+      const result = await response.json();
+      
+      if (result.success && result.files && result.files.length > 0) {
+        // Open the most recent file (first in the sorted list)
+        window.open(result.files[0].file_path, '_blank');
+      } else {
+        // Fallback to original file
+        window.open(originalFilePath, '_blank');
+      }
+    } catch (error) {
+      console.error('Error fetching latest file:', error);
+      // Fallback to original file
+      window.open(originalFilePath, '_blank');
+    }
+  }
+
+  // Toggle filter panel
+  function toggleFilters() {
+    const filterGrid = document.getElementById('filterGrid');
+    const toggleBtn = document.querySelector('.filter-toggle');
+    filterGrid.classList.toggle('show');
+    toggleBtn.classList.toggle('active');
+  }
+
+  // Clear all filters
+  function clearFilters() {
+    window.location.href = '/contracts';
+  }
+
+  // Remove single filter
+  function removeFilter(key) {
+    const url = new URL(window.location.href);
+    url.searchParams.delete(key);
+    window.location.href = url.toString();
+  }
+
+  // Submit form on enter in search field
+  document.querySelector('input[name="search"]').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+      document.getElementById('filterForm').submit();
+    }
+  });
+
+  // Show success/error toasts from URL params
+  <% if (success) { %>
+    showToast('success', 'Başarılı', '<%= success %>');
+  <% } %>
+  <% if (error) { %>
+    showToast('error', 'Hata', '<%= error %>');
+  <% } %>
+</script>

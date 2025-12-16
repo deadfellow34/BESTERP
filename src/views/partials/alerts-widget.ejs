@@ -1,0 +1,896 @@
+<!-- Alerts Dashboard Widget -->
+<style>
+.alerts-dashboard {
+  background: var(--bg-surface-glass, rgba(15, 23, 42, 0.9));
+  border: 1px solid var(--border-accent, rgba(59, 130, 246, 0.2));
+  border-radius: 12px;
+  padding: 10px 16px;
+  margin-bottom: 16px;
+  backdrop-filter: blur(10px);
+}
+
+.alerts-header {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 8px;
+  position: relative;
+}
+
+.alerts-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-primary, #f1f5f9);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.alerts-title-icon {
+  font-size: 16px;
+}
+
+.alerts-badge {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  color: white;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 20px;
+  min-width: 24px;
+  text-align: center;
+}
+
+.alerts-toggle-btn {
+  position: absolute;
+  right: 0;
+  background: transparent;
+  border: 1px solid var(--border-subtle, rgba(59, 130, 246, 0.3));
+  color: var(--text-muted, #94a3b8);
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.alerts-toggle-btn:hover {
+  background: rgba(59, 130, 246, 0.1);
+  color: var(--text-primary, #f1f5f9);
+}
+
+.alerts-summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  gap: 8px;
+  margin-bottom: 8px;
+  align-items: stretch;
+}
+
+/* Completion Progress Widget - as grid item */
+.alerts-completion-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 6px 12px;
+  background: var(--bg-surface, rgba(30, 41, 59, 0.5));
+  border: 1px solid var(--border-subtle, rgba(59, 130, 246, 0.1));
+  border-radius: 8px;
+  border-left: 2px solid #22c55e;
+  min-height: 100%;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.alerts-completion-wrapper:hover {
+  border-color: var(--border-accent, rgba(59, 130, 246, 0.3));
+  transform: translateY(-1px);
+}
+
+.alerts-completion-wrapper.active {
+  border-color: rgba(34, 197, 94, 0.6);
+  background: rgba(34, 197, 94, 0.15);
+  box-shadow: 0 0 12px rgba(34, 197, 94, 0.3);
+}
+
+.completion-circle {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+}
+
+.completion-circle svg {
+  transform: rotate(-90deg);
+  width: 40px;
+  height: 40px;
+}
+
+.completion-circle .bg {
+  fill: none;
+  stroke: var(--border-subtle, rgba(100, 116, 139, 0.2));
+  stroke-width: 4;
+}
+
+.completion-circle .progress {
+  fill: none;
+  stroke-width: 4;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 0.6s ease, stroke 0.3s ease;
+}
+
+.completion-circle .progress.green {
+  stroke: #22c55e;
+}
+
+.completion-circle .progress.yellow {
+  stroke: #f59e0b;
+}
+
+.completion-circle .progress.red {
+  stroke: #ef4444;
+}
+
+.completion-percentage {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 10px;
+  font-weight: 800;
+  color: var(--text-primary, #f1f5f9);
+}
+
+.completion-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  text-align: center;
+}
+
+.completion-title {
+  font-size: 9px;
+  font-weight: 600;
+  color: var(--text-muted, #94a3b8);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.completion-detail {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--text-primary, #f1f5f9);
+  line-height: 1;
+}
+
+.completion-detail span {
+  font-weight: 700;
+  color: #22c55e;
+}
+
+.completion-detail .incomplete {
+  color: #ef4444;
+}
+
+[data-theme="light"] .alerts-completion-wrapper {
+  background: rgba(248, 250, 252, 0.8);
+}
+
+[data-theme="light"] .completion-title {
+  color: #1e293b;
+}
+
+[data-theme="light"] .completion-percentage {
+  color: #1e293b;
+}
+
+.alert-stat-card {
+  background: var(--bg-surface, rgba(30, 41, 59, 0.5));
+  border: 1px solid var(--border-subtle, rgba(59, 130, 246, 0.1));
+  border-radius: 8px;
+  padding: 6px 8px;
+  text-align: center;
+  transition: all 0.2s;
+}
+
+.alert-stat-card:hover {
+  border-color: var(--border-accent, rgba(59, 130, 246, 0.3));
+  transform: translateY(-1px);
+}
+
+.alert-stat-card.active {
+  border-color: var(--border-accent-strong, rgba(59, 130, 246, 0.6));
+  background: var(--bg-surface-active, rgba(59, 130, 246, 0.15));
+  box-shadow: 0 0 12px rgba(59, 130, 246, 0.3);
+}
+
+.alert-stat-card.high {
+  border-left: 2px solid #ef4444;
+}
+
+.alert-stat-card.medium {
+  border-left: 2px solid #f59e0b;
+}
+
+.alert-stat-card.low {
+  border-left: 2px solid #3b82f6;
+}
+
+.alert-stat-icon {
+  font-size: 14px;
+  margin-bottom: 2px;
+}
+
+.alert-stat-count {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--text-primary, #f1f5f9);
+  line-height: 1;
+}
+
+.alert-stat-label {
+  font-size: 9px;
+  color: var(--text-muted, #94a3b8);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  margin-top: 2px;
+}
+
+.alerts-list-container {
+  max-height: 300px;
+  overflow-y: auto;
+  display: none;
+}
+
+.alerts-list-container.show {
+  display: block;
+}
+
+.alert-position-card {
+  background: var(--bg-surface, rgba(30, 41, 59, 0.5));
+  border: 1px solid var(--border-subtle, rgba(59, 130, 246, 0.1));
+  border-radius: 10px;
+  padding: 12px 16px;
+  margin-bottom: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: all 0.2s;
+  cursor: pointer;
+}
+
+.alert-position-card:hover {
+  background: var(--bg-surface-hover, rgba(30, 41, 59, 0.8));
+  border-color: var(--border-accent, rgba(59, 130, 246, 0.3));
+}
+
+.alert-position-card.high-priority {
+  border-left: 3px solid #ef4444;
+}
+
+.alert-position-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.alert-position-no {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--accent-primary, #3b82f6);
+}
+
+.alert-position-meta {
+  font-size: 12px;
+  color: var(--text-primary, #e2e8f0);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+}
+
+.alert-position-meta .sender-receiver {
+  font-weight: 500;
+}
+
+.alert-position-meta .vehicle-info {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-primary, #e2e8f0);
+}
+
+.alert-position-meta .vehicle-info .sep {
+  opacity: 0.5;
+}
+
+.alert-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.alert-tag {
+  font-size: 10px;
+  padding: 3px 8px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.alert-tag.high {
+  background: rgba(239, 68, 68, 0.2);
+  color: #fca5a5;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.alert-tag.medium {
+  background: rgba(245, 158, 11, 0.2);
+  color: #fcd34d;
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.alert-tag.low {
+  background: rgba(59, 130, 246, 0.2);
+  color: #93c5fd;
+  border: 1px solid rgba(59, 130, 246, 0.3);
+}
+
+.alerts-empty {
+  text-align: center;
+  padding: 30px;
+  color: var(--text-muted, #94a3b8);
+}
+
+.alerts-empty-icon {
+  font-size: 40px;
+  margin-bottom: 8px;
+}
+
+.alerts-loading {
+  text-align: center;
+  padding: 20px;
+  color: var(--text-muted, #94a3b8);
+}
+
+/* Light theme overrides */
+[data-theme="light"] .alerts-dashboard {
+  background: rgba(255, 255, 255, 0.95);
+  border-color: rgba(59, 130, 246, 0.2);
+}
+
+[data-theme="light"] .alerts-title {
+  color: #1e293b;
+}
+
+[data-theme="light"] .alert-stat-card {
+  background: rgba(248, 250, 252, 0.8);
+}
+
+[data-theme="light"] .alert-stat-count {
+  color: #1e293b;
+}
+
+[data-theme="light"] .alert-position-card {
+  background: rgba(248, 250, 252, 0.8);
+}
+
+[data-theme="light"] .alert-position-card:hover {
+  background: rgba(241, 245, 249, 1);
+}
+
+[data-theme="light"] .alert-position-no {
+  color: #2563eb;
+}
+
+[data-theme="light"] .alert-position-meta {
+  color: #334155;
+}
+
+[data-theme="light"] .alert-position-meta .vehicle-info {
+  color: #334155;
+}
+
+[data-theme="light"] .alert-tag.high {
+  background: rgba(239, 68, 68, 0.1);
+  color: #dc2626;
+}
+
+[data-theme="light"] .alert-tag.medium {
+  background: rgba(245, 158, 11, 0.1);
+  color: #d97706;
+}
+
+[data-theme="light"] .alert-tag.low {
+  background: rgba(59, 130, 246, 0.1);
+  color: #2563eb;
+}
+
+/* Modern Tooltip Styles */
+.alert-grupaj-trigger {
+  position: relative;
+  cursor: help;
+  padding: 2px 6px;
+  background: rgba(59, 130, 246, 0.15);
+  border-radius: 4px;
+  font-weight: 600;
+  color: var(--accent-primary, #3b82f6);
+  transition: all 0.2s;
+  display: inline-block;
+}
+
+.alert-grupaj-trigger:hover {
+  background: rgba(59, 130, 246, 0.25);
+}
+
+.alert-grupaj-tooltip {
+  position: fixed;
+  z-index: 10000;
+  min-width: 180px;
+  max-width: 280px;
+  padding: 10px 12px;
+  background: rgba(15, 23, 42, 0.98);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  border-radius: 10px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(12px);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.15s ease;
+}
+
+.alert-grupaj-tooltip.show {
+  opacity: 1;
+  visibility: visible;
+}
+
+.alert-grupaj-tooltip-title {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #64748b;
+  margin-bottom: 6px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid rgba(100, 116, 139, 0.2);
+}
+
+.alert-grupaj-tooltip-item {
+  font-size: 12px;
+  color: #e2e8f0;
+  padding: 3px 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.alert-grupaj-tooltip-item::before {
+  content: '•';
+  color: #3b82f6;
+  font-weight: bold;
+}
+
+/* Light theme tooltip */
+[data-theme="light"] .alert-grupaj-trigger {
+  background: rgba(59, 130, 246, 0.1);
+  color: #2563eb;
+}
+
+[data-theme="light"] .alert-grupaj-trigger:hover {
+  background: rgba(59, 130, 246, 0.2);
+}
+
+[data-theme="light"] .alert-grupaj-tooltip {
+  background: rgba(255, 255, 255, 0.98);
+  border-color: rgba(59, 130, 246, 0.2);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+}
+
+[data-theme="light"] .alert-grupaj-tooltip-title {
+  color: #64748b;
+  border-bottom-color: rgba(100, 116, 139, 0.15);
+}
+
+[data-theme="light"] .alert-grupaj-tooltip-item {
+  color: #1e293b;
+}
+</style>
+
+<div class="alerts-dashboard" id="alertsDashboard">
+  <div class="alerts-header">
+    <div class="alerts-title">
+      <span class="alerts-title-icon">⚠️</span>
+      <span>Eksik Evrak/Veri Uyarıları</span>
+      <span class="alerts-badge" id="alertsTotalBadge">0</span>
+    </div>
+    <button class="alerts-toggle-btn" id="alertsToggleBtn" onclick="toggleAlertsList()">
+      Detayları Göster ▼
+    </button>
+  </div>
+
+  <div class="alerts-summary" id="alertsSummary">
+    <div class="alerts-completion-wrapper" id="alertsCompletion" onclick="showCompletedPositions()">
+      <div class="completion-circle">
+        <svg viewBox="0 0 36 36">
+          <circle class="bg" cx="18" cy="18" r="15.5"></circle>
+          <circle class="progress green" cx="18" cy="18" r="15.5" 
+                  stroke-dasharray="97.4" stroke-dashoffset="97.4" id="completionProgress"></circle>
+        </svg>
+        <div class="completion-percentage" id="completionPercent">0%</div>
+      </div>
+      <div class="completion-info">
+        <div class="completion-title">Tamamlanan</div>
+        <div class="completion-detail"><span id="completeCount">0</span> / <span id="totalCount">0</span></div>
+      </div>
+    </div>
+    <div class="alerts-loading">Yükleniyor...</div>
+  </div>
+
+  <div class="alerts-list-container" id="alertsListContainer">
+    <div id="alertsList"></div>
+  </div>
+</div>
+
+<script>
+(function() {
+  let alertsData = [];
+  let isListVisible = false;
+  // Get year from EJS (passed from loadController via list.ejs)
+  const currentAlertsYear = '<%= typeof year !== "undefined" ? year : new Date().getFullYear() %>';
+
+  // Load alerts on page load
+  loadAlerts();
+
+  async function loadAlerts() {
+    try {
+      const yearParam = currentAlertsYear ? '?year=' + currentAlertsYear : '';
+      
+      // Fetch alerts and total positions count in parallel
+      const [alertsResponse, totalResponse] = await Promise.all([
+        fetch('/loads/api/alerts' + yearParam),
+        fetch('/loads/api/positions-count' + yearParam)
+      ]);
+      
+      const alertsDataRes = await alertsResponse.json();
+      let totalPositions = 0;
+      let completedPositions = 0;
+      
+      try {
+        const totalData = await totalResponse.json();
+        totalPositions = totalData.total || 0;
+        completedPositions = totalData.completed || 0;
+      } catch(e) {
+        totalPositions = 0;
+        completedPositions = 0;
+      }
+      
+      if (alertsDataRes.success) {
+        alertsData = alertsDataRes.alerts;
+        renderCompletion(completedPositions, totalPositions);
+        renderSummary();
+        renderList();
+      }
+    } catch (e) {
+      console.error('Failed to load alerts:', e);
+      document.getElementById('alertsSummary').innerHTML = '<div class="alerts-empty">Uyarılar yüklenemedi</div>';
+    }
+  }
+  
+  function renderCompletion(completeCount, totalCount) {
+    const percentage = totalCount > 0 ? Math.round((completeCount / totalCount) * 100) : 0;
+    
+    // Update text
+    document.getElementById('completionPercent').textContent = percentage + '%';
+    document.getElementById('completeCount').textContent = completeCount;
+    document.getElementById('totalCount').textContent = totalCount;
+    
+    // Update circle progress
+    const circumference = 2 * Math.PI * 15.5; // ~97.4
+    const offset = circumference - (percentage / 100) * circumference;
+    const progressCircle = document.getElementById('completionProgress');
+    progressCircle.style.strokeDashoffset = offset;
+    
+    // Update color based on percentage
+    progressCircle.classList.remove('green', 'yellow', 'red');
+    if (percentage >= 80) {
+      progressCircle.classList.add('green');
+    } else if (percentage >= 50) {
+      progressCircle.classList.add('yellow');
+    } else {
+      progressCircle.classList.add('red');
+    }
+  }
+
+  function renderSummary() {
+    const container = document.getElementById('alertsSummary');
+    const badge = document.getElementById('alertsTotalBadge');
+    const completionHtml = document.getElementById('alertsCompletion').outerHTML;
+    
+    if (alertsData.length === 0) {
+      container.innerHTML = completionHtml + `
+        <div class="alerts-empty" style="grid-column: 2/-1;">
+          <div class="alerts-empty-icon">✅</div>
+          <div>Tüm pozisyonların verileri tam!</div>
+        </div>
+      `;
+      badge.textContent = '0';
+      badge.style.background = 'linear-gradient(135deg, #22c55e, #16a34a)';
+      document.getElementById('alertsToggleBtn').style.display = 'none';
+      return;
+    }
+
+    // Calculate stats by type
+    const stats = {};
+    let totalAlerts = 0;
+    
+    alertsData.forEach(pos => {
+      pos.alerts.forEach(alert => {
+        if (!stats[alert.type]) {
+          stats[alert.type] = { count: 0, label: alert.label, icon: alert.icon, severity: alert.severity };
+        }
+        stats[alert.type].count++;
+        totalAlerts++;
+      });
+    });
+
+    badge.textContent = alertsData.length;
+
+    // Sort by severity (high first) then by count
+    const sortedTypes = Object.entries(stats)
+      .sort((a, b) => {
+        const sevOrder = { high: 0, medium: 1, low: 2 };
+        const sevDiff = sevOrder[a[1].severity] - sevOrder[b[1].severity];
+        if (sevDiff !== 0) return sevDiff;
+        return b[1].count - a[1].count;
+      });
+
+    container.innerHTML = completionHtml + sortedTypes.map(([type, data]) => `
+      <div class="alert-stat-card ${data.severity}" onclick="filterAlertsByType('${type}')">
+        <div class="alert-stat-icon">${data.icon}</div>
+        <div class="alert-stat-count">${data.count}</div>
+        <div class="alert-stat-label">${data.label}</div>
+      </div>
+    `).join('');
+  }
+
+  function renderList(filterType = null) {
+    const container = document.getElementById('alertsList');
+    
+    let filtered = alertsData;
+    if (filterType) {
+      filtered = alertsData.filter(pos => pos.alerts.some(a => a.type === filterType));
+    }
+
+    if (filtered.length === 0) {
+      container.innerHTML = '<div class="alerts-empty">Bu kategoride uyarı yok</div>';
+      return;
+    }
+
+    container.innerHTML = filtered.map(pos => {
+      const senders = pos.senders || [];
+      const receivers = pos.receivers || [];
+      
+      // Sender display
+      let senderHtml = '<span>-</span>';
+      if (senders.length === 1) {
+        senderHtml = `<span>${senders[0]}</span>`;
+      } else if (senders.length > 1) {
+        senderHtml = `
+          <span class="alert-grupaj-trigger">
+            📦 GRUPAJ (${senders.length})
+            <div class="alert-grupaj-tooltip">
+              <div class="alert-grupaj-tooltip-title">Göndericiler</div>
+              ${senders.map(s => `<div class="alert-grupaj-tooltip-item">${s}</div>`).join('')}
+            </div>
+          </span>`;
+      }
+      
+      // Receiver display
+      let receiverHtml = '<span>-</span>';
+      if (receivers.length === 1) {
+        receiverHtml = `<span>${receivers[0]}</span>`;
+      } else if (receivers.length > 1) {
+        receiverHtml = `
+          <span class="alert-grupaj-trigger">
+            📦 GRUPAJ (${receivers.length})
+            <div class="alert-grupaj-tooltip">
+              <div class="alert-grupaj-tooltip-title">Alıcılar</div>
+              ${receivers.map(r => `<div class="alert-grupaj-tooltip-item">${r}</div>`).join('')}
+            </div>
+          </span>`;
+      }
+      
+      // Build vehicle info parts
+      const vehicleParts = [];
+      if (pos.truck) vehicleParts.push(pos.truck);
+      if (pos.trailer) vehicleParts.push(pos.trailer);
+      if (pos.driver) vehicleParts.push(pos.driver);
+      
+      return `
+      <div class="alert-position-card ${pos.has_high_severity ? 'high-priority' : ''}" 
+           onclick="window.location.href='/loads/position/${encodeURIComponent(pos.position_no)}'">
+        <div class="alert-position-info">
+          <div class="alert-position-no">${pos.position_no}</div>
+          <div class="alert-position-meta">
+            <div class="sender-receiver">
+              ${senderHtml}
+              <span style="margin: 0 6px; opacity: 0.6;">→</span>
+              ${receiverHtml}
+            </div>
+            ${vehicleParts.length > 0 ? `<div class="vehicle-info"><span class="sep">•</span> ${vehicleParts.join(' <span class="sep">•</span> ')}</div>` : ''}
+          </div>
+        </div>
+        <div class="alert-tags">
+          ${pos.alerts.map(a => `
+            <span class="alert-tag ${a.severity}">${a.icon} ${a.label}</span>
+          `).join('')}
+        </div>
+      </div>
+    `}).join('');
+  }
+
+  window.toggleAlertsList = function() {
+    const container = document.getElementById('alertsListContainer');
+    const btn = document.getElementById('alertsToggleBtn');
+    
+    isListVisible = !isListVisible;
+    container.classList.toggle('show', isListVisible);
+    btn.textContent = isListVisible ? 'Detayları Gizle ▲' : 'Detayları Göster ▼';
+  };
+
+  // Track current filter type for toggle behavior
+  let currentFilterType = null;
+
+  window.filterAlertsByType = function(type) {
+    // If clicking the same type again, toggle off (hide list)
+    if (currentFilterType === type && isListVisible) {
+      toggleAlertsList();
+      currentFilterType = null;
+      isCompletedActive = false;
+      // Remove active state from all cards
+      document.querySelectorAll('.alert-stat-card').forEach(card => card.classList.remove('active'));
+      document.querySelector('.alerts-completion-wrapper')?.classList.remove('active');
+      return;
+    }
+    
+    // Show list if hidden
+    if (!isListVisible) {
+      toggleAlertsList();
+    }
+    
+    // Set current filter and render
+    currentFilterType = type;
+    isCompletedActive = false;
+    renderList(type);
+    
+    // Add active state to clicked card
+    document.querySelectorAll('.alert-stat-card').forEach(card => card.classList.remove('active'));
+    document.querySelector('.alerts-completion-wrapper')?.classList.remove('active');
+    event.currentTarget.classList.add('active');
+  };
+
+  // Track if completed positions view is active
+  let isCompletedActive = false;
+
+  // Show completed positions
+  window.showCompletedPositions = async function() {
+    // If already showing completed and list is visible, toggle off
+    if (isCompletedActive && isListVisible) {
+      toggleAlertsList();
+      isCompletedActive = false;
+      currentFilterType = null;
+      document.querySelector('.alerts-completion-wrapper')?.classList.remove('active');
+      document.querySelectorAll('.alert-stat-card').forEach(card => card.classList.remove('active'));
+      return;
+    }
+
+    try {
+      const response = await fetch('/loads/api/completed-positions');
+      const data = await response.json();
+      
+      if (!data.success) return;
+      
+      const container = document.getElementById('alertsList');
+      const positions = data.positions || [];
+      
+      if (positions.length === 0) {
+        container.innerHTML = '<div class="alerts-empty">Tamamlanmış pozisyon yok</div>';
+      } else {
+        container.innerHTML = positions.map(pos => `
+          <div class="alert-position-card" style="border-left: 3px solid #22c55e;"
+               onclick="window.location.href='/loads/position/${encodeURIComponent(pos.position_no)}'">
+            <div class="alert-position-info">
+              <div class="alert-position-no">${pos.position_no}</div>
+              <div class="alert-position-meta">
+                <div class="sender-receiver">
+                  <span>${pos.customer_name || '-'}</span>
+                  <span style="margin: 0 6px; opacity: 0.6;">→</span>
+                  <span>${pos.consignee_name || '-'}</span>
+                </div>
+                <div class="vehicle-info">
+                  ${pos.truck_plate ? `<span class="sep">•</span> ${pos.truck_plate}` : ''}
+                  ${pos.trailer_plate ? ` <span class="sep">•</span> ${pos.trailer_plate}` : ''}
+                  ${pos.driver_name ? ` <span class="sep">•</span> ${pos.driver_name}` : ''}
+                </div>
+              </div>
+            </div>
+            <div class="alert-tags">
+              <span class="alert-tag" style="background: rgba(34, 197, 94, 0.2); color: #22c55e; border: 1px solid rgba(34, 197, 94, 0.3);">✅ Tamamlandı</span>
+            </div>
+          </div>
+        `).join('');
+      }
+      
+      // Show list if hidden
+      if (!isListVisible) {
+        toggleAlertsList();
+      }
+      
+      // Mark as active
+      isCompletedActive = true;
+      currentFilterType = null;
+      document.querySelectorAll('.alert-stat-card').forEach(card => card.classList.remove('active'));
+      document.querySelector('.alerts-completion-wrapper')?.classList.add('active');
+    } catch (e) {
+      console.error('Failed to load completed positions:', e);
+    }
+  };
+
+  // Dynamic tooltip positioning
+  document.addEventListener('mouseenter', function(e) {
+    if (!e.target || typeof e.target.closest !== 'function') return;
+    const trigger = e.target.closest('.alert-grupaj-trigger');
+    if (!trigger) return;
+    
+    const tooltip = trigger.querySelector('.alert-grupaj-tooltip');
+    if (!tooltip) return;
+    
+    const rect = trigger.getBoundingClientRect();
+    const tooltipRect = tooltip.getBoundingClientRect();
+    
+    // Calculate position - prefer right side
+    let left = rect.right + 8;
+    let top = rect.top + (rect.height / 2) - 20;
+    
+    // Check if goes off right edge
+    if (left + 200 > window.innerWidth) {
+      left = rect.left - 200 - 8;
+    }
+    
+    // Check if goes off left edge
+    if (left < 10) {
+      left = 10;
+    }
+    
+    // Check if goes off top
+    if (top < 10) {
+      top = 10;
+    }
+    
+    // Check if goes off bottom
+    if (top + 100 > window.innerHeight) {
+      top = window.innerHeight - 120;
+    }
+    
+    tooltip.style.left = left + 'px';
+    tooltip.style.top = top + 'px';
+    tooltip.classList.add('show');
+  }, true);
+  
+  document.addEventListener('mouseleave', function(e) {
+    if (!e.target || typeof e.target.closest !== 'function') return;
+    const trigger = e.target.closest('.alert-grupaj-trigger');
+    if (!trigger) return;
+    
+    const tooltip = trigger.querySelector('.alert-grupaj-tooltip');
+    if (tooltip) {
+      tooltip.classList.remove('show');
+    }
+  }, true);
+})();
+</script>

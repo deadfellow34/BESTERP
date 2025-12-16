@@ -1,0 +1,1476 @@
+<%- include('./partials/navbar') %>
+
+<!-- VizeBest CSS - External file for caching -->
+<link rel="stylesheet" href="/css/vizebest.css?v=1.0">
+
+<div class="vize-page">
+  <div class="vize-header">
+    <h2>VizeBest - Vize / Şoför Takip</h2>
+    <div style="font-size:13px; opacity:0.9">Buraya elle veri girebilir, satır ekleyebilir, düzenleyebilir ve Excel olarak indirebilirsiniz.</div>
+  </div>
+
+  <div class="vize-controls">
+    <button class="btn" onclick="sendAlertMail()" style="background:linear-gradient(135deg,#dc2626,#b91c1c);">📧 Hatırlatma Maili Gönder</button>
+    <button class="btn" onclick="exportXls()">Excel Olarak İndir</button>
+    <button class="btn" onclick="exportPdf()">PDF Olarak İndir</button>
+    <button class="btn" onclick="addNewRow()">Yeni Satır Ekle</button>
+  </div>
+
+  <div class="vize-tabs">
+    <button class="vize-tab active" onclick="showActiveDrivers(this)">Aktif Şoförler</button>
+    <button class="vize-tab" onclick="showDeletedDrivers(this)">İşten Ayrılan Şoförler</button>
+  </div>
+
+  <div style="width:100%;">
+    <table id="vizeTable" class="vize-table">
+      <thead>
+        <tr>
+          <th style="width:48px">#</th>
+          <th>İşe Giriş Tarihi</th>
+          <th>Doğum Tarihi</th>
+          <th>Adı Soyadı</th>
+          <th>İngiltere Vize</th>
+          <th>Schengen Vize</th>
+          <th>Vize Veren Ülke</th>
+          <th>Ehliyet Geçerlilik</th>
+          <th>Seyahat Sigorta</th>
+          <th>SRC3</th>
+          <th>SRC5/ADR</th>
+          <th>Psikoteknik</th>
+          <th>Takograf / Kart</th>
+          <th>Pasaport Bitiş</th>
+          <th style="min-width:100px; max-width:150px;">Notlar</th>
+          <th style="width:220px">İşlemler</th>
+        </tr>
+      </thead>
+      <tbody>
+      </tbody>
+    </table>
+
+    <!-- Silinen şoförler tablosu (gizli) -->
+    <table id="deletedTable" class="vize-table" style="display:none;">
+      <thead>
+        <tr>
+          <th style="width:48px">#</th>
+          <th>Ayrılış Tarihi</th>
+          <th>İşe Giriş Tarihi</th>
+          <th>Doğum Tarihi</th>
+          <th>Adı Soyadı</th>
+          <th>İngiltere Vize</th>
+          <th>Schengen Vize</th>
+          <th>Vize Veren Ülke</th>
+          <th>Ehliyet Geçerlilik</th>
+          <th>Seyahat Sigorta</th>
+          <th>SRC3</th>
+          <th>SRC5/ADR</th>
+          <th>Psikoteknik</th>
+          <th>Takograf / Kart</th>
+          <th>Pasaport Bitiş</th>
+          <th style="min-width:100px; max-width:150px;">Notlar</th>
+          <th style="width:150px">İşlemler</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+    <!-- Delete confirmation modal -->
+    <div id="confirmDeleteModal" class="vb-modal-backdrop hidden" style="display:none;">
+      <div class="vb-modal" role="dialog" aria-modal="true" aria-labelledby="vb-confirm-title">
+        <h3 id="vb-confirm-title">Satırı silmek istediğinize emin misiniz?</h3>
+        <p>Bu işlem geri alınamaz. Satır sunucuda kayıtlıysa silme işlemi kalıcı olacaktır.</p>
+        <div class="vb-actions">
+          <button class="btn small secondary" onclick="cancelDelete()">İptal</button>
+          <button class="btn small danger" onclick="confirmDelete()">Evet, Sil</button>
+        </div>
+      </div>
+    </div>
+</div>
+
+<!-- include html2canvas and jsPDF (UMD) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<!-- SheetJS with styling support for Excel export -->
+<script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
+
+<script>
+  // server date injected by Express
+  try { window.__serverDate = new Date('<%= serverDate %>'); } catch (e) { window.__serverDate = new Date(); }
+
+  // small helper to escape unsafe HTML in strings
+  function escapeHtml(s){
+    if(!s) return '';
+    return String(s).replace(/[&<>"']/g, function(c){
+      return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#39;"}[c];
+    });
+  }
+
+  // Show attachments popup for a specific column on a row
+  function showAttachmentsPopupFor(tr, colKey, anchorEl) {
+    const id = tr && tr.dataset && tr.dataset.id;
+    if (!id) return;
+    // remove any existing popup
+    const existing = document.querySelector('.vb-attachments-popup'); if (existing) existing.remove();
+
+    const popup = document.createElement('div');
+    popup.className = 'vb-attachments-popup';
+    popup.innerHTML = '<div class="vb-popup-header"><h4>Ekler</h4><button class="btn small secondary vb-popup-close">Kapat</button></div><div class="vb-files-list">Yükleniyor...</div>';
+    document.body.appendChild(popup);
+    // mark which row/col this popup belongs to so other code can refresh it
+    popup.dataset.attachId = id;
+    popup.dataset.attachCol = colKey;
+
+    const closeBtn = popup.querySelector('.vb-popup-close'); if (closeBtn) closeBtn.addEventListener('click', () => { try { popup.classList.remove('vb-popup-open'); } catch(e){} setTimeout(() => { try { popup.remove(); } catch(e){} hideImagePreview(); }, 220); });
+    // prevent flicker when hovering popup
+    popup.addEventListener('mouseenter', cancelScheduledHideImagePreview);
+    popup.addEventListener('mouseleave', () => scheduleHideImagePreview());
+
+    const listEl = popup.querySelector('.vb-files-list');
+    fetch('/vizebest/attachments/' + encodeURIComponent(id) + '?col=' + encodeURIComponent(colKey), { credentials: 'same-origin' }).then(r => r.json()).then(data => {
+      try { console.debug('Attachments fetched', id, colKey, data); } catch (e) {}
+      listEl.innerHTML = '';
+      (data.files || []).forEach(f => {
+        const row = document.createElement('div'); row.className = 'file-row';
+        const a = document.createElement('a'); a.href = f.url; a.target = '_blank'; a.textContent = f.name; a.style.flex = '1'; a.className = 'vb-attachment-link';
+        // preview on hover
+        if (/\.(jpe?g|png|gif|webp|bmp|svg)$/i.test(f.name) || /\.pdf$/i.test(f.name)) {
+          a.addEventListener('mouseenter', () => { showFilePreview(f.url, f.name); cancelScheduledHideImagePreview(); });
+          a.addEventListener('mouseleave', () => { scheduleHideImagePreview(250); });
+        }
+        const del = document.createElement('button'); del.className = 'btn small secondary'; del.textContent = 'Sil';
+        del.addEventListener('click', async (ev) => {
+          ev.stopPropagation();
+          if (!confirm('Bu eki silmek istediğinize emin misiniz?')) return;
+          try {
+            const resp = await fetch('/vizebest/attachments/delete/' + encodeURIComponent(id) + '?col=' + encodeURIComponent(colKey), { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ filename: f.name }) });
+            const j = await resp.json();
+            if (j && j.success) {
+              showToast('Silindi');
+              row.remove();
+              try { updateBadgeCount(tr, colKey); } catch (e) {}
+            } else { showToast('Silme hatası'); }
+          } catch (err) { console.error(err); showToast('Silme hatası'); }
+        });
+        const actions = document.createElement('div'); actions.className = 'file-actions'; actions.appendChild(del);
+        row.appendChild(a); row.appendChild(actions); listEl.appendChild(row);
+      });
+      if ((data.files || []).length === 0) listEl.textContent = 'Ek dosya yok';
+      // reposition now that content size may have changed
+      try { placePopup(anchorEl); } catch (e) {}
+    }).catch(err => { console.error('List attachments error', err); listEl.textContent = 'Listelenemedi'; });
+    try { placePopup(anchorEl); } catch (e) {}
+
+    // position popup near the triggering element (above the cell if possible)
+    // anchorEl can be passed by the caller; otherwise try to find the badge for this colKey
+    function placePopup(anchorEl) {
+      try {
+        const anchor = anchorEl || tr.querySelector('.vb-attachments-badge.' + colKey) || tr;
+        const rect = anchor.getBoundingClientRect();
+        // ensure popup has been rendered so offsets are available
+        const popupW = popup.offsetWidth || 260;
+        const popupH = popup.offsetHeight || 180;
+        const scrollX = window.pageXOffset || document.documentElement.scrollLeft || 0;
+        const scrollY = window.pageYOffset || document.documentElement.scrollTop || 0;
+        let left = Math.round(rect.left + scrollX + rect.width / 2 - popupW / 2);
+        // prefer above the anchor
+        let top = Math.round(rect.top + scrollY - popupH - 8);
+        // if not enough space above, place below
+        const viewportTop = scrollY + 8;
+        const viewportBottom = scrollY + (window.innerHeight || document.documentElement.clientHeight) - 8;
+        if (top < viewportTop) {
+          top = Math.round(rect.bottom + scrollY + 8);
+        }
+        // clamp horizontally
+        const viewportLeft = scrollX + 8;
+        const viewportRight = scrollX + (window.innerWidth || document.documentElement.clientWidth) - 8;
+        if (left < viewportLeft) left = viewportLeft;
+        if (left + popupW > viewportRight) left = Math.max(viewportLeft, viewportRight - popupW);
+        popup.style.left = left + 'px';
+        popup.style.top = top + 'px';
+      } catch (e) {
+        // fallback to centered
+        popup.style.left = '50%'; popup.style.top = '50%'; popup.style.transform = 'translate(-50%,-50%)';
+      }
+    }
+
+    // initial placement (before/after fetch content) and animate open
+    try { placePopup(anchorEl); } catch (e) {}
+    // allow layout to settle then animate
+    requestAnimationFrame(() => { try { popup.classList.add('vb-popup-open'); } catch (e) {} });
+  }
+
+    // Update the badge count for a given table row and column key
+    async function updateBadgeCount(tr, colKey) {
+      try {
+        if (!tr || !colKey) return;
+        const id = tr.dataset && tr.dataset.id;
+        if (!id) return;
+        const res = await fetch('/vizebest/attachments/' + encodeURIComponent(id) + '?col=' + encodeURIComponent(colKey), { credentials: 'same-origin' });
+        if (!res.ok) return;
+        const data = await res.json();
+        const count = (data.files || []).length;
+        const badge = tr.querySelector('.vb-attachments-badge.' + colKey);
+        if (badge) {
+          badge.textContent = count;
+          badge.style.display = count ? 'block' : 'none';
+        }
+      } catch (e) { console.error('updateBadgeCount error', e); }
+    }
+
+  function parseDateFlexible(s) {
+    if (!s) return null;
+    s = String(s).trim();
+    // try dd.mm.yyyy or dd/mm/yyyy
+    const dmy = s.match(/^(\d{1,2})[\.\/](\d{1,2})[\.\/](\d{2,4})$/);
+    if (dmy) {
+      let day = parseInt(dmy[1], 10), month = parseInt(dmy[2], 10), year = parseInt(dmy[3], 10);
+      if (year < 100) year += 2000;
+      return new Date(year, month - 1, day);
+    }
+    // try ISO yyyy-mm-dd
+    const iso = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
+    if (iso) return new Date(parseInt(iso[1],10), parseInt(iso[2],10)-1, parseInt(iso[3],10));
+    // fallback to Date parse
+    const d = new Date(s);
+    if (!isNaN(d.getTime())) return d;
+    return null;
+  }
+
+  function shouldWarnUkvisa(dateStr) {
+    const d = parseDateFlexible(dateStr);
+    if (!d) return false;
+    const server = window.__serverDate || new Date();
+    const msPerDay = 1000 * 60 * 60 * 24;
+    const diff = Math.ceil((d.getTime() - server.getTime()) / msPerDay);
+    // warn if the ukvisa date is within 90 days (including past dates)
+    return diff <= 90;
+  }
+
+  // Generic function for 90-day warnings for other expiry columns
+  function shouldWarnSoon(dateStr) {
+    const d = parseDateFlexible(dateStr);
+    if (!d) return false;
+    const server = window.__serverDate || new Date();
+    const msPerDay = 1000 * 60 * 60 * 24;
+    const diff = Math.ceil((d.getTime() - server.getTime()) / msPerDay);
+    // warn if within 90 days (including already expired)
+    return diff <= 90;
+  }
+
+  // Check if person is 65 years or older based on birth date
+  function shouldWarnAge(dateStr) {
+    const dob = parseDateFlexible(dateStr);
+    if (!dob) return false;
+    const server = window.__serverDate || new Date();
+    // Calculate age
+    let age = server.getFullYear() - dob.getFullYear();
+    const monthDiff = server.getMonth() - dob.getMonth();
+    if (monthDiff < 0 || (monthDiff === 0 && server.getDate() < dob.getDate())) {
+      age--;
+    }
+    return age >= 65;
+  }
+
+  // Update age warning class on birth date cell
+  function updateAgeCellClass(tr) {
+    try {
+      // Doğum Tarihi is at index 2 (0=#, 1=İşe Giriş, 2=Doğum Tarihi)
+      const dobTd = tr.querySelectorAll('td')[2];
+      if (!dobTd) return;
+      const txt = (dobTd.textContent || '').trim();
+      if (!txt) { dobTd.classList.remove('warn-age'); return; }
+      if (shouldWarnAge(txt)) {
+        dobTd.classList.add('warn-age');
+      } else {
+        dobTd.classList.remove('warn-age');
+      }
+    } catch (e) { console.error('updateAgeCellClass error', e); }
+  }
+
+  function updateUkvisaCellClass(tr) {
+    try {
+      const ukTd = tr.querySelectorAll('td')[4];
+      if (!ukTd) return;
+      const txt = (ukTd.textContent || '').trim();
+      if (!txt) { ukTd.classList.remove('warn-ukvisa'); return; }
+      if (shouldWarnUkvisa(txt)) {
+        ukTd.classList.add('warn-ukvisa');
+      } else {
+        ukTd.classList.remove('warn-ukvisa');
+      }
+    } catch (e) { console.error('updateUkvisaCellClass error', e); }
+  }
+
+  // Update all other expiry-related cells (90-day warning)
+  function updateSoonCellClasses(tr) {
+    try {
+      // column indices to check: 5=Schengen,7=Ehliyet,8=Seyahat Sigorta,10=SRC5/ADR,11=Psikoteknik,12=Takograf,13=Pasaport
+      const idxs = [5,7,8,10,11,12,13];
+      idxs.forEach(i => {
+        const td = tr.querySelectorAll('td')[i];
+        if (!td) return;
+        const txt = (td.textContent || '').trim();
+        if (!txt) { td.classList.remove('warn-soon'); return; }
+        if (shouldWarnSoon(txt)) td.classList.add('warn-soon'); else td.classList.remove('warn-soon');
+      });
+      // Also update age warning
+      updateAgeCellClass(tr);
+    } catch (e) { console.error('updateSoonCellClasses error', e); }
+  }
+
+  function nextIndex() {
+    const tbody = document.querySelector('#vizeTable tbody');
+    return tbody.children.length + 1;
+  }
+
+  // Sort table rows by driver name (Adı Soyadı) using header lookup, then renumber
+  function sortTableByName() {
+    const table = document.querySelector('#vizeTable');
+    if (!table) return;
+    const tbody = table.querySelector('tbody');
+    if (!tbody) return;
+
+    // try to find the column index for the "Adı Soyadı" header (robust to manual TD swaps)
+    function findNameColumnIndex() {
+      // prefer thead if present
+      const thead = table.querySelector('thead');
+      const headerCells = thead ? Array.from(thead.querySelectorAll('th')) : Array.from(table.querySelectorAll('tr th'));
+      for (let i = 0; i < headerCells.length; i++) {
+        const txt = (headerCells[i].textContent || '').trim().toLowerCase();
+        if (!txt) continue;
+        if (txt.includes('adı') && txt.includes('soyad')) return i;
+        if (txt.includes('ad') && txt.includes('soyad')) return i;
+        if (txt === 'ad soyad' || txt === 'adı soyadı' || txt === 'ad soyadı') return i;
+      }
+      // fallback: look for header that contains either 'ad' or 'soyad'
+      for (let i = 0; i < headerCells.length; i++) {
+        const txt = (headerCells[i].textContent || '').trim().toLowerCase();
+        if (!txt) continue;
+        if (txt.includes('soy')) return i;
+        if (txt.includes('ad')) return i;
+      }
+      // final fallback: assume second column (index 1)
+      return 1;
+    }
+
+    const nameIdx = findNameColumnIndex();
+    const rows = Array.from(tbody.querySelectorAll('tr'));
+
+    rows.sort((a, b) => {
+      const aTd = a.querySelectorAll('td')[nameIdx];
+      const bTd = b.querySelectorAll('td')[nameIdx];
+      const an = (aTd ? getCellText(aTd) : '') || '';
+      const bn = (bTd ? getCellText(bTd) : '') || '';
+      return an.trim().localeCompare(bn.trim(), 'tr', { sensitivity: 'base' });
+    });
+
+    // re-append in order
+    rows.forEach(r => tbody.appendChild(r));
+    // renumber first column if present
+    Array.from(tbody.querySelectorAll('tr')).forEach((r, i) => { if (r.children && r.children[0]) r.children[0].textContent = i + 1; });
+    // ensure name column is marked/styled after sorting
+    try { markNameColumn(); } catch (e) {}
+  }
+
+  // Mark the Adı Soyadı column (header + corresponding tds) with a class so it can be styled
+  function markNameColumn() {
+    const table = document.querySelector('#vizeTable');
+    if (!table) return;
+    const thead = table.querySelector('thead');
+    const headerCells = thead ? Array.from(thead.querySelectorAll('th')) : Array.from(table.querySelectorAll('tr th'));
+    // We'll detect and mark both the name column and the visa-country column
+    let nameIdx = -1;
+    let visaIdx = -1;
+    for (let i = 0; i < headerCells.length; i++) {
+      const txt = (headerCells[i].textContent || '').trim().toLowerCase();
+      if (!txt) continue;
+      if (nameIdx === -1 && ((txt.includes('adı') && txt.includes('soyad')) || (txt.includes('ad') && txt.includes('soyad')) || txt === 'ad soyad' || txt === 'adı soyadı')) {
+        nameIdx = i;
+      }
+      if (visaIdx === -1 && (txt.includes('vize') && txt.includes('ülke') || txt.includes('vize veren') || txt.includes('vizeveren') )) {
+        visaIdx = i;
+      }
+    }
+    // fallback heuristics
+    if (nameIdx === -1) {
+      for (let i = 0; i < headerCells.length; i++) {
+        const txt = (headerCells[i].textContent || '').trim().toLowerCase();
+        if (!txt) continue;
+        if (txt.includes('soy') || txt.includes('ad')) { nameIdx = i; break; }
+      }
+    }
+    if (visaIdx === -1) {
+      for (let i = 0; i < headerCells.length; i++) {
+        const txt = (headerCells[i].textContent || '').trim().toLowerCase();
+        if (!txt) continue;
+        if (txt.includes('ülke') || (txt.includes('vize') && txt.includes('ülke'))) { visaIdx = i; break; }
+      }
+    }
+    if (nameIdx === -1) nameIdx = 1;
+
+    // remove previous markers
+    headerCells.forEach(h => { h.classList.remove('vb-name-col'); h.classList.remove('vb-visa-country'); });
+    if (headerCells[nameIdx]) headerCells[nameIdx].classList.add('vb-name-col');
+    if (visaIdx !== -1 && headerCells[visaIdx]) headerCells[visaIdx].classList.add('vb-visa-country');
+
+    // mark body cells: name column gets vb-name-col; visa country cells get vb-visa-country
+    const rows = Array.from(table.querySelectorAll('tbody tr'));
+    rows.forEach(r => {
+      const tds = Array.from(r.querySelectorAll('td'));
+      tds.forEach(td => { td.classList.remove('vb-name-col'); td.classList.remove('vb-visa-country'); });
+      if (tds[nameIdx]) tds[nameIdx].classList.add('vb-name-col');
+      if (visaIdx !== -1 && tds[visaIdx]) tds[visaIdx].classList.add('vb-visa-country');
+    });
+  }
+
+  function addRow(data, id) {
+    const tbody = document.querySelector('#vizeTable tbody');
+    const tr = document.createElement('tr');
+    // if an empty-state placeholder exists, remove it when adding a real row
+    try { const empty = tbody.querySelector('.vb-empty-state'); if (empty) empty.remove(); } catch (e) {}
+    const idx = nextIndex();
+    const warnUk = data && data.ukvisa && shouldWarnUkvisa(data.ukvisa);
+    const warnSchengen = data && data.schengen && shouldWarnSoon(data.schengen);
+    const warnLicense = data && data.license_exp && shouldWarnSoon(data.license_exp);
+    const warnInsurance = data && data.insurance_exp && shouldWarnSoon(data.insurance_exp);
+    const warnSrc5 = data && data.src5 && shouldWarnSoon(data.src5);
+    const warnPsycho = data && data.psycho && shouldWarnSoon(data.psycho);
+    const warnTacho = data && data.tacho && shouldWarnSoon(data.tacho);
+    const warnPassport = data && data.passport_exp && shouldWarnSoon(data.passport_exp);
+    const warnDobAge = data && data.dob && shouldWarnAge(data.dob);
+    tr.innerHTML = `
+      <td>${idx}</td>
+      <td contenteditable="false" class="editable">${escapeHtml(data.hire || '')}</td>
+      <td contenteditable="false" class="editable ${warnDobAge ? 'warn-age' : ''}">${escapeHtml(data.dob || '')}</td>
+      <td contenteditable="false" class="editable">${escapeHtml(data.name || '')}</td>
+      <td contenteditable="false" class="editable ${warnUk ? 'warn-ukvisa' : ''}">${escapeHtml(data.ukvisa || '')}</td>
+      <td contenteditable="false" class="editable ${warnSchengen ? 'warn-soon' : ''}">${escapeHtml(data.schengen || '')}</td>
+      <td contenteditable="false" class="editable">${escapeHtml(data.visaCountry || '')}</td>
+      <td contenteditable="false" class="editable ${warnLicense ? 'warn-soon' : ''}">${escapeHtml(data.license_exp || '')}</td>
+      <td contenteditable="false" class="editable ${warnInsurance ? 'warn-soon' : ''}">${escapeHtml(data.insurance_exp || '')}</td>
+      <td contenteditable="false" class="editable">${escapeHtml(data.src3 || '')}</td>
+      <td contenteditable="false" class="editable ${warnSrc5 ? 'warn-soon' : ''}">${escapeHtml(data.src5 || '')}</td>
+      <td contenteditable="false" class="editable ${warnPsycho ? 'warn-soon' : ''}">${escapeHtml(data.psycho || '')}</td>
+      <td contenteditable="false" class="editable ${warnTacho ? 'warn-soon' : ''}">${escapeHtml(data.tacho || '')}</td>
+      <td contenteditable="false" class="editable ${warnPassport ? 'warn-soon' : ''}">${escapeHtml(data.passport_exp || '')}</td>
+      <td contenteditable="false" class="editable">${escapeHtml(data.notes || '')}</td>
+      <td class="actions">
+        <button class="btn small" onclick="editRow(this)">Düzenle</button>
+        <button class="btn small secondary" onclick="removeRow(this)">Sil</button>
+      </td>
+    `;
+    tbody.appendChild(tr);
+    if (id) tr.setAttribute('data-id', String(id));
+    // ensure the ukvisa highlight is correct
+    updateUkvisaCellClass(tr);
+    updateSoonCellClasses(tr);
+    attachDropHandlers(tr);
+    // update name/visa column markers for the new row
+    try { markNameColumn(); } catch (e) {}
+  }
+
+  // Create a new row on the server and add it to the table, then enter edit mode
+  async function addNewRow() {
+    try {
+      const res = await fetch('/vizebest/add', { method: 'POST', credentials: 'same-origin' });
+      if (!res.ok) throw new Error('Sunucu hata: ' + res.status);
+      const j = await res.json();
+      if (!j || !j.id) throw new Error('Satır oluşturulamadı');
+      // add an empty row locally and open editor
+      addRow({}, j.id);
+      // find the newly added row and put into edit mode
+      const tbody = document.querySelector('#vizeTable tbody');
+      const tr = tbody.querySelector('tr[data-id="' + String(j.id) + '"]');
+      if (tr) {
+        // call editRow on the edit button
+        const btn = tr.querySelector('button');
+        if (btn) editRow(btn);
+        tr.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    } catch (e) {
+      console.error('addNewRow error', e);
+      alert('Yeni satır eklenemedi: ' + (e && e.message));
+    }
+  }
+
+  // Enable editing for a row: store originals, make cells editable and show Save/Cancel
+  function editRow(btn) {
+    try {
+      const tr = btn && btn.closest && btn.closest('tr'); if (!tr) return;
+      // prevent double-edit
+      if (tr.dataset.orig) return;
+      const tds = Array.from(tr.querySelectorAll('td')).slice(1, -1);
+      const orig = tds.map(td => getCellText(td));
+      tr.dataset.orig = JSON.stringify(orig);
+      // enable editing (make the inner text span editable and add editing class)
+      tds.forEach(td => {
+        // ensure we have a vb-cell-text wrapper
+        const span = td.querySelector('.vb-cell-text');
+        if (!span) {
+          // move existing text nodes into span
+          const txt = getCellText(td);
+          setCellText(td, txt);
+        }
+        const textEl = td.querySelector('.vb-cell-text');
+        if (textEl) textEl.contentEditable = 'true';
+        td.classList.add('editing');
+      });
+      // replace actions with save/cancel
+      const actions = tr.querySelector('td.actions');
+      actions.innerHTML = `<button class="btn small" onclick="saveRow(this)">Kaydet</button><button class="btn small secondary" onclick="cancelEdit(this)">İptal</button>`;
+      // focus first editable cell
+      try { const firstSpan = tds[0] && tds[0].querySelector && tds[0].querySelector('.vb-cell-text'); if (firstSpan) { firstSpan.focus(); const sel = window.getSelection(); const range = document.createRange(); range.selectNodeContents(firstSpan); range.collapse(true); sel.removeAllRanges(); sel.addRange(range); } } catch (e) {}
+    } catch (e) { console.error('editRow error', e); }
+  }
+
+  // Attach drag/drop and click handlers to multiple attachment-capable cells
+  function attachDropHandlers(tr) {
+    const tds = tr.querySelectorAll('td');
+    // map table td index -> column key used on server storage and queries
+    const colMap = {
+      1: 'hire',
+      3: 'name',
+      4: 'ukvisa',
+      5: 'schengen',
+      7: 'license_exp',
+      8: 'insurance_exp',
+      10: 'src5',
+      11: 'psycho',
+      12: 'tacho',
+      13: 'passport_exp'
+    };
+
+    Object.entries(colMap).forEach(([idxStr, colKey]) => {
+      const idx = parseInt(idxStr, 10);
+      const td = tds[idx];
+      if (!td) return;
+      td.style.position = td.style.position || 'relative';
+
+      let badge = td.querySelector('.vb-attachments-badge.' + colKey);
+      if (!badge) {
+        badge = document.createElement('div');
+        badge.className = 'vb-attachments-badge ' + colKey;
+        badge.textContent = '';
+        badge.style.position = 'absolute';
+        badge.style.right = '6px';
+        badge.style.top = '6px';
+        badge.style.cursor = 'pointer';
+        badge.style.display = 'none';
+        td.appendChild(badge);
+      }
+
+      async function refreshAttachments() {
+        try {
+          const id = tr.dataset.id;
+          if (!id) { badge.style.display = 'none'; return; }
+          const res = await fetch('/vizebest/attachments/' + id + '?col=' + encodeURIComponent(colKey), { credentials: 'same-origin' });
+          const data = await res.json();
+          const count = (data.files || []).length;
+          badge.textContent = count;
+          badge.style.display = count ? 'block' : 'none';
+        } catch (err) {
+          console.error(err);
+        }
+      }
+
+      td.addEventListener('dragover', (e) => { e.preventDefault(); td.classList.add('vb-drag-over'); });
+      td.addEventListener('dragleave', (e) => { td.classList.remove('vb-drag-over'); });
+      td.addEventListener('drop', async (e) => {
+        e.preventDefault(); td.classList.remove('vb-drag-over');
+        const files = Array.from(e.dataTransfer.files || []);
+        if (!files.length) return;
+        let id = tr.dataset.id;
+        if (!id) {
+          // create the row first
+          try {
+            const addRes = await fetch('/vizebest/add', { method: 'POST', credentials: 'same-origin' });
+            const addData = await addRes.json();
+            if (addData && addData.id) {
+              id = addData.id;
+              tr.dataset.id = id;
+            } else { showToast('Satır kaydedilemedi, tekrar deneyin'); return; }
+          } catch (err) { console.error(err); showToast('Satır oluşturulamadı'); return; }
+        }
+
+        const form = new FormData();
+        files.forEach(f => form.append('files', f));
+        try {
+          const upRes = await fetch('/vizebest/upload/' + id + '?col=' + encodeURIComponent(colKey), { method: 'POST', credentials: 'same-origin', body: form });
+          const upData = await upRes.json();
+          if (upData && upData.success) {
+            showToast('Yüklendi');
+            await refreshAttachments();
+              // if the attachments popup is open for this row/col, refresh it so uploaded files appear immediately
+              try {
+                const existing = document.querySelector('.vb-attachments-popup');
+                if (existing && existing.dataset && existing.dataset.attachId === String(id) && existing.dataset.attachCol === String(colKey)) {
+                  // re-open/refresh popup anchored to the badge
+                  showAttachmentsPopupFor(tr, colKey, badge);
+                }
+              } catch (e) { console.error('refresh popup after upload', e); }
+          } else { showToast('Yükleme hatası'); }
+        } catch (err) { console.error(err); showToast('Yükleme hatası'); }
+      });
+
+      badge.addEventListener('click', (e) => { e.stopPropagation(); showAttachmentsPopupFor(tr, colKey, badge); });
+
+      // Mark this cell for batch loading
+      td.dataset.attachCol = colKey;
+      td.dataset.attachBadgeReady = 'true';
+    });
+  }
+
+  // Batch load all attachment counts after page loads (OPTIMIZED: single request)
+  async function loadAllAttachmentCounts() {
+    const rows = document.querySelectorAll('#vizeTable tbody tr[data-id]');
+    if (!rows.length) return;
+    
+    const ids = Array.from(rows).map(tr => tr.dataset.id).filter(Boolean);
+    const cols = ['hire', 'name', 'ukvisa', 'schengen', 'license_exp', 'insurance_exp', 'src5', 'psycho', 'tacho', 'passport_exp'];
+    
+    try {
+      const res = await fetch('/vizebest/attachments/batch-counts', {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ids, cols })
+      });
+      const data = await res.json();
+      if (!data.success || !data.counts) return;
+      
+      // Update all badges at once
+      for (const tr of rows) {
+        const id = tr.dataset.id;
+        if (!id || !data.counts[id]) continue;
+        
+        const tds = tr.querySelectorAll('td[data-attach-badge-ready="true"]');
+        for (const td of tds) {
+          const colKey = td.dataset.attachCol;
+          if (!colKey) continue;
+          const badge = td.querySelector('.vb-attachments-badge.' + colKey);
+          if (!badge) continue;
+          
+          const count = data.counts[id][colKey] || 0;
+          badge.textContent = count;
+          badge.style.display = count ? 'block' : 'none';
+        }
+      }
+    } catch (err) {
+      console.error('loadAllAttachmentCounts error', err);
+    }
+  }
+
+  // Load saved rows on page load and show an empty-state message if none
+  (async function loadSaved() {
+    try {
+      const res = await fetch('/vizebest/data', { credentials: 'same-origin' });
+      const ct = (res && res.headers && res.headers.get('content-type')) || '';
+      if (!res.ok) throw new Error('Sunucu hata: ' + res.status);
+      if (!ct.includes('application/json')) throw new Error('Sunucu JSON döndürmedi. Muhtemelen login sayfasına yönlendirildiniz.');
+      const j = await res.json();
+      const rows = (j && j.rows) || [];
+      if (!rows.length) {
+        const tbody = document.querySelector('#vizeTable tbody');
+        tbody.innerHTML = '<tr class="vb-empty-state"><td colspan="16" style="text-align:center;padding:40px;color:var(--muted);">Kayıt bulunamadı — Yeni Satır Ekle ile başlayabilirsiniz.</td></tr>';
+        return;
+      }
+      rows.forEach(r => {
+        addRow({ name: r.name, dob: r.dob, hire: r.hire, ukvisa: r.ukvisa, schengen: r.schengen, visaCountry: r.visaCountry, license_exp: r.license_exp, insurance_exp: r.insurance_exp, src3: r.src3, src5: r.src5, psycho: r.psycho, tacho: r.tacho, passport_exp: r.passport_exp, notes: r.notes }, r.id);
+      });
+      sortTableByName();
+      // Load attachment counts after a short delay
+      setTimeout(loadAllAttachmentCounts, 500);
+    } catch (e) {
+      console.error('Failed to load saved vizebest rows', e);
+      const tbody = document.querySelector('#vizeTable tbody');
+      if (tbody) tbody.innerHTML = '<tr class="vb-empty-state"><td colspan="16" style="text-align:center;padding:40px;color:var(--muted);">Yüklenirken hata oluştu. Konsol hatalarını kontrol edin.</td></tr>';
+    }
+  })();
+
+  
+
+  // Show a confirmation modal before deleting
+  function removeRow(btn) {
+    const tr = btn.closest('tr');
+    if (!tr) return;
+    window.__vizePendingDelete = tr;
+    const modal = document.getElementById('confirmDeleteModal');
+    if (modal) { modal.style.display = 'flex'; modal.classList.remove('hidden'); }
+  }
+
+  // Cancel deletion
+  function cancelDelete() {
+    const modal = document.getElementById('confirmDeleteModal');
+    if (modal) { modal.style.display = 'none'; modal.classList.add('hidden'); }
+    window.__vizePendingDelete = null;
+  }
+
+  // Confirm deletion and call server if needed
+  async function confirmDelete() {
+    const tr = window.__vizePendingDelete;
+    cancelDelete();
+    if (!tr) return;
+    const idCell = tr.getAttribute('data-id');
+    if (idCell) {
+      try {
+        const resp = await fetch('/vizebest/delete/' + encodeURIComponent(idCell), { method: 'POST', credentials: 'same-origin' });
+        const ct = resp.headers.get('content-type') || '';
+        if (!resp.ok) throw new Error('Sunucu hata: ' + resp.status);
+        if (!ct.includes('application/json')) throw new Error('Sunucu JSON döndürmedi. Muhtemelen login sayfasına yönlendirildiniz.');
+        const j = await resp.json();
+        if (!j || !j.success) throw new Error('Silme başarısız: ' + (j && j.error ? j.error : ''));
+      } catch (e) {
+        console.error('VizeBest delete error', e);
+        alert('Silme başarısız: ' + (e.message || e));
+        return;
+      }
+    }
+    tr.remove();
+    // re-number and keep alphabetical order
+    sortTableByName();
+    window.__vizePendingDelete = null;
+  }
+
+  // Send alert email
+  async function sendAlertMail() {
+    if (!confirm('Yaklaşan belge uyarılarını içeren mail gönderilsin mi?')) return;
+    
+    try {
+      const btn = event.target;
+      const originalText = btn.innerHTML;
+      btn.innerHTML = '⏳ Gönderiliyor...';
+      btn.disabled = true;
+      
+      const res = await fetch('/vizebest/send-alert');
+      const data = await res.json();
+      
+      if (data.success) {
+        if (data.sent) {
+          alert('✅ Mail başarıyla gönderildi!\n\n' + data.warningCount + ' şoför için uyarı maili gönderildi.');
+        } else {
+          alert('ℹ️ ' + (data.message || 'Gönderilecek uyarı bulunamadı.'));
+        }
+      } else {
+        alert('❌ Hata: ' + (data.error || data.message || 'Mail gönderilemedi'));
+      }
+      
+      btn.innerHTML = originalText;
+      btn.disabled = false;
+    } catch (err) {
+      alert('❌ Hata: ' + err.message);
+      event.target.innerHTML = '📧 Hatırlatma Maili Gönder';
+      event.target.disabled = false;
+    }
+  }
+
+  // Export table to Excel with AutoFilter and styling
+  function exportXls() {
+    const table = document.querySelector('#vizeTable');
+    if (!table) { alert('Tablo bulunamadı'); return; }
+    if (typeof XLSX === 'undefined') { alert('Excel kütüphanesi yüklenemedi'); return; }
+    
+    // Get headers (exclude last column - İşlemler)
+    const headers = [];
+    const ths = table.querySelectorAll('thead th');
+    ths.forEach((th, i) => {
+      if (i < ths.length - 1) { // Skip last column (İşlemler)
+        headers.push(th.textContent.trim());
+      }
+    });
+    
+    // Collect data with warning info
+    const rowsData = [];
+    const rows = table.querySelectorAll('tbody tr');
+    rows.forEach(row => {
+      if (row.classList.contains('vb-empty-state')) return;
+      const rowData = [];
+      const tds = row.querySelectorAll('td');
+      tds.forEach((td, i) => {
+        if (i < tds.length - 1) { // Skip last column (İşlemler)
+          rowData.push({
+            value: getCellText(td),
+            isWarnAge: td.classList.contains('warn-age'),
+            isWarnSoon: td.classList.contains('warn-soon') || td.classList.contains('warn-ukvisa')
+          });
+        }
+      });
+      if (rowData.length > 0) rowsData.push(rowData);
+    });
+    
+    // Create workbook and worksheet
+    const wb = XLSX.utils.book_new();
+    const ws = {};
+    
+    // Header style - Dark blue background, white text
+    const headerStyle = {
+      font: { bold: true, color: { rgb: "FFFFFF" }, sz: 11 },
+      fill: { fgColor: { rgb: "1E40AF" } },
+      alignment: { horizontal: "center", vertical: "center" },
+      border: {
+        top: { style: "thin", color: { rgb: "1E3A8A" } },
+        bottom: { style: "thin", color: { rgb: "1E3A8A" } },
+        left: { style: "thin", color: { rgb: "1E3A8A" } },
+        right: { style: "thin", color: { rgb: "1E3A8A" } }
+      }
+    };
+    
+    // Normal cell style
+    const cellStyle = {
+      font: { sz: 11 },
+      alignment: { horizontal: "center", vertical: "center" },
+      border: {
+        top: { style: "thin", color: { rgb: "E5E7EB" } },
+        bottom: { style: "thin", color: { rgb: "E5E7EB" } },
+        left: { style: "thin", color: { rgb: "E5E7EB" } },
+        right: { style: "thin", color: { rgb: "E5E7EB" } }
+      }
+    };
+    
+    // Alternating row styles
+    const rowOddStyle = { ...cellStyle, fill: { fgColor: { rgb: "FFFFFF" } } };
+    const rowEvenStyle = { ...cellStyle, fill: { fgColor: { rgb: "F1F5F9" } } };
+    
+    // Warning styles
+    const warnYellowStyle = {
+      font: { bold: true, sz: 11, color: { rgb: "1C1917" } },
+      fill: { fgColor: { rgb: "FDE047" } },
+      alignment: { horizontal: "center", vertical: "center" },
+      border: cellStyle.border
+    };
+    
+    const warnRedStyle = {
+      font: { bold: true, sz: 11, color: { rgb: "FFFFFF" } },
+      fill: { fgColor: { rgb: "EF4444" } },
+      alignment: { horizontal: "center", vertical: "center" },
+      border: cellStyle.border
+    };
+    
+    // Name column style (bold, left aligned)
+    const nameStyle = {
+      font: { bold: true, sz: 11, color: { rgb: "1E40AF" } },
+      alignment: { horizontal: "left", vertical: "center" },
+      border: cellStyle.border
+    };
+    
+    // Write headers
+    headers.forEach((h, c) => {
+      const cellRef = XLSX.utils.encode_cell({ r: 0, c: c });
+      ws[cellRef] = { v: h, t: 's', s: headerStyle };
+    });
+    
+    // Write data rows
+    rowsData.forEach((row, r) => {
+      const isEven = r % 2 === 1;
+      row.forEach((cell, c) => {
+        const cellRef = XLSX.utils.encode_cell({ r: r + 1, c: c });
+        let style = isEven ? rowEvenStyle : rowOddStyle;
+        
+        // Apply warning styles
+        if (cell.isWarnAge) {
+          style = warnRedStyle;
+        } else if (cell.isWarnSoon) {
+          style = warnYellowStyle;
+        } else if (c === 1) { // Name column (index 1 after #)
+          style = { ...style, ...nameStyle, fill: style.fill };
+        }
+        
+        ws[cellRef] = { v: cell.value, t: 's', s: style };
+      });
+    });
+    
+    // Set worksheet range
+    ws['!ref'] = XLSX.utils.encode_range({ s: { r: 0, c: 0 }, e: { r: rowsData.length, c: headers.length - 1 } });
+    
+    // Set column widths
+    ws['!cols'] = headers.map((h, i) => {
+      let maxLen = h.length;
+      rowsData.forEach(row => {
+        if (row[i] && String(row[i].value).length > maxLen) maxLen = String(row[i].value).length;
+      });
+      return { wch: Math.min(maxLen + 3, 25) };
+    });
+    
+    // Set row heights
+    ws['!rows'] = [{ hpt: 24 }]; // Header row height
+    rowsData.forEach(() => ws['!rows'].push({ hpt: 20 }));
+    
+    // Add AutoFilter - must use exact range format
+    const endCol = XLSX.utils.encode_col(headers.length - 1);
+    const endRow = rowsData.length + 1;
+    ws['!autofilter'] = { ref: `A1:${endCol}${endRow}` };
+    
+    // Freeze header row
+    ws['!freeze'] = { xSplit: 0, ySplit: 1, topLeftCell: 'A2', state: 'frozen' };
+    
+    XLSX.utils.book_append_sheet(wb, ws, 'VizeBest');
+    
+    // Generate filename with date
+    const filename = 'vizebest_' + new Date().toISOString().slice(0, 10) + '.xlsx';
+    
+    // Write with bookType xlsx
+    XLSX.writeFile(wb, filename, { bookType: 'xlsx', type: 'binary' });
+  }
+
+  // Export table to PDF using html2canvas + jsPDF
+  async function exportPdf() {
+    const table = document.querySelector('#vizeTable');
+    if (!table) { alert('Tablo bulunamadı'); return; }
+    
+    const { jsPDF } = window.jspdf || (window.jspPDF ? { jsPDF: window.jspPDF } : {});
+    if (!jsPDF) { alert('jsPDF yüklenemedi'); return; }
+    
+    // Use A3 landscape
+    const pdf = new jsPDF('l', 'mm', 'a3');
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const pageHeight = pdf.internal.pageSize.getHeight();
+    const margin = 8;
+    const usableHeight = pageHeight - margin * 2;
+    
+    // Get all rows
+    const allRows = Array.from(table.querySelectorAll('tbody tr'));
+    const thead = table.querySelector('thead');
+    
+    // Estimate rows per page (will be calculated more precisely after first render)
+    const ROWS_PER_PAGE_ESTIMATE = 35;
+    
+    // Helper function to create a page wrapper with specific rows
+    function createPageWrapper(rows, includeHeader, pageNum) {
+      const wrapper = document.createElement('div');
+      wrapper.className = 'pdf-export';
+      wrapper.style.width = '1600px';
+      wrapper.style.position = 'absolute';
+      wrapper.style.left = '-9999px';
+      wrapper.style.top = '0';
+      wrapper.style.background = '#ffffff';
+      wrapper.style.color = '#1f2937';
+      
+      // Add header only on first page
+      if (includeHeader) {
+        const header = document.createElement('div');
+        header.className = 'pdf-header';
+        header.style.cssText = 'display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;padding-bottom:6px;border-bottom:2px solid #1e40af;';
+        const title = document.createElement('h3'); 
+        title.textContent = 'VizeBest - Vize / Şoför Takip';
+        title.style.cssText = 'margin:0;font-size:18px;font-weight:700;color:#1e3a8a;';
+        const dt = document.createElement('div'); 
+        dt.className = 'pdf-date';
+        dt.style.cssText = 'font-size:11px;color:#6b7280;';
+        dt.textContent = 'Oluşturulma: ' + new Date().toLocaleDateString('tr-TR') + ' ' + new Date().toLocaleTimeString('tr-TR', {hour: '2-digit', minute:'2-digit'});
+        header.appendChild(title); 
+        header.appendChild(dt);
+        wrapper.appendChild(header);
+      }
+      
+      // Create table
+      const newTable = document.createElement('table');
+      newTable.style.cssText = 'width:100%;table-layout:fixed;border-collapse:collapse;font-size:13px;border:1px solid #94a3b8;';
+      
+      // Clone thead (remove last column - İŞLEMLER)
+      const newThead = thead.cloneNode(true);
+      const lastTh = newThead.querySelector('tr th:last-child');
+      if (lastTh) lastTh.remove();
+      // Force dark theme header styles
+      newThead.querySelectorAll('th').forEach(th => {
+        th.style.cssText = 'background:#1e40af !important;color:#ffffff !important;padding:6px 4px;text-align:center;font-weight:600;font-size:11px;text-transform:uppercase;border:1px solid #1e3a8a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;';
+      });
+      newTable.appendChild(newThead);
+      
+      // Create tbody with specified rows
+      const newTbody = document.createElement('tbody');
+      rows.forEach((row, idx) => {
+        const clonedRow = row.cloneNode(true);
+        // Remove last column (İŞLEMLER)
+        const lastTd = clonedRow.querySelector('td:last-child');
+        if (lastTd) lastTd.remove();
+        // Remove action elements
+        clonedRow.querySelectorAll('.actions, .btn, .vb-attachments-badge, .vb-popup-close').forEach(n => n.remove());
+        // Clean contenteditable
+        clonedRow.querySelectorAll('[contenteditable]').forEach(el => el.removeAttribute('contenteditable'));
+        
+        // Force alternating row colors (dark theme style)
+        const rowBg = idx % 2 === 0 ? '#ffffff' : '#f1f5f9';
+        const allTds = clonedRow.querySelectorAll('td');
+        const notesColIdx = allTds.length - 1; // Last column after removing İŞLEMLER is NOTLAR
+        allTds.forEach((td, tdIdx) => {
+          // First column (row number) special style
+          if (tdIdx === 0) {
+            td.style.cssText = 'background:#e0e7ff !important;color:#1e40af !important;font-weight:700;font-size:11px;padding:5px 4px;border:1px solid #cbd5e1;text-align:center;vertical-align:middle;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;';
+          } else if (tdIdx === notesColIdx) {
+            // NOTLAR column - allow word wrap
+            td.style.cssText = 'background:' + rowBg + ' !important;color:#1f2937 !important;padding:5px 4px;border:1px solid #cbd5e1;font-size:11px;vertical-align:middle;white-space:normal;word-wrap:break-word;word-break:break-word;text-align:left;max-width:120px;line-height:1.3;';
+          } else {
+            td.style.cssText = 'background:' + rowBg + ' !important;color:#1f2937 !important;padding:5px 4px;border:1px solid #cbd5e1;font-size:13px;vertical-align:middle;white-space:nowrap;text-align:center;overflow:hidden;text-overflow:ellipsis;';
+          }
+          // Driver name column
+          if (td.classList.contains('vb-name-col')) {
+            td.style.cssText = 'background:' + rowBg + ' !important;color:#1e3a8a !important;font-weight:700;padding:5px 4px;padding-left:5px;border:1px solid #cbd5e1;font-size:13px;vertical-align:middle;white-space:nowrap;text-align:left;overflow:hidden;text-overflow:ellipsis;';
+          }
+          // Visa country column - red text
+          if (td.classList.contains('vb-visa-country')) {
+            td.style.color = '#dc2626';
+            td.style.fontWeight = '600';
+          }
+        });
+        
+        // Apply yellow background to warning cells
+        clonedRow.querySelectorAll('td.warn-ukvisa, td.warn-soon, .warn-ukvisa, .warn-soon').forEach(el => {
+          el.style.backgroundColor = '#fde047';
+          el.style.color = '#000000';
+          el.style.fontWeight = 'bold';
+          const parentTd = el.closest('td');
+          if (parentTd && parentTd !== el) {
+            parentTd.style.backgroundColor = '#fde047';
+          }
+        });
+        // Apply red background to age warning cells (65+)
+        clonedRow.querySelectorAll('td.warn-age, .warn-age').forEach(el => {
+          el.style.backgroundColor = '#ef4444';
+          el.style.color = '#ffffff';
+          el.style.fontWeight = 'bold';
+          const parentTd = el.closest('td');
+          if (parentTd && parentTd !== el) {
+            parentTd.style.backgroundColor = '#ef4444';
+          }
+        });
+        newTbody.appendChild(clonedRow);
+      });
+      newTable.appendChild(newTbody);
+      wrapper.appendChild(newTable);
+      
+      return wrapper;
+    }
+    
+    // Helper to render a wrapper to canvas and add to PDF
+    async function renderPageToPdf(wrapper, isFirstPage) {
+      document.body.appendChild(wrapper);
+      await new Promise(r => setTimeout(r, 100));
+      
+      const canvas = await html2canvas(wrapper, { 
+        scale: 2, 
+        backgroundColor: '#ffffff', 
+        useCORS: true,
+        logging: false,
+        allowTaint: true,
+        onclone: function(clonedDoc) {
+          clonedDoc.querySelectorAll('td.warn-ukvisa, td.warn-soon, .warn-ukvisa, .warn-soon').forEach(el => {
+            el.style.setProperty('background-color', '#fde047', 'important');
+            el.style.setProperty('color', '#000000', 'important');
+            el.style.setProperty('font-weight', 'bold', 'important');
+            const parentTd = el.closest('td');
+            if (parentTd && parentTd !== el) {
+              parentTd.style.setProperty('background-color', '#fde047', 'important');
+            }
+          });
+          // Age warning - red background
+          clonedDoc.querySelectorAll('td.warn-age, .warn-age').forEach(el => {
+            el.style.setProperty('background-color', '#ef4444', 'important');
+            el.style.setProperty('color', '#ffffff', 'important');
+            el.style.setProperty('font-weight', 'bold', 'important');
+            const parentTd = el.closest('td');
+            if (parentTd && parentTd !== el) {
+              parentTd.style.setProperty('background-color', '#ef4444', 'important');
+            }
+          });
+        }
+      });
+      
+      wrapper.remove();
+      
+      const imgWidth = pageWidth - margin * 2;
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      
+      if (!isFirstPage) {
+        pdf.addPage();
+      }
+      
+      pdf.addImage(canvas.toDataURL('image/jpeg', 0.95), 'JPEG', margin, margin, imgWidth, imgHeight, undefined, 'MEDIUM');
+      
+      return imgHeight;
+    }
+    
+    try {
+      // First, render a test page to calculate actual rows per page
+      let rowsPerPage = ROWS_PER_PAGE_ESTIMATE;
+      
+      // Render first page to get actual height
+      const testWrapper = createPageWrapper(allRows.slice(0, 5), true, 0);
+      document.body.appendChild(testWrapper);
+      await new Promise(r => setTimeout(r, 100));
+      
+      const headerHeight = testWrapper.querySelector('.pdf-header')?.offsetHeight || 0;
+      const theadHeight = testWrapper.querySelector('thead')?.offsetHeight || 0;
+      const rowHeight = testWrapper.querySelector('tbody tr')?.offsetHeight || 25;
+      testWrapper.remove();
+      
+      // Calculate rows per page based on actual measurements
+      // Convert usableHeight from mm to pixels (assuming 96 DPI and our 1600px wrapper width)
+      const pxPerMm = 1600 / (pageWidth - margin * 2); // pixels per mm based on our scale
+      const usableHeightPx = usableHeight * pxPerMm;
+      
+      const firstPageRows = Math.floor((usableHeightPx - headerHeight - theadHeight) / rowHeight);
+      const otherPageRows = Math.floor((usableHeightPx - theadHeight) / rowHeight);
+      
+      // Generate pages
+      let currentRowIndex = 0;
+      let pageNum = 0;
+      
+      while (currentRowIndex < allRows.length) {
+        const isFirstPage = pageNum === 0;
+        const rowsThisPage = isFirstPage ? firstPageRows : otherPageRows;
+        const endIndex = Math.min(currentRowIndex + rowsThisPage, allRows.length);
+        const pageRows = allRows.slice(currentRowIndex, endIndex);
+        
+        const wrapper = createPageWrapper(pageRows, isFirstPage, pageNum);
+        await renderPageToPdf(wrapper, isFirstPage);
+        
+        currentRowIndex = endIndex;
+        pageNum++;
+        
+        // Safety check
+        if (pageNum > 50) break;
+      }
+      
+      // PDF'i yeni sekmede aç (indirme yerine)
+      const pdfBlob = pdf.output('blob');
+      const pdfUrl = URL.createObjectURL(pdfBlob);
+      window.open(pdfUrl, '_blank');
+    } catch (err) {
+      console.error('PDF export error', err);
+      alert('PDF oluşturulamadı: ' + (err && err.message));
+    }
+  }
+
+  // Cancel edit: restore original values and disable editing
+  function cancelEdit(btn) {
+    const tr = btn.closest('tr'); if (!tr) return;
+    const orig = tr.dataset.orig ? JSON.parse(tr.dataset.orig) : null;
+    if (orig) {
+      const tds = Array.from(tr.querySelectorAll('td')).slice(1, -1);
+      tds.forEach((td, i) => setCellText(td, orig[i] || ''));
+    }
+    // disable editable (only the inner text spans)
+    Array.from(tr.querySelectorAll('td')).slice(1, -1).forEach(td => { const span = td.querySelector('.vb-cell-text'); if (span) span.contentEditable = 'false'; td.classList.remove('editing'); });
+    // restore actions
+    const actions = tr.querySelector('td.actions');
+    actions.innerHTML = `<button class="btn small" onclick="editRow(this)">Düzenle</button><button class="btn small secondary" onclick="removeRow(this)">Sil</button>`;
+    delete tr.dataset.orig;
+    // re-evaluate ukvisa highlight after restoring
+    updateUkvisaCellClass(tr);
+    updateSoonCellClasses(tr);
+  }
+
+  // Helper: get only the user-editable text from a table cell (exclude badge text)
+  function getCellText(td) {
+    if (!td) return '';
+    const parts = [];
+    td.childNodes.forEach(n => {
+      if (n.nodeType === Node.TEXT_NODE) parts.push(n.textContent);
+      else if (n.nodeType === Node.ELEMENT_NODE && n.matches && n.matches('span.vb-cell-text')) {
+        parts.push(n.textContent);
+      }
+    });
+    return (parts.join('') || '').trim();
+  }
+
+  // Helper: set the visible text in a table cell while preserving badge element
+  function setCellText(td, text) {
+    if (!td) return;
+    // find existing badge (if any)
+    const badge = td.querySelector('.vb-attachments-badge');
+    const escaped = escapeHtml(text || '');
+    if (badge) {
+      // place text node (wrapped) before badge
+      td.innerHTML = '<span class="vb-cell-text">' + escaped + '</span>';
+      td.appendChild(badge);
+    } else {
+      td.innerHTML = '<span class="vb-cell-text">' + escaped + '</span>';
+    }
+  }
+
+    // Simple toast helper
+    function showToast(msg, ms = 3000) {
+      try {
+        let t = document.querySelector('.vb-toast');
+        if (!t) { t = document.createElement('div'); t.className = 'vb-toast'; document.body.appendChild(t); }
+        t.textContent = msg;
+        // force reflow for transition
+        void t.offsetWidth;
+        t.classList.add('show');
+        clearTimeout(t._hideTimeout);
+        t._hideTimeout = setTimeout(() => { t.classList.remove('show'); }, ms);
+      } catch (e) { console.error('showToast error', e); }
+    }
+
+  // Save edits to server
+  async function saveRow(btn) {
+    const tr = btn.closest('tr'); if (!tr) return;
+    const id = tr.getAttribute('data-id');
+    if (!id) { alert('Bu satır daha önce kaydedilmemiş. Lütfen önce ekleyin.'); return; }
+    const tds = Array.from(tr.querySelectorAll('td')).slice(1, -1);
+    const data = {
+      hire: getCellText(tds[0]),
+      dob: getCellText(tds[1]),
+      name: getCellText(tds[2]),
+      ukvisa: getCellText(tds[3]),
+      schengen: getCellText(tds[4]),
+      visaCountry: getCellText(tds[5]),
+      license_exp: getCellText(tds[6]),
+      insurance_exp: getCellText(tds[7]),
+      src3: getCellText(tds[8]),
+      src5: getCellText(tds[9]),
+      psycho: getCellText(tds[10]),
+      tacho: getCellText(tds[11]),
+      passport_exp: getCellText(tds[12]),
+      notes: getCellText(tds[13])
+    };
+    try {
+      const resp = await fetch('/vizebest/update/' + encodeURIComponent(id), { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
+      const ct = resp.headers.get('content-type') || '';
+      if (!resp.ok) throw new Error('Sunucu hata: ' + resp.status);
+      if (!ct.includes('application/json')) throw new Error('Sunucu JSON döndürmedi. Muhtemelen login sayfasına yönlendirildiniz.');
+      const j = await resp.json();
+      if (!j || !j.success) throw new Error('Kaydetme başarısız: ' + (j && j.error ? j.error : ''));
+      // success: disable editing and restore action buttons
+      // normalize cell text (preserve badges) and disable editing
+      Array.from(tr.querySelectorAll('td')).slice(1, -1).forEach(td => {
+        const cur = getCellText(td);
+        setCellText(td, cur);
+        const span = td.querySelector('.vb-cell-text'); if (span) span.contentEditable = 'false';
+        td.classList.remove('editing');
+      });
+      const actions = tr.querySelector('td.actions');
+      actions.innerHTML = `<button class="btn small" onclick="editRow(this)">Düzenle</button><button class="btn small secondary" onclick="removeRow(this)">Sil</button>`;
+      delete tr.dataset.orig;
+      // re-sort in case the name changed
+      sortTableByName();
+      // update ukvisa highlight after save
+      updateUkvisaCellClass(tr);
+      updateSoonCellClasses(tr);
+    } catch (e) {
+      console.error('VizeBest update error', e);
+      alert('Güncelleme başarısız: ' + (e.message || e));
+    }
+  }
+
+  // File preview helpers (images and PDFs) — show large centered preview overlay
+  function showFilePreview(url, filename) {
+    try {
+      if (!url) return;
+      cancelScheduledHideImagePreview();
+      hideImagePreview();
+      const backdrop = document.createElement('div'); backdrop.className = 'vb-img-backdrop';
+      const wrap = document.createElement('div'); wrap.className = 'vb-img-preview';
+      // choose renderer based on file type
+      if (/\.pdf$/i.test(filename || url)) {
+        // Try iframe first, then fallback to <object>, then open in new tab if blocked
+        const iframe = document.createElement('iframe');
+        iframe.src = url;
+        iframe.style.border = '0';
+        iframe.style.width = '90vw';
+        iframe.style.height = '80vh';
+        iframe.style.maxWidth = '1100px';
+        iframe.style.maxHeight = '820px';
+        // If iframe fails to load (some servers block embedding), try object fallback
+        let loaded = false;
+        const onLoad = () => { loaded = true; iframe.removeEventListener('load', onLoad); };
+        iframe.addEventListener('load', onLoad);
+        // short timeout to detect failure to load/embed
+        const failTimer = setTimeout(() => {
+          if (loaded) return;
+          try {
+            // replace iframe with object element as fallback
+            const obj = document.createElement('object');
+            obj.data = url;
+            obj.type = 'application/pdf';
+            obj.style.width = iframe.style.width;
+            obj.style.height = iframe.style.height;
+            obj.style.maxWidth = iframe.style.maxWidth;
+            obj.style.maxHeight = iframe.style.maxHeight;
+            // include a simple fallback link
+            const link = document.createElement('a'); link.href = url; link.target = '_blank'; link.textContent = 'PDF görüntülenemiyor — yeni sekmede aç'; link.style.display = 'block'; link.style.marginTop = '8px';
+            obj.appendChild(link);
+            wrap.innerHTML = '';
+            wrap.appendChild(obj);
+          } catch (e) {
+            // final fallback: open in new tab
+            window.open(url, '_blank');
+            hideImagePreview();
+          }
+        }, 800);
+        // ensure we clean up timer if load succeeds
+        iframe.addEventListener('load', () => { clearTimeout(failTimer); });
+        wrap.appendChild(iframe);
+      } else {
+        const img = document.createElement('img'); img.src = url;
+        wrap.appendChild(img);
+      }
+      document.body.appendChild(backdrop);
+      document.body.appendChild(wrap);
+      // clicking backdrop or preview closes
+      backdrop.addEventListener('click', hideImagePreview);
+      wrap.addEventListener('click', hideImagePreview);
+      // cancel scheduled hides when hovering the preview
+      backdrop.addEventListener('mouseenter', cancelScheduledHideImagePreview);
+      wrap.addEventListener('mouseenter', cancelScheduledHideImagePreview);
+      // schedule hide when leaving the preview (small delay to avoid flicker)
+      backdrop.addEventListener('mouseleave', scheduleHideImagePreview);
+      wrap.addEventListener('mouseleave', scheduleHideImagePreview);
+    } catch (e) { console.error('showFilePreview', e); }
+  }
+
+  function hideImagePreview() {
+    try {
+      cancelScheduledHideImagePreview();
+      const b = document.querySelector('.vb-img-backdrop'); if (b) b.remove();
+      const w = document.querySelector('.vb-img-preview'); if (w) w.remove();
+    } catch (e) { console.error('hideImagePreview', e); }
+  }
+
+  // scheduled hide helpers to avoid flicker when moving mouse between link and preview
+  let __vb_img_hide_timeout = null;
+  function scheduleHideImagePreview(ms = 220) {
+    cancelScheduledHideImagePreview();
+    __vb_img_hide_timeout = setTimeout(() => { hideImagePreview(); }, ms);
+  }
+  function cancelScheduledHideImagePreview() { if (__vb_img_hide_timeout) { clearTimeout(__vb_img_hide_timeout); __vb_img_hide_timeout = null; } }
+
+  // Tab switching functions
+  function showActiveDrivers(btn) {
+    document.querySelectorAll('.vize-tab').forEach(t => t.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('vizeTable').style.display = '';
+    document.getElementById('deletedTable').style.display = 'none';
+    // Show controls for active drivers
+    document.querySelector('.vize-controls').style.display = '';
+  }
+
+  async function showDeletedDrivers(btn) {
+    document.querySelectorAll('.vize-tab').forEach(t => t.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('vizeTable').style.display = 'none';
+    document.getElementById('deletedTable').style.display = '';
+    // Hide controls for deleted drivers view
+    document.querySelector('.vize-controls').style.display = 'none';
+    // Load deleted drivers
+    await loadDeletedDrivers();
+  }
+
+  // Load deleted drivers
+  async function loadDeletedDrivers() {
+    try {
+      const res = await fetch('/vizebest/deleted', { credentials: 'same-origin' });
+      if (!res.ok) throw new Error('Sunucu hata: ' + res.status);
+      const j = await res.json();
+      const rows = (j && j.rows) || [];
+      const tbody = document.querySelector('#deletedTable tbody');
+      tbody.innerHTML = '';
+      
+      if (!rows.length) {
+        tbody.innerHTML = '<tr class="vb-empty-state"><td colspan="17" style="text-align:center;padding:40px;color:var(--muted);">Silinen şoför bulunamadı.</td></tr>';
+        return;
+      }
+      
+      rows.forEach((r, idx) => {
+        const tr = document.createElement('tr');
+        tr.setAttribute('data-id', String(r.id));
+        
+        // Format deleted_at date
+        let deletedDate = '';
+        if (r.deleted_at) {
+          try {
+            const d = new Date(r.deleted_at);
+            deletedDate = d.toLocaleDateString('tr-TR') + ' ' + d.toLocaleTimeString('tr-TR', {hour: '2-digit', minute:'2-digit'});
+          } catch (e) {
+            deletedDate = r.deleted_at;
+          }
+        }
+        
+        tr.innerHTML = `
+          <td>${idx + 1}</td>
+          <td class="deleted-date-col">${escapeHtml(deletedDate)}</td>
+          <td>${escapeHtml(r.hire || '')}</td>
+          <td>${escapeHtml(r.dob || '')}</td>
+          <td>${escapeHtml(r.name || '')}</td>
+          <td>${escapeHtml(r.ukvisa || '')}</td>
+          <td>${escapeHtml(r.schengen || '')}</td>
+          <td>${escapeHtml(r.visaCountry || '')}</td>
+          <td>${escapeHtml(r.license_exp || '')}</td>
+          <td>${escapeHtml(r.insurance_exp || '')}</td>
+          <td>${escapeHtml(r.src3 || '')}</td>
+          <td>${escapeHtml(r.src5 || '')}</td>
+          <td>${escapeHtml(r.psycho || '')}</td>
+          <td>${escapeHtml(r.tacho || '')}</td>
+          <td>${escapeHtml(r.passport_exp || '')}</td>
+          <td>${escapeHtml(r.notes || '')}</td>
+          <td class="actions">
+            <button class="btn small" onclick="restoreDriver(this)" style="background:#22c55e;">Geri Al</button>
+            <button class="btn small secondary" onclick="permanentDeleteDriver(this)" style="color:#ef4444;border-color:#ef4444;">Kalıcı Sil</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    } catch (e) {
+      console.error('loadDeletedDrivers error', e);
+      const tbody = document.querySelector('#deletedTable tbody');
+      tbody.innerHTML = '<tr class="vb-empty-state"><td colspan="17" style="text-align:center;padding:40px;color:var(--muted);">Yüklenirken hata oluştu.</td></tr>';
+    }
+  }
+
+  // Restore a deleted driver
+  async function restoreDriver(btn) {
+    const tr = btn.closest('tr');
+    if (!tr) return;
+    const id = tr.getAttribute('data-id');
+    if (!id) return;
+    
+    if (!confirm('Bu şoförü geri almak istediğinize emin misiniz?')) return;
+    
+    try {
+      const res = await fetch('/vizebest/restore/' + encodeURIComponent(id), { method: 'POST', credentials: 'same-origin' });
+      const j = await res.json();
+      if (j && j.success) {
+        showToast('Şoför geri alındı');
+        tr.remove();
+        // Check if table is now empty
+        const tbody = document.querySelector('#deletedTable tbody');
+        if (!tbody.querySelector('tr:not(.vb-empty-state)')) {
+          tbody.innerHTML = '<tr class="vb-empty-state"><td colspan="17" style="text-align:center;padding:40px;color:var(--muted);">Silinen şoför bulunamadı.</td></tr>';
+        }
+      } else {
+        showToast('Geri alma başarısız');
+      }
+    } catch (e) {
+      console.error('restoreDriver error', e);
+      showToast('Geri alma hatası');
+    }
+  }
+
+  // Permanently delete a driver
+  async function permanentDeleteDriver(btn) {
+    const tr = btn.closest('tr');
+    if (!tr) return;
+    const id = tr.getAttribute('data-id');
+    if (!id) return;
+    
+    if (!confirm('Bu şoförü kalıcı olarak silmek istediğinize emin misiniz?\n\nBu işlem geri alınamaz!')) return;
+    
+    try {
+      const res = await fetch('/vizebest/permanent-delete/' + encodeURIComponent(id), { method: 'POST', credentials: 'same-origin' });
+      const j = await res.json();
+      if (j && j.success) {
+        showToast('Kalıcı olarak silindi');
+        tr.remove();
+        // Check if table is now empty
+        const tbody = document.querySelector('#deletedTable tbody');
+        if (!tbody.querySelector('tr:not(.vb-empty-state)')) {
+          tbody.innerHTML = '<tr class="vb-empty-state"><td colspan="17" style="text-align:center;padding:40px;color:var(--muted);">Silinen şoför bulunamadı.</td></tr>';
+        }
+      } else {
+        showToast('Silme başarısız');
+      }
+    } catch (e) {
+      console.error('permanentDeleteDriver error', e);
+      showToast('Silme hatası');
+    }
+  }
+</script>

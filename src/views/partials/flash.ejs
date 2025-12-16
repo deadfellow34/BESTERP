@@ -1,0 +1,17 @@
+<%
+// Şimdilik central flash sistemi kullanmıyoruz ama ileride
+// res.locals.flashSuccess / flashError set edebiliriz.
+// typeof ile kontrol ettiğimiz için tanımlı olmasa da hata vermez.
+%>
+
+<% if (typeof flashSuccess !== 'undefined' && flashSuccess) { %>
+  <div class="alert alert-success">
+    <%= flashSuccess %>
+  </div>
+<% } %>
+
+<% if (typeof flashError !== 'undefined' && flashError) { %>
+  <div class="alert alert-error">
+    <%= flashError %>
+  </div>
+<% } %>

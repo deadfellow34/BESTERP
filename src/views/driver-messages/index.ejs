@@ -1,0 +1,939 @@
+<%- include('../partials/navbar') %>
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Şoför Mesajları</title>
+  <link rel="stylesheet" href="/css/theme.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="/js/theme.js" defer></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+      background: var(--bg-body);
+      color: var(--text-primary);
+      min-height: 100vh;
+    }
+    
+    .messages-app {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    
+    /* Header */
+    .app-header {
+      background: var(--bg-card);
+      border: 1px solid var(--border-default);
+      border-radius: 24px;
+      padding: 28px 32px;
+      margin-bottom: 24px;
+      box-shadow: var(--shadow-card);
+    }
+    
+    .header-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+    }
+    
+    .back-link {
+      color: var(--accent-primary);
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+      padding: 10px 18px;
+      border-radius: 12px;
+      background: var(--bg-surface-alt);
+      border: 1px solid var(--border-default);
+      transition: all 0.3s;
+    }
+    
+    .back-link:hover {
+      background: var(--bg-surface-hover);
+      transform: translateX(-5px);
+      border-color: var(--accent-primary);
+    }
+    
+    .header-actions {
+      display: flex;
+      gap: 12px;
+    }
+    
+    .action-btn {
+      padding: 12px 22px;
+      border: none;
+      border-radius: 14px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      transition: all 0.3s;
+      text-decoration: none;
+    }
+    
+    .btn-refresh {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      box-shadow: 0 4px 20px rgba(102, 126, 234, 0.3);
+    }
+    
+    .btn-refresh:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 30px rgba(102, 126, 234, 0.5);
+    }
+    
+    .header-content {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .header-title {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+    
+    .header-icon {
+      width: 68px;
+      height: 68px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 32px;
+      box-shadow: 0 10px 40px rgba(102, 126, 234, 0.4);
+      animation: iconFloat 3s ease-in-out infinite;
+    }
+    
+    @keyframes iconFloat {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-5px); }
+    }
+    
+    .header-text h1 {
+      font-size: 32px;
+      font-weight: 800;
+      margin-bottom: 6px;
+      color: var(--text-primary);
+    }
+    
+    .header-text p {
+      color: var(--text-muted);
+      font-size: 15px;
+    }
+    
+    .header-stats {
+      display: flex;
+      gap: 16px;
+    }
+    
+    .stat-card {
+      text-align: center;
+      padding: 16px 24px;
+      background: var(--bg-surface-alt);
+      border-radius: 16px;
+      border: 1px solid var(--border-default);
+      min-width: 100px;
+      transition: all 0.3s;
+    }
+    
+    .stat-card:hover {
+      background: var(--bg-surface-hover);
+      transform: translateY(-2px);
+    }
+    
+    .stat-value {
+      font-size: 28px;
+      font-weight: 800;
+    }
+    
+    .stat-value.purple { color: var(--accent-primary); }
+    .stat-value.green { color: var(--success); }
+    .stat-value.red { color: var(--danger); }
+    
+    .stat-label {
+      font-size: 11px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-top: 4px;
+    }
+    
+    /* Search & Filter Section */
+    .search-filter-section {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    
+    .search-container {
+      flex: 1;
+      position: relative;
+    }
+    
+    .search-input {
+      width: 100%;
+      padding: 18px 24px 18px 56px;
+      border: 2px solid var(--border-default);
+      border-radius: 18px;
+      font-size: 15px;
+      background: var(--bg-input);
+      color: var(--text-primary);
+      transition: all 0.3s;
+    }
+    
+    .search-input::placeholder {
+      color: var(--text-muted);
+    }
+    
+    .search-input:focus {
+      outline: none;
+      border-color: var(--accent-primary);
+      background: var(--bg-input);
+      box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+    }
+    
+    .search-icon {
+      position: absolute;
+      left: 22px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+      font-size: 18px;
+    }
+    
+    /* Filter Tabs */
+    .filter-tabs {
+      display: flex;
+      gap: 6px;
+      padding: 6px;
+      background: var(--bg-surface-alt);
+      border-radius: 16px;
+      border: 1px solid var(--border-default);
+    }
+    
+    .filter-tab {
+      padding: 14px 22px;
+      border: none;
+      border-radius: 12px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      background: transparent;
+      color: var(--text-muted);
+      transition: all 0.3s;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      white-space: nowrap;
+    }
+    
+    .filter-tab:hover {
+      background: var(--bg-surface-hover);
+      color: var(--text-primary);
+    }
+    
+    .filter-tab.active {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      box-shadow: 0 4px 20px rgba(102, 126, 234, 0.4);
+    }
+    
+    .filter-tab .badge {
+      background: var(--bg-surface-alt);
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+    
+    .filter-tab.active .badge {
+      background: rgba(255, 255, 255, 0.25);
+      color: white;
+    }
+    
+    .filter-tab:not(.active) .badge {
+      background: var(--bg-surface-hover);
+      color: var(--text-secondary);
+    }
+    
+    /* Conversations Grid */
+    .conversations-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    
+    .conversation-card {
+      display: flex;
+      align-items: center;
+      padding: 20px 24px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-default);
+      border-radius: 20px;
+      cursor: pointer;
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      text-decoration: none;
+      color: inherit;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .conversation-card::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      height: 100%;
+      width: 4px;
+      background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+      transform: scaleY(0);
+      transition: transform 0.3s;
+    }
+
+    .conversation-card:hover {
+      background: var(--bg-surface-hover);
+      border-color: var(--accent-primary);
+      transform: translateX(10px) scale(1.01);
+    }
+    
+    .conversation-card:hover::before {
+      transform: scaleY(1);
+    }
+    
+    .conversation-card.has-unread {
+      background: var(--bg-surface-alt);
+      border-color: var(--accent-primary);
+    }
+    
+    .conversation-card.has-unread::before {
+      transform: scaleY(1);
+    }
+    
+    /* Avatar */
+    .avatar-wrapper {
+      position: relative;
+      margin-right: 20px;
+      flex-shrink: 0;
+      z-index: 1;
+    }
+    
+    .driver-avatar {
+      width: 60px;
+      height: 60px;
+      border-radius: 18px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      font-weight: 700;
+      box-shadow: 0 8px 25px rgba(102, 126, 234, 0.35);
+      transition: all 0.3s;
+    }
+    
+    .conversation-card:hover .driver-avatar {
+      transform: scale(1.05);
+      box-shadow: 0 12px 35px rgba(102, 126, 234, 0.5);
+    }
+    
+    .online-status {
+      position: absolute;
+      bottom: -2px;
+      right: -2px;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      border: 3px solid var(--bg-card);
+    }
+    
+    .online-status.online {
+      background: linear-gradient(135deg, #34d399 0%, #10b981 100%);
+      box-shadow: 0 0 15px rgba(52, 211, 153, 0.6);
+      animation: pulse 2s infinite;
+    }
+    
+    .online-status.offline {
+      background: #9ca3af;
+    }
+    
+    @keyframes pulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(52, 211, 153, 0.6); }
+      50% { box-shadow: 0 0 0 8px rgba(52, 211, 153, 0); }
+    }
+    
+    /* Conversation Info */
+    .conversation-info {
+      flex: 1;
+      min-width: 0;
+      z-index: 1;
+    }
+    
+    .info-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+    
+    .driver-name {
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--text-primary);
+      letter-spacing: -0.3px;
+    }
+    
+    .message-time {
+      font-size: 12px;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+    
+    .has-unread .message-time {
+      color: var(--accent-primary);
+      font-weight: 600;
+    }
+    
+    .last-message {
+      font-size: 14px;
+      color: var(--text-muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 100%;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 10px;
+    }
+    
+    .last-message .you-tag {
+      color: var(--accent-primary);
+      font-weight: 600;
+    }
+    
+    .no-message-text {
+      color: var(--text-muted);
+      font-style: italic;
+      opacity: 0.6;
+    }
+    
+    .status-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .status-badge {
+      font-size: 11px;
+      padding: 5px 12px;
+      border-radius: 20px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-weight: 600;
+      letter-spacing: 0.3px;
+    }
+    
+    .status-badge.online {
+      background: var(--success-light);
+      color: var(--success);
+      border: 1px solid rgba(52, 211, 153, 0.25);
+    }
+    
+    .status-badge.offline {
+      background: var(--bg-surface-alt);
+      color: var(--text-muted);
+      border: 1px solid var(--border-default);
+    }
+    
+    .status-badge i {
+      font-size: 6px;
+    }
+    
+    /* Meta Section */
+    .conversation-meta {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 12px;
+      margin-left: 20px;
+      z-index: 1;
+    }
+    
+    .unread-badge {
+      background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+      color: white;
+      font-size: 12px;
+      font-weight: 800;
+      padding: 6px 14px;
+      border-radius: 20px;
+      min-width: 32px;
+      text-align: center;
+      box-shadow: 0 4px 20px rgba(239, 68, 68, 0.5);
+      animation: badgeBounce 2s infinite;
+    }
+    
+    @keyframes badgeBounce {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.08); }
+    }
+    
+    .arrow-icon {
+      color: var(--text-muted);
+      font-size: 20px;
+      transition: all 0.3s;
+    }
+    
+    .conversation-card:hover .arrow-icon {
+      color: var(--accent-primary);
+      transform: translateX(5px);
+    }
+    
+    /* Empty State */
+    .empty-state {
+      text-align: center;
+      padding: 100px 30px;
+      background: var(--bg-card);
+      border: 2px dashed var(--border-default);
+      border-radius: 28px;
+    }
+    
+    .empty-icon-wrapper {
+      width: 120px;
+      height: 120px;
+      background: var(--bg-surface-alt);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 30px;
+      animation: emptyFloat 3s ease-in-out infinite;
+    }
+    
+    @keyframes emptyFloat {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+    
+    .empty-icon-wrapper i {
+      font-size: 50px;
+      color: var(--accent-primary);
+    }
+    
+    .empty-state h3 {
+      font-size: 24px;
+      margin-bottom: 12px;
+      color: var(--text-primary);
+      font-weight: 700;
+    }
+    
+    .empty-state p {
+      font-size: 15px;
+      color: var(--text-muted);
+      max-width: 380px;
+      margin: 0 auto;
+      line-height: 1.6;
+    }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+      .messages-app {
+        padding: 16px;
+      }
+      
+      .app-header {
+        padding: 20px;
+        border-radius: 20px;
+      }
+      
+      .header-top {
+        flex-direction: column;
+        gap: 16px;
+        align-items: stretch;
+      }
+      
+      .header-actions {
+        justify-content: center;
+      }
+      
+      .header-content {
+        flex-direction: column;
+        gap: 24px;
+        text-align: center;
+      }
+      
+      .header-title {
+        flex-direction: column;
+        gap: 16px;
+      }
+      
+      .header-stats {
+        width: 100%;
+        justify-content: center;
+      }
+      
+      .search-filter-section {
+        flex-direction: column;
+      }
+      
+      .filter-tabs {
+        overflow-x: auto;
+        justify-content: flex-start;
+        padding: 8px;
+      }
+      
+      .conversation-card {
+        padding: 16px;
+      }
+      
+      .driver-avatar {
+        width: 50px;
+        height: 50px;
+        font-size: 20px;
+        border-radius: 14px;
+      }
+      
+      .last-message {
+        max-width: 160px;
+      }
+      
+      .header-text h1 {
+        font-size: 26px;
+      }
+    }
+    
+    /* Animation for new messages */
+    .new-message-highlight {
+      animation: highlightFlash 2s ease-out;
+    }
+    
+    @keyframes highlightFlash {
+      0% { 
+        background: var(--accent-primary);
+        opacity: 0.4;
+        transform: scale(1.02);
+      }
+      100% { 
+        background: var(--bg-card);
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="messages-app">
+    <!-- Header -->
+    <div class="app-header">
+      <div class="header-top">
+        <a href="/driver-locations" class="back-link">
+          <i class="fas fa-arrow-left"></i>
+          <span>Konum Takibi</span>
+        </a>
+        <div class="header-actions">
+          <button class="action-btn btn-refresh" onclick="location.reload()">
+            <i class="fas fa-sync-alt"></i>
+            <span>Yenile</span>
+          </button>
+        </div>
+      </div>
+      
+      <div class="header-content">
+        <div class="header-title">
+          <div class="header-icon">💬</div>
+          <div class="header-text">
+            <h1>Şoför Mesajları</h1>
+            <p>Şoförlerle anlık iletişim kurun</p>
+          </div>
+        </div>
+        
+        <div class="header-stats">
+          <div class="stat-card">
+            <div class="stat-value purple"><%= conversations ? conversations.length : 0 %></div>
+            <div class="stat-label">Toplam Şoför</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value green"><%= conversations ? conversations.filter(c => c.is_tracking).length : 0 %></div>
+            <div class="stat-label">Çevrimiçi</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value red"><%= conversations ? conversations.reduce((sum, c) => sum + (c.unread_count || 0), 0) : 0 %></div>
+            <div class="stat-label">Okunmamış</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Search & Filter -->
+    <div class="search-filter-section">
+      <div class="search-container">
+        <i class="fas fa-search search-icon"></i>
+        <input type="text" class="search-input" id="searchDriver" placeholder="Şoför adı ile ara..." oninput="filterConversations()">
+      </div>
+      
+      <div class="filter-tabs">
+        <button class="filter-tab active" data-filter="all" onclick="setFilter('all')">
+          <i class="fas fa-comments"></i>
+          <span>Tümü</span>
+          <span class="badge"><%= conversations ? conversations.length : 0 %></span>
+        </button>
+        <button class="filter-tab" data-filter="unread" onclick="setFilter('unread')">
+          <i class="fas fa-envelope"></i>
+          <span>Okunmamış</span>
+          <span class="badge"><%= conversations ? conversations.filter(c => c.unread_count > 0).length : 0 %></span>
+        </button>
+        <button class="filter-tab" data-filter="online" onclick="setFilter('online')">
+          <i class="fas fa-circle" style="font-size: 8px; color: #34d399;"></i>
+          <span>Çevrimiçi</span>
+          <span class="badge"><%= conversations ? conversations.filter(c => c.is_tracking).length : 0 %></span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Conversations List -->
+    <% if (conversations && conversations.length > 0) { %>
+      <div class="conversations-grid" id="conversationsList">
+        <% conversations.forEach(conv => { %>
+          <a href="/driver-messages/<%= conv.driver_id %>" 
+             class="conversation-card <%= conv.unread_count > 0 ? 'has-unread' : '' %>" 
+             data-name="<%= (conv.driver_name || '').toLowerCase() %>"
+             data-unread="<%= conv.unread_count > 0 ? 'true' : 'false' %>"
+             data-online="<%= conv.is_tracking ? 'true' : 'false' %>">
+            
+            <div class="avatar-wrapper">
+              <div class="driver-avatar">
+                <%= conv.driver_name ? conv.driver_name.charAt(0).toUpperCase() : '?' %>
+              </div>
+              <div class="online-status <%= conv.is_tracking ? 'online' : 'offline' %>"></div>
+            </div>
+            
+            <div class="conversation-info">
+              <div class="info-header">
+                <span class="driver-name"><%= conv.driver_name || 'Bilinmeyen Şoför' %></span>
+                <% if (conv.last_message_at) { %>
+                  <span class="message-time"><%= formatTime(conv.last_message_at) %></span>
+                <% } %>
+              </div>
+              
+              <div class="last-message">
+                <% if (conv.last_message) { %>
+                  <% if (conv.last_sender_type === 'operator') { %>
+                    <span class="you-tag">Sen:</span>
+                  <% } %>
+                  <%= conv.last_message.length > 55 ? conv.last_message.substring(0, 55) + '...' : conv.last_message %>
+                <% } else { %>
+                  <span class="no-message-text">Henüz mesaj yok</span>
+                <% } %>
+              </div>
+              
+              <div class="status-row">
+                <% if (conv.is_tracking) { %>
+                  <span class="status-badge online">
+                    <i class="fas fa-circle"></i>
+                    Çevrimiçi
+                  </span>
+                <% } else { %>
+                  <span class="status-badge offline">
+                    <i class="fas fa-circle"></i>
+                    Çevrimdışı
+                  </span>
+                <% } %>
+              </div>
+            </div>
+            
+            <div class="conversation-meta">
+              <% if (conv.unread_count > 0) { %>
+                <span class="unread-badge"><%= conv.unread_count %></span>
+              <% } %>
+              <i class="fas fa-chevron-right arrow-icon"></i>
+            </div>
+          </a>
+        <% }); %>
+      </div>
+    <% } else { %>
+      <div class="empty-state">
+        <div class="empty-icon-wrapper">
+          <i class="fas fa-comments"></i>
+        </div>
+        <h3>Henüz mesaj yok</h3>
+        <p>Şoförler uygulama üzerinden mesaj gönderdikçe burada görünecek.</p>
+      </div>
+    <% } %>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const socket = io();
+    const currentUser = '<%= currentUser?.username || "operator" %>';
+    let currentFilter = 'all';
+    
+    socket.emit('joinDriverMessagesPanel', { username: currentUser });
+    
+    socket.on('driver_new_message', (data) => {
+      console.log('[Socket] New message:', data);
+      showNotification(data.driverName, data.message);
+      updateConversationCard(data.driverId, data.driverName, data.message);
+    });
+    
+    function setFilter(filter) {
+      currentFilter = filter;
+      document.querySelectorAll('.filter-tab').forEach(tab => {
+        tab.classList.toggle('active', tab.dataset.filter === filter);
+      });
+      filterConversations();
+    }
+    
+    function filterConversations() {
+      const term = document.getElementById('searchDriver').value.toLowerCase().trim();
+      const cards = document.querySelectorAll('.conversation-card');
+      
+      cards.forEach(card => {
+        const name = card.getAttribute('data-name');
+        const hasUnread = card.getAttribute('data-unread') === 'true';
+        const isOnline = card.getAttribute('data-online') === 'true';
+        
+        let matchesFilter = true;
+        if (currentFilter === 'unread') matchesFilter = hasUnread;
+        if (currentFilter === 'online') matchesFilter = isOnline;
+        
+        const matchesSearch = term === '' || name.includes(term);
+        
+        card.style.display = (matchesFilter && matchesSearch) ? 'flex' : 'none';
+      });
+    }
+    
+    function showNotification(driverName, message) {
+      updateStats();
+      
+      if (Notification.permission === 'granted') {
+        new Notification('Yeni Mesaj - ' + driverName, {
+          body: message.message || '📷 Görsel',
+          icon: '/images/logo.png'
+        });
+      }
+      
+      playSound();
+    }
+    
+    function playSound() {
+      try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.frequency.value = 800;
+        osc.type = 'sine';
+        gain.gain.value = 0.3;
+        osc.start();
+        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
+        osc.stop(ctx.currentTime + 0.3);
+      } catch(e) {}
+    }
+    
+    function updateConversationCard(driverId, driverName, message) {
+      const card = document.querySelector(`a[href="/driver-messages/${driverId}"]`);
+      
+      if (card) {
+        const lastMsgEl = card.querySelector('.last-message');
+        if (lastMsgEl) {
+          const text = message.message 
+            ? (message.message.length > 55 ? message.message.substring(0, 55) + '...' : message.message)
+            : '<i class="fas fa-image" style="color:#a5b4fc;"></i> Görsel';
+          lastMsgEl.innerHTML = text;
+        }
+        
+        card.classList.add('has-unread');
+        card.setAttribute('data-unread', 'true');
+        
+        let badge = card.querySelector('.unread-badge');
+        const meta = card.querySelector('.conversation-meta');
+        
+        if (badge) {
+          badge.textContent = parseInt(badge.textContent) + 1;
+        } else if (meta) {
+          badge = document.createElement('span');
+          badge.className = 'unread-badge';
+          badge.textContent = '1';
+          meta.insertBefore(badge, meta.firstChild);
+        }
+        
+        const timeEl = card.querySelector('.message-time');
+        if (timeEl) timeEl.textContent = new Date().toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
+        
+        const list = document.getElementById('conversationsList');
+        if (list) list.insertBefore(card, list.firstChild);
+        
+        card.classList.add('new-message-highlight');
+        setTimeout(() => card.classList.remove('new-message-highlight'), 2000);
+        
+        filterConversations();
+      } else {
+        location.reload();
+      }
+    }
+    
+    function updateStats() {
+      fetch('/driver-messages/api/conversations')
+        .then(r => r.json())
+        .then(data => {
+          if (data.success && data.conversations) {
+            let unread = 0;
+            data.conversations.forEach(c => unread += c.unread_count || 0);
+            
+            const el = document.querySelector('.stat-value.red');
+            if (el) el.textContent = unread;
+            
+            document.title = unread > 0 ? `(${unread}) Şoför Mesajları` : 'Şoför Mesajları';
+          }
+        })
+        .catch(() => {});
+    }
+    
+    if ('Notification' in window && Notification.permission === 'default') {
+      Notification.requestPermission();
+    }
+    
+    window.addEventListener('beforeunload', () => {
+      socket.emit('leaveDriverMessagesPanel');
+    });
+  </script>
+
+  <%
+    function formatTime(dateStr) {
+      if (!dateStr) return '';
+      const date = new Date(dateStr);
+      const now = new Date();
+      
+      if (date.toDateString() === now.toDateString()) {
+        return date.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
+      }
+      
+      const yesterday = new Date(now);
+      yesterday.setDate(yesterday.getDate() - 1);
+      if (date.toDateString() === yesterday.toDateString()) {
+        return 'Dün';
+      }
+      
+      return date.toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' });
+    }
+  %>
+</body>
+</html>

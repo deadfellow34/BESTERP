@@ -1,0 +1,74 @@
+<!-- Live Chat Widget -->
+<div id="chat-widget">
+  <!-- Chat Bubble Button -->
+  <button id="chat-bubble" class="chat-bubble" title="Canlı Sohbet">
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+    </svg>
+    <span id="chat-unread-badge" class="chat-unread-badge" style="display: none;">0</span>
+  </button>
+
+  <!-- Chat Window -->
+  <div id="chat-window" class="chat-window" style="display: none;">
+    <!-- Tabs Bar -->
+    <div class="chat-tabs-bar">
+      <div id="chat-tabs" class="chat-tabs">
+        <!-- Main tab - always visible -->
+        <div class="chat-tab active" data-tab="main">
+          <span class="chat-tab-icon">💬</span>
+          <span class="chat-tab-name">Genel</span>
+        </div>
+        <!-- Private chat tabs will be added here dynamically -->
+      </div>
+      <button id="chat-close" class="chat-close-btn" title="Kapat">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Body -->
+    <div class="chat-body">
+      <!-- Messages Area -->
+      <div class="chat-messages-area">
+        <div id="chat-messages" class="chat-messages">
+          <!-- Messages will be inserted here -->
+          <div class="chat-welcome-message">
+            <p>👋 Henüz mesaj yok. İlk mesajı siz gönderin!</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Online Users Sidebar -->
+      <div class="chat-sidebar">
+        <div class="chat-sidebar-header" style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(34, 197, 94, 0.08) 100%); border-bottom: 1px solid rgba(16, 185, 129, 0.2);">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span style="width: 8px; height: 8px; background: #10b981; border-radius: 50%; box-shadow: 0 0 8px rgba(16, 185, 129, 0.6); animation: pulse-green 2s infinite;"></span>
+            <span style="color: #10b981; font-weight: 600; font-size: 12px; letter-spacing: 0.5px;">Çevrimiçi (<span id="chat-online-count" style="font-weight: 700;">0</span>)</span>
+          </div>
+        </div>
+        <div id="online-users" class="chat-online-users">
+          <!-- Online users will be inserted here -->
+        </div>
+      </div>
+      <style>
+        @keyframes pulse-green {
+          0%, 100% { opacity: 1; transform: scale(1); }
+          50% { opacity: 0.7; transform: scale(1.1); }
+        }
+      </style>
+    </div>
+
+    <!-- Input Area -->
+    <div class="chat-input-area">
+      <input type="text" id="chat-input" class="chat-input" placeholder="Mesaj yazın..." autocomplete="off" />
+      <button id="chat-send" class="chat-send-btn" title="Gönder">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="22" y1="2" x2="11" y2="13"></line>
+          <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+        </svg>
+      </button>
+    </div>
+  </div>
+</div>

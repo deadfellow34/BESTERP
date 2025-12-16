@@ -1,0 +1,48 @@
+PORT=3000
+SESSION_SECRET=bestfreight_super_secret
+NODE_ENV=development
+
+# Mail Ayarları (Yandex SMTP)
+MAIL_HOST=smtp.yandex.com
+MAIL_PORT=465
+MAIL_SECURE=true
+MAIL_USER=xx@xxxxxx.com.tr
+MAIL_PASSWORD=XXXXXXXXXXXX
+
+# Optional: comma-separated list of allowed sender addresses shown in the UI dropdown
+# Example: MAIL_SENDERS=xxxxx@xxxxx.com.tr,xxxxx@xxxxxxx.com.tr
+
+
+# VizeBest günlük uyarı maili alıcısı (sarı/kırmızı uyarılar için)
+VIZE_ALERT_EMAIL=xxxxxx@xxxxx.com.tr,xxxxxxx@xxxxx.com.tr
+
+# Admin Panel Pin Kodu
+ADMIN_PANEL_PIN=xxxxxxxx
+
+#TTEvrakbutonu mail alıcı
+GURAY_EMAIL_TO=xxxxxxxx@xxxxxxxxx.com.tr
+
+# Luca e-Fatura API Ayarları
+LUCA_API_URL=https://einvoiceapiturmob.luca.com.tr
+LUCA_IDENTIFICATION_NUMBER=xxxxxxxxxxxxxxxx
+LUCA_PASSWORD=xxxxxxxxxxxxxxxx
+LUCA_COMPANY_ID=xxxxxxxxxxxxxxxxxxxxxx
+
+# =====================
+# GPSBuddy (Zorunlu)
+# =====================
+# NOT: Prod'da bu değerleri sunucu env olarak set etmen önerilir.
+
+# Base URL (opsiyonel - default: http://webservice.gps-buddy.com
+# GPSBUDDY_BASE_URL=http://webservice.gps-buddy.com
+# Zorunlu alanlar
+GPSBUDDY_COMPANY_ID=xxxxxxxxxxxx
+GPSBUDDY_USERNAME=xxxxxxxxxxx@xxxxxxxxxxxxx.com
+GPSBUDDY_PASSWORD=xxxxxxxxxxxxxxxxx
+
+# Opsiyonel: grup filtresi ve fonksiyon adı
+# GPSBUDDY_GROUP_ID=xxxxxxxxxxxx
+# GPSBUDDY_LIVE_ENDPOINT=xxxxxxxxxxxx
+
+# Opsiyonel: cron ile 2 dk'da bir otomatik refresh
+# GPS_REFRESH_CRON_ENABLED=false
